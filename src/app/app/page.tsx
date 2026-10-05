@@ -12,6 +12,7 @@ import { demoCounterpart } from "@/lib/demo";
 import { cn } from "@/lib/cn";
 import { getDashboard } from "@/lib/domain/queries";
 import { formatMoney } from "@/lib/money";
+import { getPayPal } from "@/lib/paypal";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -44,12 +45,15 @@ export default async function DashboardPage() {
   ];
 
   const ade = user.demoWorkspace ? (user.name.startsWith("Ana") ? user : await demoCounterpart(user)) : null;
+  const sandbox = getPayPal().mode !== "simulator";
   const byTitle = (prefix: string) => d.pacts.find((p) => p.title.startsWith(prefix));
   const guide: GuideStep[] | null = user.demoWorkspace
     ? [
         { title: "Compile a DM into a pact", detail: "Paste a chat (or pick the suspicious one) and watch criteria, vague terms and scam flags appear.", href: "/app/pacts/new", as: "either" },
         { title: "Countersign the packaging pact", detail: "Review the invitation Maya sent and seal it. (The tour switches you to Ana.)", href: byTitle("Holiday Blend packaging") ? `/app/pacts/${byTitle("Holiday Blend packaging")!.id}` : "/app", as: "Ana" },
-        { title: "Fund milestone 1 with PayPal", detail: "Real sandbox checkout — PayPal account or a test card (4012 0000 3333 0026).", href: byTitle("Holiday Blend packaging") ? `/app/pacts/${byTitle("Holiday Blend packaging")!.id}` : "/app", as: "Maya" },
+        { title: "Fund milestone 1 with PayPal", detail: sandbox
+            ? "Real PayPal sandbox checkout: a sandbox PayPal account, or a test card (4012 0000 3333 0026)."
+            : "This server runs the built-in PayPal simulator (no sandbox keys set), so approval is one click.", href: byTitle("Holiday Blend packaging") ? `/app/pacts/${byTitle("Holiday Blend packaging")!.id}` : "/app", as: "Maya" },
         { title: "Deliver the landing page", detail: "Submit work → try the honest, the half-finished and the sneaky (prompt-injection) samples.", href: byTitle("Pre-order landing") ? `/app/pacts/${byTitle("Pre-order landing")!.id}` : "/app", as: "Ana" },
         { title: "Settle a dispute with AI mediation", detail: "Accept the 65/35 proposal as both people → PayPal Payout + partial refund.", href: byTitle("Instagram") ? `/app/pacts/${byTitle("Instagram")!.id}` : "/app", as: "either" },
         { title: "Go silent as the client", detail: "On the photo-retouching pact (a PASS), “skip ahead 48h” — the freelancer is paid automatically.", href: byTitle("Menu photo") ? `/app/pacts/${byTitle("Menu photo")!.id}` : "/app", as: "either" },
@@ -75,7 +79,7 @@ export default async function DashboardPage() {
         </Button>
       </div>
 
-      {guide && <DemoGuide steps={guide} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}
+      {guide && <DemoGuide steps={guide} sandbox={sandbox} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (

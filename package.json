@@ -67,6 +67,7 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "nock": "^14.0.17",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",

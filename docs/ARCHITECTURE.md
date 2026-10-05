@@ -37,7 +37,7 @@ stateDiagram-v2
 | Release | `POST /v1/payments/payouts` | `sender_batch_id = kept-<milestone>` — PayPal rejects duplicates for 30 days |
 | Refund / split | `POST /v2/payments/captures/{id}/refund` (Server SDK `PaymentsController.refundCapturedPayment`) | `PayPal-Request-Id = kept-refund-<refund row>` |
 | Reconcile | `GET /v1/payments/payouts/{batch}` | sweeper refreshes in-flight items |
-| Webhooks | `POST /v1/notifications/verify-webhook-signature` | event id stored with a unique index; unverified events are stored but never acted on |
+| Webhooks | `POST /v1/notifications/verify-webhook-signature` | event id stored with a unique index; unverified deliveries get a 401 and are not recorded; a redelivery of an event whose first attempt failed is processed again |
 | Payer disputes | `CUSTOMER.DISPUTE.*` webhooks → `POST /v1/customer/disputes/{id}/provide-evidence` | auto-release frozen while open; evidence submitted once |
 | Identity | `/signin/authorize` → `/v1/oauth2/token` → `/v1/identity/oauth2/userinfo` | OAuth `state` cookie; verified payer id stored for payouts |
 
@@ -51,7 +51,7 @@ stateDiagram-v2
 
 | Event | Journal |
 |---|---|
-| Capture of $320.38 for a $300 milestone | Dr `paypal_cash` 32038 · Cr `escrow_liability` 30000 · Cr `fee_revenue` 870 · Cr `processing_collected` 1168 |
+| Capture of $320.37 for a $300 milestone | Dr `paypal_cash` 32037 · Cr `escrow_liability` 30000 · Cr `fee_revenue` 870 · Cr `processing_collected` 1167 |
 | PayPal's actual fee (from `seller_receivable_breakdown`) | Dr `processing_expense` · Cr `paypal_cash` |
 | Payout to freelancer | Dr `escrow_liability` · Cr `paypal_cash` |
 | Payout fee | Dr `payout_expense` · Cr `paypal_cash` |
@@ -85,7 +85,7 @@ flowchart LR
 
 ## 5. Background work
 
-The **sweeper** ([`sweep.ts`](../src/lib/domain/sweep.ts)) runs every minute in-process (`src/instrumentation.ts`) and can also be triggered by an external cron (`GET /api/cron/sweep` with `Authorization: Bearer $CRON_SECRET`). It:
+The **sweeper** ([`sweep.ts`](../src/lib/domain/sweep.ts)) runs every minute in-process (`src/instrumentation.ts`) and can also be triggered by an external cron (`GET` or `POST /api/cron/sweep` with `Authorization: Bearer $CRON_SECRET`; the repo ships a GitHub Actions schedule for it). It:
 
 1. auto-releases milestones whose review window elapsed with a clean PASS;
 2. opens mediation for those that elapsed without one;

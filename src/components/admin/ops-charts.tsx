@@ -96,7 +96,8 @@ export function EscrowStatusChart({ data, height = 196 }: { data: StatusDatum[];
       theme,
       height,
       data,
-      padding: { top: 4, right: 12, bottom: 0, left: 0 },
+      // Room on the right for the outside-end value label of the longest bar.
+      padding: { top: 4, right: 44, bottom: 0, left: 0 },
       series: [
         {
           type: "bar",
@@ -140,6 +141,7 @@ export function EscrowStatusChart({ data, height = 196 }: { data: StatusDatum[];
           type: "number",
           position: "bottom",
           nice: true,
+          max: Math.max(1, ...data.map((d) => d.cents)) * 1.15,
           line: { enabled: false },
           gridLine: { enabled: true, style: [{ stroke: "#efe9de", lineDash: [] }] },
           label: { color: KEPT_CHART.ink3, fontSize: 11, formatter: (p) => compactMoney(Number(p.value)) },

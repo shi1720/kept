@@ -67,6 +67,8 @@ export default async function PactPage({
   // eslint-disable-next-line react-hooks/purity -- server component: evaluated once per request
   const justSealed = sealed && Date.now() - lastSignature < 90_000;
   const demo = Boolean(pact.demoWorkspace && pact.demoWorkspace === user.demoWorkspace);
+  // "Kept" only when every milestone was paid in full; a split or refund is a fair settlement, not a kept promise.
+  const keptInFull = pact.status === "completed" && milestones.every((m) => m.status === "released" || m.status === "cancelled");
   const done = milestones.filter((m) => ["released", "settled", "refunded", "cancelled"].includes(m.status)).length;
   const inviteUrl = `${env.appUrl}/invite/${pact.inviteToken}`;
   // Returned from a PayPal approval link (redirect flow): capture that order.
@@ -105,11 +107,11 @@ export default async function PactPage({
             <div className="hidden flex-col items-center justify-center gap-2 lg:flex">
               <Seal
                 size={104}
-                label={pact.status === "completed" ? "KEPT" : "SEALED"}
+                label={pact.status === "completed" ? (keptInFull ? "KEPT" : "SETTLED") : "SEALED"}
                 tone={pact.status === "completed" ? "jade" : "ember"}
                 className={justSealed ? "animate-stamp" : undefined}
               />
-              <span className="text-[11px] uppercase tracking-[0.2em] text-ink-3">{pact.status === "completed" ? "Promise kept" : "Signed by both"}</span>
+              <span className="text-[11px] uppercase tracking-[0.2em] text-ink-3">{pact.status === "completed" ? (keptInFull ? "Promise kept" : "Settled fairly") : "Signed by both"}</span>
             </div>
           )}
         </div>

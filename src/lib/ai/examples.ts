@@ -160,13 +160,14 @@ const DRAFTS: DraftOutput[] = [
     milestones: [
       {
         title: "Company website",
-        description: "A company website — scope to be confirmed in writing before any work starts.",
+        description: "A four-page company website. The page list below is Kept's suggestion — confirm it with the client before funding.",
         amount: 2500,
         dueInDays: 21,
         criteria: [
-          { text: "Scope, page list and content are confirmed in writing before work starts", kind: "objective", check: { ...n, type: "none" } },
-          { text: "Website is live and publicly reachable", kind: "objective", check: { ...n, type: "url_reachable" } },
-          { text: "All payment happens through Kept's PayPal escrow — no cheques, gift cards or Friends & Family", kind: "objective", check: { ...n, type: "none" } },
+          { text: "Website is live and publicly reachable at the agreed address", kind: "objective", check: { ...n, type: "url_reachable" } },
+          { text: "Has Home, About, Services and Contact pages", kind: "objective", check: { ...n, type: "page_contains", values: ["About", "Services", "Contact"] } },
+          { text: "Contact form sends enquiries to the client's email address", kind: "objective", check: { ...n, type: "none" } },
+          { text: "Pages work on a phone without horizontal scrolling", kind: "subjective", check: { ...n, type: "none" } },
         ],
       },
     ],
@@ -174,7 +175,7 @@ const DRAFTS: DraftOutput[] = [
       revisionsIncluded: 2,
       reviewWindowHours: 72,
       ipTransfer: "The client owns the website once paid in full through escrow.",
-      communication: "Through Kept only — no moving the conversation to Telegram.",
+      communication: "Through Kept only. All payment goes through Kept's PayPal escrow: no cheques, gift cards, Friends & Family or unpaid tests.",
     },
     ambiguities: [
       { quote: "I need a website for my company urgently", issue: "No pages, features or content specified", suggestion: "A written page list and content plan before funding" },

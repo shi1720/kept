@@ -7,7 +7,7 @@ import { Container } from "./section";
 const PROOF = [
   { k: "100%", v: "of the milestone goes to the freelancer" },
   { k: "2.9%", v: "client protection fee, AI mediation included" },
-  { k: "72h", v: "default review window, then passing work auto-releases" },
+  { k: "72h", v: "default review window (each pact can set its own), then passing work auto-releases" },
   { k: "MCP", v: "agents can hire people with escrow protection" },
 ];
 
