@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
+import { Field, Textarea } from "@/components/ui/input";
 import { api } from "@/lib/client-api";
 
 export function SendPactButton({ pactId }: { pactId: string }) {
@@ -88,6 +90,8 @@ export function CancelPactButton({ pactId }: { pactId: string }) {
 export function CountersignButton({ token, role }: { token: string; role: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"accept" | "decline" | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [changes, setChanges] = useState("");
   return (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -108,23 +112,39 @@ export function CountersignButton({ token, role }: { token: string; role: string
       >
         <PenLine /> Countersign as {role}
       </Button>
-      <Button
-        variant="outline"
-        size="lg"
-        loading={busy === "decline"}
-        onClick={async () => {
-          setBusy("decline");
-          try {
-            await api(`/api/invites/${token}/decline`, { body: {} });
-            toast("We let them know you'd like changes.");
-            router.push("/app");
-          } finally {
-            setBusy(null);
-          }
-        }}
-      >
-        Ask for changes
-      </Button>
+      <Dialog open={asking} onOpenChange={setAsking}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="lg">
+            Ask for changes
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader title="Ask for changes" description="The pact goes back to its author as a draft. Nothing is signed or charged." />
+          <Field label="What should change?" hint="Optional, but it helps: e.g. “Make milestone 2 due in 14 days, and include the source files.”">
+            <Textarea rows={4} maxLength={1000} value={changes} onChange={(e) => setChanges(e.target.value)} autoFocus />
+          </Field>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setAsking(false)}>
+              Cancel
+            </Button>
+            <Button
+              loading={busy === "decline"}
+              onClick={async () => {
+                setBusy("decline");
+                try {
+                  await api(`/api/invites/${token}/decline`, { body: { message: changes.trim() || null } });
+                  toast("Sent. They'll see your note and can send you a revised pact.");
+                  router.push("/app");
+                } finally {
+                  setBusy(null);
+                }
+              }}
+            >
+              Send request
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

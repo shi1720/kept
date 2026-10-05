@@ -5,7 +5,7 @@ import type { Criterion, CriterionResult, Verdict } from "@/lib/db/schema";
 
 const RESULT: Record<CriterionResult["result"], { icon: React.ElementType; label: string; cls: string }> = {
   met: { icon: CheckCircle2, label: "Met", cls: "text-jade-600" },
-  partially_met: { icon: MinusCircle, label: "Partly met", cls: "text-amber-600" },
+  partially_met: { icon: MinusCircle, label: "Partly met", cls: "text-amber-700" },
   not_met: { icon: XCircle, label: "Not met", cls: "text-rose-600" },
   cannot_verify: { icon: CircleHelp, label: "Can’t verify", cls: "text-ink-3" },
 };
@@ -68,11 +68,31 @@ export function CriterionRow({ criterion, result, index }: { criterion: Criterio
   );
 }
 
-export function VerdictReport({ verdict, criteria, viewerRole }: { verdict: Verdict; criteria: Criterion[]; viewerRole: "client" | "freelancer" | null }) {
+/** "3 met · 1 partly · 1 can't verify": every result the score is built from, not just the passes. */
+function tally(results: Verdict["criteriaResults"]): string {
+  const n = (r: string) => results.filter((x) => x.result === r).length;
+  const parts = [`${n("met")}/${results.length} met`];
+  if (n("partially_met")) parts.push(`${n("partially_met")} partly`);
+  if (n("not_met")) parts.push(`${n("not_met")} not met`);
+  if (n("cannot_verify")) parts.push(`${n("cannot_verify")} can’t verify`);
+  return parts.join(" · ");
+}
+
+export function VerdictReport({
+  verdict,
+  criteria,
+  viewerRole,
+  resolved = false,
+}: {
+  verdict: Verdict;
+  criteria: Criterion[];
+  viewerRole: "client" | "freelancer" | null;
+  /** The milestone is settled, so advice about approving or improving no longer applies. */
+  resolved?: boolean;
+}) {
   const byId = new Map(verdict.criteriaResults.map((r) => [r.criterionId, r]));
-  const met = verdict.criteriaResults.filter((r) => r.result === "met").length;
   const overallTone = verdict.overall === "pass" ? "jade" : verdict.overall === "partial" ? "amber" : "rose";
-  const notes = viewerRole === "freelancer" ? verdict.notesForFreelancer : verdict.notesForClient;
+  const notes = resolved ? null : viewerRole === "freelancer" ? verdict.notesForFreelancer : verdict.notesForClient;
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-card">
       <div className="flex flex-wrap items-center gap-5 border-b border-line bg-gradient-to-r from-sky-50/60 via-card to-card p-5">
@@ -81,7 +101,7 @@ export function VerdictReport({ verdict, criteria, viewerRole }: { verdict: Verd
           <div className="flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1.5 text-[13px] font-semibold"><Bot className="size-4 text-sky-600" /> AI Referee verdict</span>
             <Badge tone={overallTone}>{verdict.overall.toUpperCase()}</Badge>
-            <span className="text-xs text-ink-3">{met}/{verdict.criteriaResults.length} criteria met</span>
+            <span className="text-xs text-ink-3">{tally(verdict.criteriaResults)}</span>
           </div>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2">{verdict.summary}</p>
           <p className="mt-1.5 text-[11px] text-ink-3">

@@ -34,12 +34,18 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const d = await getDashboard(user);
   const firstName = user.name.split(" ")[0];
-  const isFreelancerish = d.stats.earnedCents > 0 || d.pacts.some((p) => p.role === "freelancer");
+  const isFreelancerish = d.stats.earnedCents + d.stats.earningPendingCents > 0 || d.pacts.some((p) => p.role === "freelancer");
 
   const stats = [
     { label: "Held in escrow", value: formatMoney(d.stats.heldCents), icon: Lock, tone: "text-amber-700 bg-amber-50", hint: "Secured with PayPal, waiting on work" },
     isFreelancerish
-      ? { label: "Paid out to you", value: formatMoney(d.stats.earnedCents), icon: Banknote, tone: "text-jade-700 bg-jade-50", hint: "Released via PayPal Payouts" }
+      ? {
+          label: "Paid out to you",
+          value: formatMoney(d.stats.earnedCents),
+          icon: Banknote,
+          tone: "text-jade-700 bg-jade-50",
+          hint: d.stats.earningPendingCents ? `+ ${formatMoney(d.stats.earningPendingCents)} released, not yet delivered` : "Delivered by PayPal Payouts",
+        }
       : { label: "Released to freelancers", value: formatMoney(d.stats.paidCents), icon: Banknote, tone: "text-jade-700 bg-jade-50", hint: "Only for work that passed" },
     { label: "Needs your attention", value: String(d.actions.length), icon: Hourglass, tone: "text-sky-600 bg-sky-50", hint: d.actions.length ? "See the queue below" : "Nothing waiting on you" },
     { label: "Milestones kept", value: String(d.stats.milestonesKept), icon: Sparkles, tone: "text-ember-700 bg-ember-50", hint: `${d.stats.completed} pact${d.stats.completed === 1 ? "" : "s"} completed · ${d.stats.active} active` },

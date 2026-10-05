@@ -7,7 +7,9 @@ import {
   milestones,
   pacts,
   users,
+  type Criterion,
   type MachineCheck,
+  type Milestone,
   type Pact,
   type PactTerms,
   type User,
@@ -179,6 +181,46 @@ export async function createPact(user: User, raw: unknown, via: Pact["createdVia
   return loadPact(id);
 }
 
+/**
+ * A saved pact as composer input, for editing. Saving adds each milestone's duration to the
+ * previous due date, counted from the moment of saving, so absolute due dates are turned back into
+ * per-milestone durations measured from now. Re-saving without changes then keeps every date.
+ */
+export function editableDraft(
+  pact: Pact,
+  milestones: (Pick<Milestone, "title" | "description" | "amountCents" | "dueAt"> & { criteria: Pick<Criterion, "text" | "kind" | "check">[] })[],
+  now = Date.now(),
+): PactInput {
+  let previousDue = now;
+  return {
+    title: pact.title,
+    summary: pact.summary,
+    currency: "USD",
+    creatorRole: pact.creatorRole,
+    counterpartyName: pact.counterpartyName ?? "",
+    counterpartyEmail: pact.counterpartyEmail ?? "",
+    sourceText: pact.sourceText,
+    terms: { ...pact.terms, communication: pact.terms.communication ?? null },
+    clarityScore: pact.clarityScore,
+    ambiguities: pact.ambiguities,
+    riskFlags: pact.riskFlags,
+    milestones: milestones.map((m) => {
+      let dueInDays: number | null = null;
+      if (m.dueAt) {
+        dueInDays = Math.max(1, Math.round((m.dueAt.getTime() - previousDue) / 86_400_000));
+        previousDue = previousDue + dueInDays * 86_400_000;
+      }
+      return {
+        title: m.title,
+        description: m.description,
+        amount: m.amountCents / 100,
+        dueInDays,
+        criteria: m.criteria.map((c) => ({ text: c.text, kind: c.kind, check: c.check })),
+      };
+    }),
+  };
+}
+
 export async function updatePact(user: User, pactId: string, raw: unknown): Promise<Pact> {
   const pact = await loadPact(pactId);
   if (pact.creatorId !== user.id) throw forbidden("Only the pact's author can edit it");
@@ -281,12 +323,23 @@ export async function acceptPact(user: User, token: string): Promise<Pact> {
   return loadPact(pact.id);
 }
 
-export async function declinePact(user: User, token: string) {
+export async function declinePact(user: User, token: string, message?: string | null) {
   const pact = await getPactByInvite(token);
   if (pact.status !== "pending_acceptance") throw invalidState("This invitation is no longer open");
   await db.update(pacts).set({ status: "draft", clientSignedAt: null, freelancerSignedAt: null, updatedAt: new Date() }).where(eq(pacts.id, pact.id));
-  await recordEvent(db, { pactId: pact.id, actorId: user.id, actorKind: "user", type: "pact.declined", message: `${user.name} asked for changes before signing` });
-  await notify(db, [pact.creatorId], { pactId: pact.id, title: "Changes requested", body: `${user.name} wants changes to “${pact.title}” before signing.` });
+  const note = message?.trim().slice(0, 1000) || null;
+  await recordEvent(db, {
+    pactId: pact.id,
+    actorId: user.id,
+    actorKind: "user",
+    type: "pact.declined",
+    message: note ? `${user.name} asked for changes before signing: “${note}”` : `${user.name} asked for changes before signing`,
+  });
+  await notify(db, [pact.creatorId], {
+    pactId: pact.id,
+    title: "Changes requested",
+    body: note ? `${user.name} wants changes to “${pact.title}”: “${note}”` : `${user.name} wants changes to “${pact.title}” before signing.`,
+  });
 }
 
 export async function cancelPact(user: User, pactId: string) {
@@ -299,6 +352,8 @@ export async function cancelPact(user: User, pactId: string) {
   await db.update(milestones).set({ status: "cancelled", updatedAt: new Date() }).where(eq(milestones.pactId, pactId));
   await db.update(pacts).set({ status: "cancelled", updatedAt: new Date() }).where(eq(pacts.id, pactId));
   await recordEvent(db, { pactId, actorId: user.id, actorKind: "user", type: "pact.cancelled", message: `${user.name} cancelled the pact` });
+  const others = [pact.clientId, pact.freelancerId].filter((id): id is string => Boolean(id) && id !== user.id);
+  if (others.length) await notify(db, others, { pactId, title: "A pact was cancelled", body: `${user.name} cancelled “${pact.title}”. No money had been taken.` });
 }
 
 export async function listPactsForUser(user: User) {
@@ -333,7 +388,13 @@ export async function refreshPactStatus(pactId: string) {
   if (next !== pact.status) {
     await db.update(pacts).set({ status: next, updatedAt: new Date() }).where(eq(pacts.id, pactId));
     if (next === "completed") {
-      await recordEvent(db, { pactId, actorKind: "system", type: "pact.completed", message: "All milestones resolved. Promise kept." });
+      const n = (st: string) => ms.filter((m) => m.status === st).length;
+      const [paid, settled, refunded] = [n("released"), n("settled"), n("refunded")];
+      const message =
+        settled + refunded === 0
+          ? "All milestones paid in full. Promise kept."
+          : `All milestones resolved: ${[paid && `${paid} paid in full`, settled && `${settled} settled by agreement`, refunded && `${refunded} refunded`].filter(Boolean).join(", ")}.`;
+      await recordEvent(db, { pactId, actorKind: "system", type: "pact.completed", message });
     }
   } else {
     await db.update(pacts).set({ updatedAt: new Date() }).where(eq(pacts.id, pactId));

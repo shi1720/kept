@@ -1,7 +1,7 @@
 import { AlertOctagon, ArrowLeft, Bot, FileSignature, ScrollText, ShieldCheck, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PactStatusBadge } from "@/components/app/status";
 import { Timeline } from "@/components/app/timeline";
 import { Seal } from "@/components/brand/seal";
@@ -12,21 +12,34 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { requireUser } from "@/lib/auth/session";
+import { getCurrentUser, requireUser } from "@/lib/auth/session";
+import { loadPact } from "@/lib/domain/context";
 import { getPactDetail, type PublicUser } from "@/lib/domain/queries";
 import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
 import { getPayPal } from "@/lib/paypal";
 
-export const metadata: Metadata = { title: "Pact" };
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  // Only someone who can open the pact sees its title in the tab.
+  const viewer = await getCurrentUser();
+  const detail = viewer ? await getPactDetail(viewer, (await params).id).catch(() => null) : null;
+  return { title: detail?.pact.title ?? "Pact" };
+}
 
 async function load(id: string) {
   const user = await requireUser();
   try {
     return { user, detail: await getPactDetail(user, id) };
   } catch (err) {
-    if (err instanceof AppError && (err.code === "not_found" || err.code === "forbidden")) notFound();
+    if (err instanceof AppError && err.code === "forbidden") {
+      // Someone invited by email (and verified as that address) who hasn't countersigned yet
+      // belongs on the invitation, e.g. after clicking the "You've been invited" notification.
+      const pact = await loadPact(id).catch(() => null);
+      if (pact?.status === "pending_acceptance" && user.emailVerifiedAt && pact.counterpartyEmail === user.email) redirect(`/invite/${pact.inviteToken}`);
+      notFound();
+    }
+    if (err instanceof AppError && err.code === "not_found") notFound();
     throw err;
   }
 }
@@ -150,7 +163,15 @@ export default async function PactPage({
               <SendPactButton pactId={pact.id} />
             </div>
           )}
-          {isCreator && pact.status === "pending_acceptance" && <div className="w-full max-w-md"><CopyInvite url={inviteUrl} /></div>}
+          {isCreator && pact.status === "pending_acceptance" && (
+            <div className="flex w-full max-w-md flex-col gap-2">
+              <CopyInvite url={inviteUrl} />
+              <div className="flex flex-wrap items-center gap-2">
+                <EditPactLink pactId={pact.id} />
+                <span className="text-[12px] text-ink-3">Editing withdraws your signature until you send it again (same link).</span>
+              </div>
+            </div>
+          )}
           {!isCreator && pact.status === "pending_acceptance" && (
             <Link href={`/invite/${pact.inviteToken}`} className="text-[13px] font-medium text-jade-700 hover:underline">Review & countersign →</Link>
           )}

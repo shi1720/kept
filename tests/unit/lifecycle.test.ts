@@ -265,6 +265,19 @@ describe("escrow lifecycle", () => {
     const d = await openDispute(client, milestoneId, "The post is off-topic and not what we agreed on");
     expect(d.status).toBe("ruling_proposed");
   });
+
+  it("keeps an escalated dispute with the arbitrator: no new statements re-run the mediator", async () => {
+    const { addStatement } = await import("@/lib/domain/disputes");
+    const { milestoneId } = await activePact();
+    await fund(milestoneId);
+    await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
+    await runReview(milestoneId);
+    const d = await openDispute(client, milestoneId, "The post is off-topic and not what we agreed on");
+    await respondToRuling(freelancer, d.id, false);
+    await expect(addStatement(client, d.id, "One more thing: the tone is also wrong for our brand.")).rejects.toThrow(/arbitrator/);
+    const [after] = await db.select().from(disputes).where(eq(disputes.id, d.id));
+    expect(after.status).toBe("escalated");
+  });
 });
 
 describe("chargeback shield", () => {
@@ -311,5 +324,37 @@ describe("payout failure accounting", () => {
     expect(again.senderBatchId).toBe(`kept-${milestoneId}-r2`);
     bal = await accountBalances(db);
     expect(Object.values(bal).reduce((s, x) => s + x, 0)).toBe(0);
+  });
+});
+
+describe("editing a pact", () => {
+  it("keeps every milestone's due date when a pact is opened for editing and saved unchanged", async () => {
+    const { editableDraft, updatePact } = await import("@/lib/domain/pacts");
+    const pact = await createPact(client, {
+      title: "Three-part brand job",
+      summary: "Logo, guide, templates",
+      creatorRole: "client",
+      terms: { revisionsIncluded: 1, reviewWindowHours: 72, ipTransfer: "Client owns on payment" },
+      milestones: [7, 14, 5].map((d, i) => ({
+        title: `Part ${i + 1}`,
+        description: "Work",
+        amount: 100,
+        dueInDays: d,
+        criteria: [{ text: "Delivered as agreed", kind: "objective" as const, check: { type: "none" as const } }],
+      })),
+    });
+    const dueDates = async () =>
+      (await db.select().from(milestones).where(eq(milestones.pactId, pact.id))).sort((a, b) => a.position - b.position).map((m) => m.dueAt!.getTime());
+    const before = await dueDates();
+    for (let i = 0; i < 3; i++) {
+      const ms = (await db.select().from(milestones).where(eq(milestones.pactId, pact.id))).sort((a, b) => a.position - b.position);
+      const withCriteria = ms.map((m) => ({ ...m, criteria: [{ text: "Delivered as agreed", kind: "objective" as const, check: { type: "none" as const } }] }));
+      const fresh = (await db.select().from((await import("@/lib/db/schema")).pacts).where(eq((await import("@/lib/db/schema")).pacts.id, pact.id)))[0];
+      const draft = editableDraft(fresh, withCriteria);
+      // As the composer sends it: empty optional fields become null.
+      await updatePact(client, pact.id, { ...draft, counterpartyEmail: draft.counterpartyEmail || null, counterpartyName: draft.counterpartyName || null });
+    }
+    const after = await dueDates();
+    after.forEach((t, i) => expect(Math.abs(t - before[i])).toBeLessThan(86_400_000 / 2));
   });
 });

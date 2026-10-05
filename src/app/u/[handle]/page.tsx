@@ -54,7 +54,13 @@ export default async function PublicProfilePage({ params }: Props) {
   const statCards =
     primaryRole === "freelancer"
       ? [
-          { label: "Pacts completed", value: String(stats.pactsCompleted), hint: stats.pactsActive ? `${stats.pactsActive} in progress` : "All delivered", icon: CheckCircle2 },
+          { label: "Pacts completed", value: String(stats.pactsCompleted), hint: [
+              stats.pactsActive ? `${stats.pactsActive} in progress` : null,
+              stats.milestonesSettled ? `${stats.milestonesSettled} milestone${stats.milestonesSettled === 1 ? "" : "s"} settled` : null,
+              stats.milestonesRefunded ? `${stats.milestonesRefunded} refunded` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Every milestone paid in full", icon: CheckCircle2 },
           { label: "Released via Kept", value: money(stats.releasedCents), hint: "Paid out by PayPal from escrow", icon: ShieldCheck },
           { label: "On-time delivery", value: stats.onTimeRate === null ? "—" : `${stats.onTimeRate}%`, hint: stats.onTimeSample ? `Across ${stats.onTimeSample} delivered milestone${stats.onTimeSample === 1 ? "" : "s"}` : "No deliveries yet", icon: Clock3 },
           { label: "AI referee score", value: stats.avgScore === null ? "—" : `${stats.avgScore}`, suffix: stats.avgScore === null ? undefined : "/100", hint: stats.scoredCount ? `Average of ${stats.scoredCount} reviewed deliver${stats.scoredCount === 1 ? "y" : "ies"}` : "No reviews yet", icon: Sparkles },
@@ -233,7 +239,7 @@ function OutcomeBadge({ item }: { item: TrackRecordItem }) {
     case "refunded":
       return <Badge tone="neutral"><RotateCcw /> Refunded</Badge>;
     default:
-      return <Badge tone="sky" dot>In progress · {item.milestonesKept} of {item.milestonesTotal} kept</Badge>;
+      return <Badge tone="sky" dot>In progress · {item.milestonesKept} of {item.milestonesTotal} done</Badge>;
   }
 }
 

@@ -360,7 +360,7 @@ paths:
         default: { $ref: "#/components/responses/Error" }
     patch:
       tags: [Account]
-      summary: Update your profile or payout email
+      summary: Update your profile or payout email (browser session only; API keys get 403)
       operationId: updateMe
       requestBody:
         required: true
@@ -378,14 +378,14 @@ paths:
   /api/keys:
     get:
       tags: [Account]
-      summary: List your API keys (prefixes only)
+      summary: List your API keys (prefixes only; browser session only)
       operationId: listKeys
       responses:
         "200": { description: Keys }
         default: { $ref: "#/components/responses/Error" }
     post:
       tags: [Account]
-      summary: Create an API key for an agent; the secret is shown once
+      summary: Create an API key for an agent; the secret is shown once (browser session only, max 10 active)
       operationId: createKey
       requestBody:
         content:
@@ -398,7 +398,7 @@ paths:
     parameters: [{ $ref: "#/components/parameters/Id" }]
     delete:
       tags: [Account]
-      summary: Revoke an API key
+      summary: Revoke an API key (browser session only)
       operationId: revokeKey
       responses:
         "200": { description: Revoked }

@@ -55,10 +55,11 @@ export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep
         <ol className="grid gap-px border-t border-ember-100 bg-ember-100/60 sm:grid-cols-2 xl:grid-cols-3">
           {steps.map((s, i) => (
             <li key={s.title} className="bg-card/90">
-              <Link
-                href={s.as !== "either" ? `/api/auth/switch?as=${s.as}&next=${encodeURIComponent(s.href)}` : s.href}
-                prefetch={false}
-                className="group flex h-full gap-3 px-5 py-4 transition-colors hover:bg-paper"
+              <StepLink
+                // Switching persona changes who is signed in, so it needs a full page load: a client-side
+                // navigation would keep the old persona in the (unchanged) app header.
+                href={s.as !== "either" && s.as !== currentPersona ? `/api/auth/switch?as=${s.as}&next=${encodeURIComponent(s.href)}` : s.href}
+                fullLoad={s.as !== "either" && s.as !== currentPersona}
               >
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-paper">{i + 1}</span>
                 <span className="min-w-0">
@@ -72,11 +73,24 @@ export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep
                   </span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-ink-3">{s.detail}</span>
                 </span>
-              </Link>
+              </StepLink>
             </li>
           ))}
         </ol>
       )}
     </div>
+  );
+}
+
+function StepLink({ href, fullLoad, children }: { href: string; fullLoad: boolean; children: React.ReactNode }) {
+  const className = "group flex h-full gap-3 px-5 py-4 transition-colors hover:bg-paper";
+  return fullLoad ? (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  ) : (
+    <Link href={href} prefetch={false} className={className}>
+      {children}
+    </Link>
   );
 }

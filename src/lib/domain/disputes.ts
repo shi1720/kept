@@ -96,6 +96,9 @@ export async function addStatement(user: User, disputeId: string, statement: str
   const { pact, milestone } = await loadMilestone(dispute.milestoneId);
   const role = assertParty(user, pact);
   if (dispute.status === "resolved") throw invalidState("This dispute is already resolved");
+  // Once escalated, the human arbitrator decides on the record as it stands; a new statement would
+  // re-run the mediator and pull the case back from them.
+  if (dispute.status === "escalated") throw invalidState("This dispute is with the arbitrator now, so statements are closed");
   if (statement.trim().length < 10) throw badRequest("Your statement is too short");
   await db
     .update(disputes)

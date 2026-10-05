@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth/session";
+import { requireSessionUser, requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import { retryPayoutsForFreelancer } from "@/lib/domain/settlement";
@@ -17,8 +17,9 @@ export const GET = handler(async () => {
   return { user: { id: u.id, name: u.name, email: u.email, handle: u.handle, headline: u.headline, paypalEmail: u.paypalEmail, paypalVerified: u.paypalVerified, role: u.role, demo: Boolean(u.demoWorkspace) } };
 });
 
+/** Profile and payout email: browser sessions only, so an agent's API key can't redirect payouts. */
 export const PATCH = handler(async (req) => {
-  const u = await requireUser();
+  const u = await requireSessionUser();
   const input = patch.parse(await readJson(req));
   const changes: Partial<typeof users.$inferInsert> = { ...input };
   if (input.paypalEmail !== undefined && input.paypalEmail?.toLowerCase() !== u.paypalEmail) {

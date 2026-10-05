@@ -1,5 +1,8 @@
 import { and, ne, asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { env } from "@/lib/env";
+import { formatMoney } from "@/lib/money";
+import { isPaidOut, payoutState } from "@/lib/payout-status";
 import {
   artifacts,
   criteria,
@@ -20,10 +23,23 @@ import { forbidden } from "@/lib/errors";
 import { loadPact, loadUser, roleOf } from "./context";
 import { listPactsForUser } from "./pacts";
 
-export type PublicUser = Pick<User, "id" | "name" | "handle" | "headline" | "avatarHue" | "paypalVerified">;
+export type PublicUser = Pick<User, "id" | "name" | "handle" | "headline" | "avatarHue" | "paypalVerified"> & {
+  /** Has somewhere for PayPal Payouts to go (the address itself stays private). */
+  payoutReady: boolean;
+};
 
 export const publicUser = (u: User | null): PublicUser | null =>
-  u ? { id: u.id, name: u.name, handle: u.handle, headline: u.headline, avatarHue: u.avatarHue, paypalVerified: u.paypalVerified } : null;
+  u
+    ? {
+        id: u.id,
+        name: u.name,
+        handle: u.handle,
+        headline: u.headline,
+        avatarHue: u.avatarHue,
+        paypalVerified: u.paypalVerified,
+        payoutReady: Boolean(u.paypalEmail || u.paypalPayerId || (u.demoWorkspace && env.paypal.demoPayoutEmail)),
+      }
+    : null;
 
 /** Everything the pact room needs, in one round trip, scoped to what this viewer may see. */
 export async function getPactDetail(viewer: User | null, pactId: string, opts: { inviteToken?: string } = {}) {
@@ -169,6 +185,20 @@ export async function getDashboard(user: User) {
   const myRefunds = msIds.length ? await db.select().from(refunds).where(inArray(refunds.milestoneId, msIds)) : [];
   const asFreelancer = new Set(allMs.filter((m) => m.pact.role === "freelancer").map((m) => m.id));
   const asClient = new Set(allMs.filter((m) => m.pact.role === "client").map((m) => m.id));
+  const mine = myPayouts.filter((p) => asFreelancer.has(p.milestoneId));
+  const waitingForEmail = mine.filter((p) => payoutState(p.status) === "needs_email");
+  if (waitingForEmail.length) {
+    const cents = waitingForEmail.reduce((s, p) => s + p.amountCents, 0);
+    actions.unshift({
+      pactId: allMs.find((m) => m.id === waitingForEmail[0].milestoneId)!.pact.id,
+      pactTitle: "Your payouts",
+      label: "Add your PayPal email to get paid",
+      detail: `${formatMoney(cents)} has been released to you and is waiting for a payout address`,
+      tone: "amber",
+      cta: "Add email",
+      href: "/app/settings#payouts",
+    });
+  }
 
   const partyIds = [...new Set(list.flatMap((p) => [p.clientId, p.freelancerId, p.creatorId]).filter((x): x is string => Boolean(x)))];
   const names = new Map(
@@ -203,12 +233,14 @@ export async function getDashboard(user: User) {
     actions,
     stats: {
       heldCents: held.reduce((s, m) => s + m.amountCents, 0),
-      earnedCents: myPayouts.filter((p) => asFreelancer.has(p.milestoneId)).reduce((s, p) => s + p.amountCents, 0),
+      // Only money PayPal has actually delivered counts as paid; the rest is on its way or waiting.
+      earnedCents: mine.filter((p) => isPaidOut(p.status)).reduce((s, p) => s + p.amountCents, 0),
+      earningPendingCents: mine.filter((p) => !isPaidOut(p.status)).reduce((s, p) => s + p.amountCents, 0),
       paidCents: myPayouts.filter((p) => asClient.has(p.milestoneId)).reduce((s, p) => s + p.amountCents, 0),
       refundedCents: myRefunds.filter((r) => asClient.has(r.milestoneId)).reduce((s, r) => s + r.amountCents, 0),
       active: list.filter((p) => p.status === "active").length,
       completed: list.filter((p) => p.status === "completed").length,
-      milestonesKept: allMs.filter((m) => m.status === "released" || m.status === "settled").length,
+      milestonesKept: allMs.filter((m) => m.status === "released").length,
     },
     events: recentEvents,
     pactTitles: Object.fromEntries(list.map((p) => [p.id, p.title])),

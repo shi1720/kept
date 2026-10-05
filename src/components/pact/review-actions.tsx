@@ -33,12 +33,14 @@ export function ReviewActions({
   milestoneId,
   amountCents,
   freelancerName,
+  payoutReady,
   revisionsLeft,
   canRevise,
 }: {
   milestoneId: string;
   amountCents: number;
   freelancerName: string;
+  payoutReady: boolean;
   revisionsLeft: number;
   canRevise: boolean;
 }) {
@@ -56,7 +58,11 @@ export function ReviewActions({
           <Button variant="jade" size="lg"><CheckCircle2 /> Approve & release {formatMoney(amountCents)}</Button>
         </DialogTrigger>
         <DialogContent>
-          <DialogHeader title="Release payment?" description={`${formatMoney(amountCents)} will be sent from escrow to ${freelancerName}'s PayPal account via PayPal Payouts. This can't be undone.`} />
+          <DialogHeader title="Release payment?" description={
+              payoutReady
+                ? `${formatMoney(amountCents)} will be sent from escrow to ${freelancerName}'s PayPal account via PayPal Payouts. This can't be undone.`
+                : `${formatMoney(amountCents)} will be released to ${freelancerName}. They haven't added a PayPal payout email yet, so PayPal sends it the moment they do; it can't come back to you. This can't be undone.`
+            } />
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpenApprove(false)}>Not yet</Button>
             <Button variant="jade" loading={busy === "approve"} onClick={async () => (await run("approve", `/api/milestones/${milestoneId}/approve`, {}, "Released! The freelancer is being paid via PayPal.")) && setOpenApprove(false)}>

@@ -53,7 +53,9 @@ interface Kpi {
 
 export function KpiHeader({ kpis, heldCount }: { kpis: OpsKpis; heldCount: number }) {
   const items: Kpi[] = [
-    { label: "Escrow held", value: formatMoney(kpis.escrowHeldCents), hint: `Owed to parties across ${plural(heldCount, "milestone")}`, icon: Lock, tone: "bg-amber-50 text-amber-700", emphasis: true },
+    { label: "Escrow held", value: formatMoney(kpis.escrowHeldCents), hint: kpis.awaitingPayPalCents
+        ? `${plural(heldCount, "held milestone")} + ${formatMoney(kpis.awaitingPayPalCents)} released, awaiting PayPal`
+        : `Owed to parties across ${plural(heldCount, "milestone")}`, icon: Lock, tone: "bg-amber-50 text-amber-700", emphasis: true },
     { label: "GMV funded", value: formatMoney(kpis.gmvFundedCents), hint: `${plural(kpis.fundedCount, "capture")} · ${formatMoney(kpis.grossChargedCents)} charged incl. fees`, icon: HandCoins, tone: "bg-sky-50 text-sky-600" },
     {
       label: "Released via Payouts",

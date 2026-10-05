@@ -200,8 +200,21 @@ function ArbitrateForm({ dispute, onDone }: { dispute: DisputeRow; onDone: () =>
           <p className="mt-2 leading-relaxed text-ink-2">
             <span className="font-medium text-ink">{dispute.openedBy ?? "A party"}:</span> “{dispute.reason}”
           </p>
+          {(dispute.clientStatement || dispute.freelancerStatement) && (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {[
+                { who: `${dispute.client ?? "Client"} (client)`, text: dispute.clientStatement },
+                { who: `${dispute.freelancer ?? "Freelancer"} (freelancer)`, text: dispute.freelancerStatement },
+              ].map((s) => (
+                <div key={s.who} className="rounded-lg border border-line bg-card px-3 py-2">
+                  <p className="text-[11.5px] font-medium uppercase tracking-wide text-ink-3">{s.who}</p>
+                  <p className="mt-1 whitespace-pre-line leading-relaxed text-ink-2">{s.text ? `“${s.text}”` : <span className="italic text-ink-3">No statement yet</span>}</p>
+                </div>
+              ))}
+            </div>
+          )}
           {dispute.rationale && (
-            <p className="mt-2 flex gap-1.5 leading-relaxed text-ink-3">
+            <p className="mt-3 flex gap-1.5 leading-relaxed text-ink-3">
               <Sparkles className="mt-0.5 size-3.5 shrink-0 text-jade-600" />
               <span>
                 AI mediator proposed <b className="text-ink-2">{dispute.proposedPct}%</b>: {dispute.rationale}

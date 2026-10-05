@@ -159,6 +159,9 @@ export interface DisputeRow {
   status: DisputeStatus;
   reason: string;
   openedBy: string | null;
+  /** Each side's account of what happened, as given to the mediator. */
+  clientStatement: string | null;
+  freelancerStatement: string | null;
   client: string | null;
   freelancer: string | null;
   proposedPct: number | null;
@@ -196,6 +199,8 @@ export interface BooksCheck {
 
 export interface OpsKpis {
   escrowHeldCents: number;
+  /** Part of escrowHeldCents already released or refunded, waiting on PayPal (or a payout email). */
+  awaitingPayPalCents: number;
   gmvFundedCents: number;
   grossChargedCents: number;
   fundedCount: number;
@@ -562,6 +567,8 @@ export async function getOpsConsole(scope: OpsScope): Promise<OpsConsole> {
     status: r.d.status,
     reason: r.d.reason,
     openedBy: r.openedBy,
+    clientStatement: r.d.clientStatement,
+    freelancerStatement: r.d.freelancerStatement,
     client: r.client,
     freelancer: r.freelancer,
     proposedPct: r.d.ruling?.releasePct ?? null,
@@ -649,6 +656,7 @@ export async function getOpsConsole(scope: OpsScope): Promise<OpsConsole> {
 
   const kpis: OpsKpis = {
     escrowHeldCents: escrowLiabilityCents,
+    awaitingPayPalCents: pendingPayoutsCents + pendingRefundsCents,
     gmvFundedCents: captured.reduce((s, { p }) => s + p.milestoneCents, 0),
     grossChargedCents: captured.reduce((s, { p }) => s + p.totalCents, 0),
     fundedCount: captured.length,

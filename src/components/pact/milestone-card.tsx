@@ -3,6 +3,7 @@ import { MilestoneStatusBadge } from "@/components/app/status";
 import { Badge } from "@/components/ui/badge";
 import type { PactDetail } from "@/lib/domain/queries";
 import { formatMoney } from "@/lib/money";
+import { payoutStatusLabel } from "@/lib/payout-status";
 import { ago } from "@/lib/time";
 import { DisputePanel } from "./dispute-panel";
 import { PayPalDisputeBanner, SimulatePayPalDisputeButton } from "./paypal-dispute";
@@ -72,7 +73,7 @@ export function MilestoneCard({
 
       <div className="flex flex-col gap-5 px-6 py-5">
         {showVerdict ? (
-          <VerdictReport verdict={verdict} criteria={m.criteria} viewerRole={role} />
+          <VerdictReport verdict={verdict} criteria={m.criteria} viewerRole={role} resolved={["released", "settled", "refunded"].includes(m.status)} />
         ) : (
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">Acceptance criteria</p>
@@ -127,7 +128,7 @@ export function MilestoneCard({
               )}
             </p>
             {role === "client" ? (
-              <ReviewActions milestoneId={m.id} amountCents={m.amountCents} freelancerName={freelancerName} revisionsLeft={revisionsLeft} canRevise={revisionsLeft > 0} />
+              <ReviewActions milestoneId={m.id} amountCents={m.amountCents} freelancerName={freelancerName} payoutReady={detail.freelancer?.payoutReady ?? false} revisionsLeft={revisionsLeft} canRevise={revisionsLeft > 0} />
             ) : (
               <p className="text-[13px] text-ink-3">Waiting for {clientName} to review. You can’t be ghosted: passing work is released when the window closes.</p>
             )}
@@ -148,10 +149,15 @@ export function MilestoneCard({
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {m.payout && (
-                <Receipt icon={<CircleDollarSign />} title="PayPal Payout to freelancer" amount={m.payout.amountCents} lines={[`Status: ${m.payout.status}`, m.payout.paypalBatchId ? `Batch ${m.payout.paypalBatchId}` : "Awaiting payout details", m.payout.receiverEmail ? `To ${m.payout.receiverEmail}` : "", m.payout.simulated ? "Simulated" : ""]} />
+                <Receipt icon={<CircleDollarSign />} title="PayPal Payout to freelancer" amount={m.payout.amountCents} lines={[
+                    payoutStatusLabel(m.payout.status, freelancerName.split(" ")[0]),
+                    m.payout.paypalBatchId ? `Batch ${m.payout.paypalBatchId}` : "",
+                    m.payout.receiverEmail ? `To ${m.payout.receiverEmail.startsWith("payer:") ? "linked PayPal account" : m.payout.receiverEmail}` : "",
+                    m.payout.simulated ? "Simulated" : "",
+                  ]} />
               )}
               {m.refund && (
-                <Receipt icon={<Undo2 />} title="PayPal refund to client" amount={m.refund.amountCents} lines={[`Status: ${m.refund.status}`, m.refund.paypalRefundId ? `Refund ${m.refund.paypalRefundId}` : "", m.refund.simulated ? "Simulated" : ""]} />
+                <Receipt icon={<Undo2 />} title="PayPal refund to client" amount={m.refund.amountCents} lines={[m.refund.status === "COMPLETED" ? "Delivered by PayPal" : `Refund ${m.refund.status.toLowerCase()}`, m.refund.paypalRefundId ? `Refund ${m.refund.paypalRefundId}` : "", m.refund.simulated ? "Simulated" : ""]} />
               )}
             </div>
           </div>

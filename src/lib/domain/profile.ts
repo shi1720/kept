@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { ensureMigrated } from "@/lib/db/migrate";
+import { isPaidOut } from "@/lib/payout-status";
 import { projectCategory } from "./categories";
 import { disputes, milestones, pacts, payouts, users, verdicts, type Milestone, type MilestoneStatus } from "@/lib/db/schema";
 
@@ -53,6 +54,8 @@ export interface PublicProfile {
     pactsCompleted: number;
     pactsActive: number;
     milestonesKept: number;
+    milestonesSettled: number;
+    milestonesRefunded: number;
     /** Paid out to this person as freelancer. */
     releasedCents: number;
     /** Paid out by this person, as client, to freelancers. */
@@ -96,7 +99,13 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
   const msIds = ms.map((m) => m.id);
 
   const [pyos, verds, disps] = await Promise.all([
-    msIds.length ? db.select({ milestoneId: payouts.milestoneId, amountCents: payouts.amountCents }).from(payouts).where(inArray(payouts.milestoneId, msIds)) : [],
+    msIds.length
+      ? db
+          .select({ milestoneId: payouts.milestoneId, amountCents: payouts.amountCents, status: payouts.status })
+          .from(payouts)
+          .where(inArray(payouts.milestoneId, msIds))
+          .then((rows) => rows.filter((r) => isPaidOut(r.status))) // only money PayPal actually delivered
+      : [],
     msIds.length
       ? db
           .select({ milestoneId: verdicts.milestoneId, score: verdicts.score, createdAt: verdicts.createdAt })
@@ -176,7 +185,7 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
         releasedCents,
         outcome,
         releasedPct,
-        milestonesKept: resolved.filter((m) => m.status !== "refunded").length,
+        milestonesKept: resolved.length,
         milestonesTotal: pms.filter((m) => m.status !== "cancelled").length,
         score: pScores.length ? Math.round(pScores.reduce((a, b) => a + b, 0) / pScores.length) : null,
         date: new Date(dates.length ? Math.max(...dates) : p.updatedAt.getTime()),
@@ -198,7 +207,10 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
     stats: {
       pactsCompleted: pactRows.filter((p) => p.status === "completed").length,
       pactsActive: pactRows.filter((p) => p.status === "active").length,
-      milestonesKept: ms.filter((m) => DELIVERED.includes(m.status)).length,
+      // "Kept" means paid in full; splits and refunds are counted separately, never as kept.
+      milestonesKept: ms.filter((m) => m.status === "released").length,
+      milestonesSettled: ms.filter((m) => m.status === "settled").length,
+      milestonesRefunded: ms.filter((m) => m.status === "refunded").length,
       releasedCents: pyos.filter((y) => freelancerIds.has(y.milestoneId)).reduce((s, y) => s + y.amountCents, 0),
       paidCents: pyos.filter((y) => clientIds.has(y.milestoneId)).reduce((s, y) => s + y.amountCents, 0),
       milestonesFunded: asClient.filter((m) => FUNDED_EVER.includes(m.status)).length,

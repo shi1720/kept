@@ -118,13 +118,18 @@ export function DisputePanel({
         </div>
       )}
 
-      {role && dispute.status !== "resolved" && (
+      {role && dispute.status === "escalated" && (
+        <p className="border-t border-line bg-paper/50 px-5 py-4 text-[13px] text-ink-3">
+          A human arbitrator is reviewing the contract, the evidence and both statements above. Statements are closed; you’ll be notified of the decision.
+        </p>
+      )}
+      {role && dispute.status !== "resolved" && dispute.status !== "escalated" && (
         <div className="border-t border-line bg-paper/50 p-5">
           <p className="text-[13px] font-medium">{mine ? "Update your side of the story" : "Add your side of the story"}</p>
           <p className="mb-2 text-xs text-ink-3">The mediator re-evaluates the proposal whenever either party adds context.</p>
           <Textarea rows={3} value={statement} onChange={(e) => setStatement(e.target.value)} placeholder="Stick to facts about the agreed criteria." />
           <div className="mt-2 flex justify-end">
-            <Button size="sm" loading={busy === "stmt"} disabled={statement.trim().length < 10} onClick={() => act("stmt", `/api/disputes/${dispute.id}/statement`, { statement }, "Statement added — the mediator updated its proposal.")}>
+            <Button size="sm" loading={busy === "stmt"} disabled={statement.trim().length < 10} onClick={() => act("stmt", `/api/disputes/${dispute.id}/statement`, { statement }, "Statement added. The mediator re-read the case and reviewed its proposal.")}>
               Submit statement
             </Button>
           </div>
