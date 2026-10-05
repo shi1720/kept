@@ -3,7 +3,9 @@ import { createUser } from "@/lib/auth/users";
 import { db } from "@/lib/db/client";
 import {
   disputes,
+  events,
   milestones,
+  payments,
   pacts,
   submissions,
   artifacts,
@@ -13,7 +15,7 @@ import {
   type User,
 } from "@/lib/db/schema";
 import { loadMilestone } from "@/lib/domain/context";
-import { recordEvent } from "@/lib/domain/events";
+import { recordEvent, setEventClock } from "@/lib/domain/events";
 import { captureFunding, createFundingOrder } from "@/lib/domain/funding";
 import { acceptPact, createPact, sendPact, type PactInput } from "@/lib/domain/pacts";
 import { settleMilestone } from "@/lib/domain/settlement";
@@ -150,7 +152,51 @@ function v(criteriaIds: string[], rows: [CriterionResult["result"], number, stri
   return rows.map(([result, confidence, evidence, reasoning], i) => ({ criterionId: criteriaIds[i], result, confidence, evidence, reasoning, machineCheck: null }));
 }
 
+/** A monotonically advancing fake clock so seeded history reads like real life. */
+function timeline(startDaysAgo: number, endHoursAgo: number, steps: number) {
+  const start = Date.now() - startDaysAgo * 86_400_000;
+  const end = Date.now() - endHoursAgo * 3_600_000;
+  const step = (end - start) / Math.max(1, steps);
+  let t = start;
+  return () => {
+    t = Math.min(end, t + step * (0.5 + Math.random()));
+    return new Date(t);
+  };
+}
+
+async function stampPact(pactId: string, at: Date) {
+  await db.update(pacts).set({ createdAt: new Date(at.getTime() - 86_400_000), updatedAt: at }).where(eq(pacts.id, pactId));
+  // Align milestone, payment, submission and verdict timestamps with the seeded event timeline.
+  const evts = await db.select().from(events).where(eq(events.pactId, pactId));
+  const ms = await db.select().from(milestones).where(eq(milestones.pactId, pactId));
+  for (const m of ms) {
+    const at = (type: string) => evts.find((e) => e.milestoneId === m.id && e.type === type)?.createdAt;
+    const funded = at("milestone.funded");
+    const resolved = at("milestone.released") ?? at("milestone.settled") ?? at("milestone.refunded");
+    const reviewed = at("review.completed") ?? (resolved ? new Date(resolved.getTime() - 3_600_000) : undefined);
+    if (funded) {
+      await db.update(milestones).set({ fundedAt: funded }).where(eq(milestones.id, m.id));
+      await db.update(payments).set({ createdAt: funded, capturedAt: funded }).where(eq(payments.milestoneId, m.id));
+    }
+    if (resolved) await db.update(milestones).set({ resolvedAt: resolved }).where(eq(milestones.id, m.id));
+    if (reviewed) {
+      const submitted = new Date(reviewed.getTime() - 9 * 60_000);
+      await db.update(milestones).set({ submittedAt: submitted }).where(eq(milestones.id, m.id));
+      await db.update(submissions).set({ createdAt: submitted }).where(eq(submissions.milestoneId, m.id));
+      await db.update(verdicts).set({ createdAt: reviewed }).where(eq(verdicts.milestoneId, m.id));
+    }
+  }
+}
+
 export async function createDemoWorkspace(): Promise<{ client: User; freelancer: User; workspace: string }> {
+  try {
+    return await seedWorkspace();
+  } finally {
+    setEventClock(null);
+  }
+}
+
+async function seedWorkspace(): Promise<{ client: User; freelancer: User; workspace: string }> {
   const ws = newToken().slice(0, 10).toLowerCase();
   const sim = simulator();
   const suffix = ws.slice(0, 4);
@@ -205,6 +251,7 @@ export async function createDemoWorkspace(): Promise<{ client: User; freelancer:
 
   /* -- Past work for Ade's public track record ---------------------- */
   {
+    setEventClock(timeline(40, 24 * 26, 8));
     const { ms } = await seal(pastClient, freelancer, {
       title: "Menu redesign for Bluebird Café",
       summary: "New menu boards and a printable takeaway menu.",
@@ -218,10 +265,12 @@ export async function createDemoWorkspace(): Promise<{ client: User; freelancer:
     await fundSim(pastClient, ms[0].id);
     await db.update(milestones).set({ status: "in_review" }).where(eq(milestones.id, ms[0].id));
     await settleMilestone(ms[0].id, 100, { from: ["in_review"], actorId: pastClient.id, actorKind: "user", reason: "approved by Jonas Weber" });
+    await stampPact(ms[0].pactId, new Date(Date.now() - 26 * 86_400_000));
   }
 
   /* -- A: brand identity — M1 released, M2 awaiting Maya's review ------ */
   {
+    setEventClock(timeline(14, 20, 14));
     const { pact, ms } = await seal(client, freelancer, brandPact());
     const [m1, m2] = ms;
     await fundSim(client, m1.id);
@@ -267,16 +316,20 @@ export async function createDemoWorkspace(): Promise<{ client: User; freelancer:
       latencyMs: 11200,
     });
     await recordEvent(db, { pactId: pact.id, milestoneId: m2.id, actorKind: "ai", type: "review.completed", message: "AI referee: PARTIAL — 3/4 criteria met, score 81/100" });
+    await stampPact(pact.id, new Date(Date.now() - 20 * 3_600_000));
   }
 
   /* -- B: landing page — funded, waiting for Ade to deliver ------------ */
   {
-    const { ms } = await seal(freelancer, client, landingPact());
+    setEventClock(timeline(3, 5, 4));
+    const { pact, ms } = await seal(freelancer, client, landingPact());
     await fundSim(client, ms[0].id);
+    await stampPact(pact.id, new Date(Date.now() - 5 * 3_600_000));
   }
 
   /* -- C: captions — in mediation with an AI proposal ------------------- */
   {
+    setEventClock(timeline(6, 2, 7));
     const { pact, ms } = await seal(client, freelancer, captionsPact());
     const m = ms[0];
     await fundSim(client, m.id);
@@ -323,10 +376,12 @@ export async function createDemoWorkspace(): Promise<{ client: User; freelancer:
     });
     await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorId: client.id, actorKind: "user", type: "dispute.opened", message: "Maya Chen raised an issue: “We agreed on six captions and only got four.” Funds stay frozen in escrow." });
     await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorKind: "ai", type: "dispute.ruling_proposed", message: "AI mediator proposed releasing 65% to the freelancer and refunding 35% to the client" });
+    await stampPact(pact.id, new Date(Date.now() - 2 * 3_600_000));
   }
 
   /* -- D: packaging — sent by Maya, waiting for Ade's signature --------- */
   {
+    setEventClock(timeline(0.1, 0.5, 2));
     const pact = await createPact(client, {
       title: "Holiday Blend packaging illustration",
       summary: "Illustrated front-of-bag artwork and a matching round sticker for the Holiday Blend, delivered print-ready.",
@@ -370,6 +425,7 @@ export async function createDemoWorkspace(): Promise<{ client: User; freelancer:
       ],
     }, "seed");
     await sendPact(client, pact.id);
+    setEventClock(null);
   }
 
   return { client, freelancer, workspace: ws };

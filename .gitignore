@@ -46,3 +46,5 @@ next-env.d.ts
 *.db-journal
 /test-results
 /playwright-report
+!.env.example
+shot.tmp.mjs

@@ -2,6 +2,13 @@ import { events, notifications } from "@/lib/db/schema";
 import { newId } from "@/lib/ids";
 import type { DbOrTx } from "./ledger";
 
+let clock: (() => Date) | null = null;
+
+/** Demo seeding only: stamp events on a simulated timeline instead of "now". */
+export function setEventClock(fn: (() => Date) | null) {
+  clock = fn;
+}
+
 export type ActorKind = "user" | "ai" | "system" | "paypal" | "agent";
 
 export interface EventInput {
@@ -25,6 +32,7 @@ export async function recordEvent(dbx: DbOrTx, e: EventInput) {
     type: e.type,
     message: e.message,
     data: e.data,
+    ...(clock ? { createdAt: clock() } : {}),
   });
 }
 

@@ -1,26 +1,132 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Kept design tokens. Warm paper + ink, a deep jade for "kept" states,
+ * ember (wax-seal) as the accent, amber for money held in escrow.
+ */
+@theme {
+  --color-paper: #faf8f3;
+  --color-paper-2: #f3efe6;
+  --color-card: #ffffff;
+  --color-ink: #16140f;
+  --color-ink-2: #4a463e;
+  --color-ink-3: #8a857a;
+  --color-line: #e7e1d5;
+  --color-line-2: #d9d1c2;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-jade-50: #eaf4f0;
+  --color-jade-100: #d0e8df;
+  --color-jade-300: #7fbea8;
+  --color-jade-500: #148a6f;
+  --color-jade-600: #0f6b57;
+  --color-jade-700: #0b5646;
+  --color-jade-900: #0a2f27;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-ember-50: #fdf1ea;
+  --color-ember-100: #fbdcc9;
+  --color-ember-500: #d9541e;
+  --color-ember-600: #c2410c;
+  --color-ember-700: #9a330a;
+
+  --color-amber-50: #fbf4e6;
+  --color-amber-100: #f5e3bd;
+  --color-amber-500: #c98a1c;
+  --color-amber-600: #a86d10;
+  --color-amber-700: #84540b;
+
+  --color-rose-50: #fdf0f2;
+  --color-rose-100: #f9d3da;
+  --color-rose-500: #d63358;
+  --color-rose-600: #be123c;
+  --color-rose-700: #9f1239;
+
+  --color-sky-50: #eef4ff;
+  --color-sky-100: #d8e5ff;
+  --color-sky-500: #3266e3;
+  --color-sky-600: #1d4ed8;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+
+  --shadow-card: 0 1px 0 rgba(22, 20, 15, 0.04), 0 1px 3px rgba(22, 20, 15, 0.06);
+  --shadow-lift: 0 1px 0 rgba(22, 20, 15, 0.04), 0 12px 32px -12px rgba(22, 20, 15, 0.18);
+  --shadow-glow: 0 0 0 4px rgba(15, 107, 87, 0.12);
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pulse-ring: pulse-ring 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(15, 107, 87, 0.35); }
+    100% { box-shadow: 0 0 0 10px rgba(15, 107, 87, 0); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: var(--color-jade-100);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-jade-500);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .grain {
+    background-image: radial-gradient(rgba(22, 20, 15, 0.05) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+  .prose-kept p { margin: 0.5em 0; }
+  .prose-kept h1, .prose-kept h2, .prose-kept h3 { font-weight: 600; margin: 0.9em 0 0.3em; }
+}
+
+/* AG Grid theme alignment */
+.ag-kept {
+  --ag-font-family: var(--font-sans);
+  --ag-font-size: 13px;
+  --ag-foreground-color: var(--color-ink);
+  --ag-background-color: var(--color-card);
+  --ag-header-background-color: var(--color-paper);
+  --ag-border-color: var(--color-line);
+  --ag-row-hover-color: #f7f4ec;
+  --ag-selected-row-background-color: var(--color-jade-50);
+  --ag-header-foreground-color: var(--color-ink-2);
+  --ag-accent-color: var(--color-jade-600);
 }
