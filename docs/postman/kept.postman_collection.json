@@ -1,0 +1,3097 @@
+{
+    "item": [
+        {
+            "name": "Pacts",
+            "description": "",
+            "item": [
+                {
+                    "id": "1770699e-4849-4a85-b175-c327f1fb2b85",
+                    "name": "List pacts you are a party to",
+                    "request": {
+                        "name": "List pacts you are a party to",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "pacts"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "4da0d98a-8ed9-41cf-b130-f0842b1b8fe3",
+                            "name": "Pacts with milestones",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"pacts\": [\n    {\n      \"id\": \"<string>\",\n      \"title\": \"<string>\",\n      \"status\": \"pending_acceptance\",\n      \"role\": \"freelancer\",\n      \"milestones\": [\n        {\n          \"id\": \"<string>\",\n          \"title\": \"<string>\",\n          \"amountCents\": \"<integer>\",\n          \"status\": \"cancelled\"\n        },\n        {\n          \"id\": \"<string>\",\n          \"title\": \"<string>\",\n          \"amountCents\": \"<integer>\",\n          \"status\": \"submitted\"\n        }\n      ]\n    },\n    {\n      \"id\": \"<string>\",\n      \"title\": \"<string>\",\n      \"status\": \"completed\",\n      \"role\": \"client\",\n      \"milestones\": [\n        {\n          \"id\": \"<string>\",\n          \"title\": \"<string>\",\n          \"amountCents\": \"<integer>\",\n          \"status\": \"funded\"\n        },\n        {\n          \"id\": \"<string>\",\n          \"title\": \"<string>\",\n          \"amountCents\": \"<integer>\",\n          \"status\": \"draft\"\n        }\n      ]\n    }\n  ]\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "f8a5ba9f-59b9-4a55-871a-debfee6ee8ca",
+                    "name": "Create a draft pact",
+                    "request": {
+                        "name": "Create a draft pact",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "pacts"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"terms\": {\n    \"revisionsIncluded\": \"<integer>\",\n    \"reviewWindowHours\": \"<integer>\",\n    \"ipTransfer\": \"<string>\"\n  },\n  \"milestones\": [\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"max_words\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"min_files\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    },\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"objective\",\n          \"check\": {\n            \"type\": \"repo_has_path\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"url_reachable\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    }\n  ],\n  \"summary\": \"<string>\",\n  \"currency\": \"USD\",\n  \"counterpartyName\": \"<string,null>\",\n  \"counterpartyEmail\": \"<string,null-email>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "663a30af-e3a4-4ded-bfd7-dcca371c0b52",
+                            "name": "Created",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"title\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"terms\": {\n    \"revisionsIncluded\": \"<integer>\",\n    \"reviewWindowHours\": \"<integer>\",\n    \"ipTransfer\": \"<string>\"\n  },\n  \"milestones\": [\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"max_words\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"min_files\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    },\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"objective\",\n          \"check\": {\n            \"type\": \"repo_has_path\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"url_reachable\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    }\n  ],\n  \"summary\": \"<string>\",\n  \"currency\": \"USD\",\n  \"counterpartyName\": \"<string,null>\",\n  \"counterpartyEmail\": \"<string,null-email>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"pact\": {\n    \"id\": \"<string>\",\n    \"title\": \"<string>\",\n    \"status\": \"pending_acceptance\",\n    \"role\": \"freelancer\",\n    \"milestones\": [\n      {\n        \"id\": \"<string>\",\n        \"title\": \"<string>\",\n        \"amountCents\": \"<integer>\",\n        \"status\": \"in_review\"\n      },\n      {\n        \"id\": \"<string>\",\n        \"title\": \"<string>\",\n        \"amountCents\": \"<integer>\",\n        \"status\": \"disputed\"\n      }\n    ]\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "bb39070e-7fe1-4a31-bd92-67cdc72074e6",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"title\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"terms\": {\n    \"revisionsIncluded\": \"<integer>\",\n    \"reviewWindowHours\": \"<integer>\",\n    \"ipTransfer\": \"<string>\"\n  },\n  \"milestones\": [\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"max_words\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"min_files\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    },\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"objective\",\n          \"check\": {\n            \"type\": \"repo_has_path\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"url_reachable\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    }\n  ],\n  \"summary\": \"<string>\",\n  \"currency\": \"USD\",\n  \"counterpartyName\": \"<string,null>\",\n  \"counterpartyEmail\": \"<string,null-email>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "b96e5198-a3f3-4f88-bdb4-f32affdac18f",
+                    "name": "Full pact detail (milestones, criteria, verdicts, disputes, PayPal payments, payouts, refunds, events)",
+                    "request": {
+                        "name": "Full pact detail (milestones, criteria, verdicts, disputes, PayPal payments, payouts, refunds, events)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "pacts",
+                                ":id"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "899a8e6c-e4dd-4451-b620-60ab00d1ec25",
+                            "name": "Pact detail",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts",
+                                        ":id"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "39674f99-6ef4-4cf7-946c-ac71207c370f",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts",
+                                        ":id"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "01510d37-a259-4a7c-aada-e140c737f471",
+                    "name": "Replace the terms of a draft pact (author only; clears signatures)",
+                    "request": {
+                        "name": "Replace the terms of a draft pact (author only; clears signatures)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "pacts",
+                                ":id"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PATCH",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"terms\": {\n    \"revisionsIncluded\": \"<integer>\",\n    \"reviewWindowHours\": \"<integer>\",\n    \"ipTransfer\": \"<string>\"\n  },\n  \"milestones\": [\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"max_words\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"min_files\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    },\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"objective\",\n          \"check\": {\n            \"type\": \"repo_has_path\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"url_reachable\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    }\n  ],\n  \"summary\": \"<string>\",\n  \"currency\": \"USD\",\n  \"counterpartyName\": \"<string,null>\",\n  \"counterpartyEmail\": \"<string,null-email>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "301842c4-c0f3-406d-9179-0a28fbf3cead",
+                            "name": "Updated",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts",
+                                        ":id"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "PATCH",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"title\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"terms\": {\n    \"revisionsIncluded\": \"<integer>\",\n    \"reviewWindowHours\": \"<integer>\",\n    \"ipTransfer\": \"<string>\"\n  },\n  \"milestones\": [\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"max_words\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"min_files\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    },\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"objective\",\n          \"check\": {\n            \"type\": \"repo_has_path\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"url_reachable\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    }\n  ],\n  \"summary\": \"<string>\",\n  \"currency\": \"USD\",\n  \"counterpartyName\": \"<string,null>\",\n  \"counterpartyEmail\": \"<string,null-email>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "16b1a451-f04e-484c-a6af-89f037139561",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts",
+                                        ":id"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "PATCH",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"title\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"terms\": {\n    \"revisionsIncluded\": \"<integer>\",\n    \"reviewWindowHours\": \"<integer>\",\n    \"ipTransfer\": \"<string>\"\n  },\n  \"milestones\": [\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"max_words\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"min_files\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    },\n    {\n      \"title\": \"<string>\",\n      \"amount\": \"<number>\",\n      \"criteria\": [\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"objective\",\n          \"check\": {\n            \"type\": \"repo_has_path\",\n            \"value\": \"<number,null>\",\n            \"values\": null,\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        },\n        {\n          \"text\": \"<string>\",\n          \"kind\": \"subjective\",\n          \"check\": {\n            \"type\": \"url_reachable\",\n            \"value\": \"<number,null>\",\n            \"values\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"width\": \"<number,null>\",\n            \"height\": \"<number,null>\"\n          }\n        }\n      ],\n      \"description\": \"<string>\",\n      \"dueInDays\": \"<integer,null>\"\n    }\n  ],\n  \"summary\": \"<string>\",\n  \"currency\": \"USD\",\n  \"counterpartyName\": \"<string,null>\",\n  \"counterpartyEmail\": \"<string,null-email>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "d030c2f3-77bf-4ff2-88f1-0dd37c063df4",
+                    "name": "Sign as the author and get the countersignature link",
+                    "request": {
+                        "name": "Sign as the author and get the countersignature link",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "pacts",
+                                ":id",
+                                "send"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "a736a7ff-305e-4a91-bc35-d2161a02a6c1",
+                            "name": "Signed",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts",
+                                        ":id",
+                                        "send"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"inviteUrl\": \"<uri>\"\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "9928d3f4-6a57-4e87-875f-8ccc0b23b7da",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "pacts",
+                                        ":id",
+                                        "send"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "db199522-49f6-4b9c-93eb-a60350bcb0ac",
+                    "name": "Countersign a pact from its invitation; milestones become fundable",
+                    "request": {
+                        "name": "Countersign a pact from its invitation; milestones become fundable",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "invites",
+                                ":token",
+                                "accept"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "token",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "2b26209c-4e87-47c7-bc16-6bc2170888fd",
+                            "name": "Pact is active",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "invites",
+                                        ":token",
+                                        "accept"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "token"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "fa77748f-f3c9-41f3-9d9e-c68ea6205308",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "invites",
+                                        ":token",
+                                        "accept"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "token"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Milestones",
+            "description": "",
+            "item": [
+                {
+                    "id": "ee6c052f-0fb3-4521-8d8a-903b39b520e9",
+                    "name": "Create a PayPal order to fund a milestone (client only)",
+                    "request": {
+                        "name": "Create a PayPal order to fund a milestone (client only)",
+                        "description": {
+                            "content": "Returns the PayPal order id (for the JS SDK) and, for redirect flows, the PayPal approval URL.",
+                            "type": "text/plain"
+                        },
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "order"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "a5bcd24d-7c9d-4c7e-a3c9-fef896ef4211",
+                            "name": "PayPal order created",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "order"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"orderId\": \"<string>\",\n  \"approveUrl\": \"<uri>\",\n  \"mode\": \"simulator\",\n  \"quote\": {\n    \"milestoneCents\": \"<integer>\",\n    \"platformFeeCents\": \"<integer>\",\n    \"processingFeeCents\": \"<integer>\",\n    \"totalCents\": \"<integer>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "5c961c74-f9ed-4cec-affe-411353cd2675",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "order"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "5c3df2e3-7602-4442-a61b-c968221a3456",
+                    "name": "Capture an approved PayPal order into escrow (idempotent)",
+                    "request": {
+                        "name": "Capture an approved PayPal order into escrow (idempotent)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "capture"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"orderId\": \"<string>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "9986c6ac-1fa8-4231-b16a-8493eb3d013d",
+                            "name": "Funded",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "capture"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"orderId\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "bdf76bcf-fc0f-41cd-85de-c126175f583e",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "capture"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"orderId\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "ec61a6bb-455e-4e32-b883-e4a21048973f",
+                    "name": "Submit deliverables (freelancer only); the AI referee reviews them asynchronously",
+                    "request": {
+                        "name": "Submit deliverables (freelancer only); the AI referee reviews them asynchronously",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "submit"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"items\": [\n    {\n      \"kind\": \"\",\n      \"content\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"note\": \"<string>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "c1694d23-aca5-4049-8dad-fb9fd7c9097a",
+                            "name": "Submitted",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "submit"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"items\": [\n    {\n      \"kind\": \"\",\n      \"content\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"note\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "b986886d-a228-443a-9427-34a750468571",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "submit"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"items\": [\n    {\n      \"kind\": \"\",\n      \"content\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"note\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "bf57583c-5840-49bb-a692-f1674c35bdec",
+                    "name": "Approve and release 100% via PayPal Payouts (client only)",
+                    "request": {
+                        "name": "Approve and release 100% via PayPal Payouts (client only)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "approve"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "6d5c4d2d-7840-4afd-9bf7-3ff265ed5e60",
+                            "name": "Released",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "approve"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "2aa1cd46-22aa-4fa9-96b0-1e6a6f9c2b6d",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "approve"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "2e6db74f-6e74-46f3-b76e-59481e56276a",
+                    "name": "Request a revision (client only; limited by the pact's revisions)",
+                    "request": {
+                        "name": "Request a revision (client only; limited by the pact's revisions)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "revision"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"note\": \"<string>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "077b817c-401b-47b9-85cf-735992b30599",
+                            "name": "Revision requested",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "revision"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"note\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "3c445416-290a-4d4b-8d97-7b4497b135a7",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "revision"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"note\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "1831d355-f264-4567-a1cf-ed1db6e4c6f8",
+                    "name": "Freelancer refunds the client in full via PayPal",
+                    "request": {
+                        "name": "Freelancer refunds the client in full via PayPal",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "refund"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reason\": \"<string>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "ee4d6448-abf2-4c6f-a174-f3b6a0e127c3",
+                            "name": "Refunded",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "refund"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"reason\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "dcd6f805-1c1e-4f2f-b50d-3e8777221cf9",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "refund"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"reason\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Disputes",
+            "description": "",
+            "item": [
+                {
+                    "id": "22522d41-7a5e-429a-8dad-34e4c2799efe",
+                    "name": "Raise an issue; the AI mediator proposes a split",
+                    "request": {
+                        "name": "Raise an issue; the AI mediator proposes a split",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "dispute"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reason\": \"<string>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "c29a7991-a31d-4b79-bf35-bbc0c3307cb5",
+                            "name": "Dispute with proposed ruling",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "dispute"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"reason\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "c6decb35-5213-45e1-accf-40acc41c3352",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "dispute"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"reason\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "d354785c-71bc-44b6-b09c-7a48958eff21",
+                    "name": "Add your side of the story; the mediator re-evaluates",
+                    "request": {
+                        "name": "Add your side of the story; the mediator re-evaluates",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "disputes",
+                                ":id",
+                                "statement"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"statement\": \"<string>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "ccd85dd5-8464-4091-b1e2-4d7cb5628b18",
+                            "name": "Updated dispute",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "disputes",
+                                        ":id",
+                                        "statement"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"statement\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "089d827d-2649-4e18-b1bd-5d20c4a5168c",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "disputes",
+                                        ":id",
+                                        "statement"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"statement\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "b63b5a7a-4f50-4870-b295-fad3ecc3b33e",
+                    "name": "Accept or reject the proposed split; when both accept, PayPal settles it",
+                    "request": {
+                        "name": "Accept or reject the proposed split; when both accept, PayPal settles it",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "disputes",
+                                ":id",
+                                "respond"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"accept\": \"<boolean>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "af1ca050-1470-40fa-8fe7-92812cf7d5f3",
+                            "name": "Updated dispute",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "disputes",
+                                        ":id",
+                                        "respond"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"accept\": \"<boolean>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "114b9e95-d9fd-4edf-b05d-c0c249860373",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "disputes",
+                                        ":id",
+                                        "respond"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"accept\": \"<boolean>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "AI",
+            "description": "",
+            "item": [
+                {
+                    "id": "f0c18863-9fa7-4a89-9444-5ee8c7a35ade",
+                    "name": "Compile a conversation or description into a pact draft (not saved)",
+                    "request": {
+                        "name": "Compile a conversation or description into a pact draft (not saved)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "ai",
+                                "draft"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"sourceText\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"amount\": \"<number>\"\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "f60f6563-312b-4c49-9900-b4942ca4efc1",
+                            "name": "Draft pact plus AI metadata",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "ai",
+                                        "draft"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"sourceText\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"amount\": \"<number>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"draft\": {\n    \"title\": \"<string>\",\n    \"creatorRole\": \"client\",\n    \"terms\": {\n      \"revisionsIncluded\": \"<integer>\",\n      \"reviewWindowHours\": \"<integer>\",\n      \"ipTransfer\": \"<string>\"\n    },\n    \"milestones\": [\n      {\n        \"title\": \"<string>\",\n        \"amount\": \"<number>\",\n        \"criteria\": [\n          {\n            \"text\": \"<string>\",\n            \"kind\": \"subjective\",\n            \"check\": {\n              \"type\": \"url_reachable\",\n              \"value\": \"<number,null>\",\n              \"values\": null,\n              \"width\": \"<number,null>\",\n              \"height\": \"<number,null>\"\n            }\n          },\n          {\n            \"text\": \"<string>\",\n            \"kind\": \"objective\",\n            \"check\": {\n              \"type\": \"file_types\",\n              \"value\": \"<number,null>\",\n              \"values\": [\n                \"<string>\",\n                \"<string>\"\n              ],\n              \"width\": \"<number,null>\",\n              \"height\": \"<number,null>\"\n            }\n          }\n        ],\n        \"description\": \"<string>\",\n        \"dueInDays\": \"<integer,null>\"\n      },\n      {\n        \"title\": \"<string>\",\n        \"amount\": \"<number>\",\n        \"criteria\": [\n          {\n            \"text\": \"<string>\",\n            \"kind\": \"subjective\",\n            \"check\": {\n              \"type\": \"repo_has_path\",\n              \"value\": \"<number,null>\",\n              \"values\": [\n                \"<string>\",\n                \"<string>\"\n              ],\n              \"width\": \"<number,null>\",\n              \"height\": \"<number,null>\"\n            }\n          },\n          {\n            \"text\": \"<string>\",\n            \"kind\": \"objective\",\n            \"check\": {\n              \"type\": \"min_files\",\n              \"value\": \"<number,null>\",\n              \"values\": null,\n              \"width\": \"<number,null>\",\n              \"height\": \"<number,null>\"\n            }\n          }\n        ],\n        \"description\": \"<string>\",\n        \"dueInDays\": \"<integer,null>\"\n      }\n    ],\n    \"summary\": \"<string>\",\n    \"currency\": \"USD\",\n    \"counterpartyName\": \"<string,null>\",\n    \"counterpartyEmail\": \"<string,null-email>\"\n  },\n  \"ai\": {\n    \"provider\": \"<string>\",\n    \"model\": \"<string>\",\n    \"degraded\": \"<boolean>\",\n    \"latencyMs\": \"<integer>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "f4bf70bd-bfde-401d-93a9-f1c32eed854f",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "ai",
+                                        "draft"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"sourceText\": \"<string>\",\n  \"creatorRole\": \"client\",\n  \"amount\": \"<number>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "1d018746-caa8-4784-8082-6f8c110e57a3",
+                    "name": "Run (or re-run) the AI referee synchronously",
+                    "request": {
+                        "name": "Run (or re-run) the AI referee synchronously",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "milestones",
+                                ":id",
+                                "review"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "b63ff69f-0bba-4d9e-b3f4-7f3174814431",
+                            "name": "Verdict id",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "review"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "93fd2765-52e9-4583-8f27-07ddfd2dc7df",
+                            "name": "Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "milestones",
+                                        ":id",
+                                        "review"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"error\": {\n    \"code\": \"internal\",\n    \"message\": \"<string>\"\n  }\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "System",
+            "description": "",
+            "item": [
+                {
+                    "id": "a0f11191-ea72-4bc5-a12b-1a7b3dd4bd05",
+                    "name": "PayPal webhook receiver (signature-verified, de-duplicated)",
+                    "request": {
+                        "name": "PayPal webhook receiver (signature-verified, de-duplicated)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "webhooks",
+                                "paypal"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "method": "POST",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "d6511478-6140-48ab-90bd-42bf56388c5e",
+                            "name": "Processed",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "webhooks",
+                                        "paypal"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        },
+                        {
+                            "id": "c6ec5c73-245f-4944-841a-23e8d6821f81",
+                            "name": "Stored but not trusted (signature could not be verified)",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "webhooks",
+                                        "paypal"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {}
+                            },
+                            "status": "Accepted",
+                            "code": 202,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "9da116aa-3ea6-4cea-af78-39ffdb778192",
+                    "name": "Liveness and active integration modes",
+                    "request": {
+                        "name": "Liveness and active integration modes",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "health"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "42b042d1-703b-4702-8506-b93919c1949f",
+                            "name": "OK",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "health"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "26b86728-b06d-4882-80f5-4f6eb5d154d0",
+                    "name": "Live integration self-test (cached 10 minutes, no secrets)",
+                    "request": {
+                        "name": "Live integration self-test (cached 10 minutes, no secrets)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "api",
+                                "doctor"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "f1992b23-2325-48bd-a1a2-d744e9c0493c",
+                            "name": "Check results",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "api",
+                                        "doctor"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "description": {
+                                            "content": "Added as a part of security scheme: bearer",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "Authorization",
+                                        "value": "Bearer <token>"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "type": "any",
+                "value": "{{bearerToken}}",
+                "key": "token"
+            }
+        ]
+    },
+    "event": [],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "https://kept.onrender.com"
+        }
+    ],
+    "info": {
+        "_postman_id": "4f9c1858-cc0b-443c-ac15-59f482c4b1d2",
+        "name": "Kept API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": {
+            "content": "Programmatic access to Kept for apps and AI agents. Authenticate with an API key\n(`Authorization: Bearer kept_sk_…`, create one under **Agents & API**) or a browser session.\n\nMoney only moves through PayPal: funding uses PayPal Orders v2, releases use PayPal Payouts,\nand refunds/splits use PayPal Payments v2 refunds. Every money-moving endpoint is a state-machine\ntransition and is safe to retry.\n\nAgents may prefer the MCP endpoint at `/api/mcp` (Streamable HTTP), which wraps the same operations as tools.\n",
+            "type": "text/plain"
+        }
+    }
+}

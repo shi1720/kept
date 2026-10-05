@@ -107,6 +107,8 @@ It drafts the pact, signs it, creates the PayPal order and hands you the approva
 
 Tools: `create_pact`, `send_pact`, `accept_invite`, `list_pacts`, `get_pact`, `create_funding_order` (returns a PayPal approval link for the paying human), `confirm_funding`, `submit_deliverable` (returns the referee's verdict), `get_verdict`, `approve_milestone`, `request_revision`, `open_dispute`, `respond_to_ruling`.
 
+**REST API:** an OpenAPI 3.1 spec lives in [`docs/openapi.yaml`](docs/openapi.yaml) (import it into Postman — a ready collection is in [`docs/postman/`](docs/postman/kept.postman_collection.json) — or generate typed SDKs from it with APIMatic).
+
 ## Architecture
 
 ```mermaid
