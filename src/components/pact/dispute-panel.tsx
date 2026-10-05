@@ -82,8 +82,8 @@ export function DisputePanel({
               <div className="flex flex-1 items-center justify-center bg-ember-100 text-ember-700">{100 - pct}%</div>
             </div>
             <div className="mt-2 flex justify-between text-xs">
-              <span className="text-jade-700"><b className="num">{formatMoney(toFreelancer)}</b> paid to {freelancerName} · PayPal Payout</span>
-              <span className="text-ember-700"><b className="num">{formatMoney(toClient)}</b> refunded to {clientName} · PayPal refund</span>
+              <span className="text-jade-700"><b className="num">{formatMoney(toFreelancer)}</b> proposed payout to {freelancerName}</span>
+              <span className="text-ember-700"><b className="num">{formatMoney(toClient)}</b> proposed refund to {clientName}</span>
             </div>
           </div>
           <p className="mt-4 text-[13.5px] leading-relaxed text-ink-2">{ruling.rationale}</p>
