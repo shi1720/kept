@@ -9,5 +9,7 @@ CREATE TABLE ai_jobs (
  started_at INTEGER,
  finished_at INTEGER
 );
+--> statement-breakpoint
 CREATE INDEX ai_jobs_owner ON ai_jobs(user_id,created_at);
+--> statement-breakpoint
 CREATE UNIQUE INDEX ai_jobs_active ON ai_jobs(user_id,kind,input) WHERE status IN ('queued','running');

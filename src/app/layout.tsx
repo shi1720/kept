@@ -8,13 +8,13 @@ const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
-  title: { default: "Kept ,  escrow with an AI referee, built on PayPal", template: "%s · Kept" },
+  metadataBase: new URL(process.env.APP_URL || "https://kept-pacts.web.app"),
+  title: { default: "Kept | Clear agreements. PayPal payments.", template: "%s · Kept" },
   description:
     "Clear freelance agreements, PayPal milestone payments, and AI reviews with evidence both sides can see.",
   openGraph: {
-    title: "Kept ,  promises, kept.",
-    description: "Escrow with an AI referee for freelance work agreed anywhere on the internet. Built on PayPal.",
+    title: "Kept | Promises kept.",
+    description: "Clear freelance agreements, shared evidence, and PayPal payments.",
     type: "website",
   },
   icons: { icon: "/icon.svg" },

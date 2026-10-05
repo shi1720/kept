@@ -98,12 +98,12 @@ export default async function Image() {
             <div style={{ fontFamily: display, fontSize: 132, lineHeight: 0.92, letterSpacing: -2, display: "flex" }}>Promises,</div>
             <div style={{ fontFamily: display, fontStyle: "italic", fontSize: 132, lineHeight: 0.98, letterSpacing: -2, color: C.jade, display: "flex" }}>kept.</div>
             <div style={{ marginTop: 28, fontSize: 26, lineHeight: 1.35, color: C.ink2, maxWidth: 540, display: "flex" }}>
-              Escrow with an AI referee for freelance work agreed anywhere on the internet.
+              Clear agreements, shared evidence, and PayPal payments for freelance work.
             </div>
           </div>
 
           <div style={{ display: "flex", gap: 10 }}>
-            {["Built on PayPal", "Freelancers keep 100%", "MCP-ready"].map((t) => (
+            {["Built on PayPal", "Evidence-led AI", "Both sides sign"].map((t) => (
               <div
                 key={t}
                 style={{
@@ -138,11 +138,11 @@ export default async function Image() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", padding: "24px 26px 18px", borderBottom: `1px solid ${C.line}` }}>
               <div style={{ display: "flex", flexDirection: "column", width: 250 }}>
-                <div style={{ fontSize: 13, letterSpacing: 2.5, color: C.ink3, display: "flex" }}>PACT · MILESTONE 1</div>
+                <div style={{ fontSize: 13, letterSpacing: 2.5, color: C.ink3, display: "flex" }}>EXAMPLE · MILESTONE 1</div>
                 <div style={{ fontSize: 21, fontWeight: 600, marginTop: 6, lineHeight: 1.25, display: "flex" }}>Pre-order landing page for the Holiday Blend</div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                <div style={{ fontSize: 26, fontWeight: 600, display: "flex" }}>$900.00</div>
+                <div style={{ fontSize: 26, fontWeight: 600, display: "flex" }}>$4,500.00</div>
                 <div
                   style={{
                     display: "flex",
@@ -187,8 +187,8 @@ export default async function Image() {
                 <span style={{ fontSize: 24, fontWeight: 600, color: C.jade }}>94</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <div style={{ display: "flex", fontSize: 17, fontWeight: 600 }}>AI referee · PASS</div>
-                <div style={{ display: "flex", fontSize: 15, color: C.ink2, marginTop: 4 }}>Payout sent · $900.00 → Ana</div>
+                <div style={{ display: "flex", fontSize: 17, fontWeight: 600 }}>AI referee · Evidence</div>
+                <div style={{ display: "flex", fontSize: 15, color: C.ink2, marginTop: 4 }}>Review evidence together</div>
               </div>
             </div>
 
