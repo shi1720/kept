@@ -35,7 +35,8 @@ export const checkInput = z.object({
 export const pactInput = z.object({
   title: z.string().trim().min(3).max(140),
   summary: z.string().trim().max(2000).default(""),
-  currency: z.string().length(3).default("USD"),
+  // MVP settles in USD (fees, rounding and payouts are USD-calibrated).
+  currency: z.literal("USD").default("USD"),
   creatorRole: z.enum(["client", "freelancer"]),
   counterpartyName: z.string().trim().max(120).nullish(),
   counterpartyEmail: z.email().nullish(),
@@ -82,7 +83,7 @@ export function draftToInput(
   return {
     title: draft.title.slice(0, 140),
     summary: draft.summary,
-    currency: draft.currency,
+    currency: "USD",
     creatorRole: extra.creatorRole,
     counterpartyEmail: extra.counterpartyEmail ?? null,
     counterpartyName:
@@ -251,7 +252,7 @@ export async function acceptPact(user: User, token: string): Promise<Pact> {
   const now = new Date();
   const side = pact.creatorRole === "client" ? "freelancer" : "client";
   await db.transaction(async (tx) => {
-    await tx
+    const [claimed] = await tx
       .update(pacts)
       .set({
         status: "active",
@@ -260,7 +261,9 @@ export async function acceptPact(user: User, token: string): Promise<Pact> {
         counterpartyEmail: user.email,
         updatedAt: now,
       })
-      .where(and(eq(pacts.id, pact.id), eq(pacts.status, "pending_acceptance")));
+      .where(and(eq(pacts.id, pact.id), eq(pacts.status, "pending_acceptance")))
+      .returning();
+    if (!claimed) throw invalidState("This invitation was just accepted or withdrawn — refresh to see the pact");
     await tx
       .update(milestones)
       .set({ status: "awaiting_funding", updatedAt: now })

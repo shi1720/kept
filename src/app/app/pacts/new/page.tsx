@@ -18,7 +18,7 @@ export default async function NewPactPage({ searchParams }: { searchParams: Prom
     const initial: PactInput = {
       title: pact.title,
       summary: pact.summary,
-      currency: pact.currency,
+      currency: "USD",
       creatorRole: pact.creatorRole,
       counterpartyName: pact.counterpartyName ?? "",
       counterpartyEmail: pact.counterpartyEmail ?? "",

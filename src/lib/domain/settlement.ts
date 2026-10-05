@@ -1,6 +1,6 @@
 import { and, eq, inArray, lt } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { payouts, payments, refunds, type MilestoneStatus, type Payout, type Refund } from "@/lib/db/schema";
+import { ledgerEntries, payouts, payments, refunds, type MilestoneStatus, type Payout, type Refund } from "@/lib/db/schema";
 import { env } from "@/lib/env";
 import { invalidState } from "@/lib/errors";
 import { newId } from "@/lib/ids";
@@ -137,11 +137,14 @@ export async function executePayout(payoutId: string) {
           updatedAt: new Date(),
         })
         .where(eq(payouts.id, p.id));
+      // Book the payout exactly once per payout row, however many times PayPal is called.
+      const [booked] = await tx.select({ id: ledgerEntries.id }).from(ledgerEntries).where(eq(ledgerEntries.reference, `payout:${p.id}`)).limit(1);
+      if (booked) return;
       await postJournal(tx, {
         pactId: pact.id,
         milestoneId: milestone.id,
         memo: `PayPal payout ${res.batchId} to freelancer`,
-        reference: res.batchId,
+        reference: `payout:${p.id}`,
         demoWorkspace: pact.demoWorkspace,
         lines: [
           { account: "escrow_liability", amountCents: p.amountCents },
@@ -249,16 +252,63 @@ export async function executeRefund(refundId: string) {
   }
 }
 
-/** Called when a freelancer adds a payout email after funds were released. */
+/** PayPal item statuses after which the money is back in Kept's balance. */
+export const PAYOUT_RETURNED_STATUSES = ["FAILED", "RETURNED", "BLOCKED", "REFUNDED", "REVERSED", "DENIED"];
+
+/**
+ * A payout PayPal could not deliver (failed, returned after 30 days unclaimed, blocked…):
+ * reverse the journal so the books show the money back in escrow, and wait for the
+ * freelancer to fix their payout details. Never re-send with the same batch id.
+ */
+export async function markPayoutReturned(payoutId: string, paypalStatus: string) {
+  const [p] = await db.select().from(payouts).where(eq(payouts.id, payoutId)).limit(1);
+  if (!p || p.status === "RETURNED_TO_ESCROW") return;
+  const { milestone, pact } = await loadMilestone(p.milestoneId);
+  await db.transaction(async (tx) => {
+    const [booked] = await tx.select({ id: ledgerEntries.id }).from(ledgerEntries).where(eq(ledgerEntries.reference, `payout:${p.id}`)).limit(1);
+    const [reversed] = await tx.select({ id: ledgerEntries.id }).from(ledgerEntries).where(eq(ledgerEntries.reference, `payout-reversal:${p.id}`)).limit(1);
+    if (booked && !reversed) {
+      await postJournal(tx, {
+        pactId: pact.id,
+        milestoneId: milestone.id,
+        memo: `PayPal payout ${p.paypalBatchId ?? ""} ${paypalStatus.toLowerCase()} — funds back in escrow`,
+        reference: `payout-reversal:${p.id}`,
+        demoWorkspace: pact.demoWorkspace,
+        lines: [
+          { account: "paypal_cash", amountCents: p.amountCents },
+          { account: "escrow_liability", amountCents: -p.amountCents },
+        ],
+      });
+    }
+    await tx.update(payouts).set({ status: "RETURNED_TO_ESCROW", updatedAt: new Date() }).where(eq(payouts.id, p.id));
+    await recordEvent(tx, {
+      pactId: pact.id,
+      milestoneId: milestone.id,
+      actorKind: "paypal",
+      type: "payout.returned",
+      message: `PayPal reported the payout as ${paypalStatus.toLowerCase()}. ${formatMoney(p.amountCents, pact.currency)} is back in escrow until the freelancer updates their payout account.`,
+    });
+    await notify(tx, [pact.freelancerId], {
+      pactId: pact.id,
+      title: "Update your PayPal payout account",
+      body: `PayPal couldn't deliver ${formatMoney(p.amountCents, pact.currency)} for “${milestone.title}”. Update your payout details in Settings and Kept will re-send it.`,
+    });
+  });
+}
+
+/** Called when a freelancer adds or fixes their payout account after funds were released. */
 export async function retryPayoutsForFreelancer(freelancerId: string, email: string) {
-  const rows = await db
-    .select({ payout: payouts, pact: { freelancerId: payouts.milestoneId } })
-    .from(payouts)
-    .where(eq(payouts.status, "NEEDS_PAYOUT_EMAIL"));
-  for (const { payout } of rows) {
+  const rows = await db.select().from(payouts).where(inArray(payouts.status, ["NEEDS_PAYOUT_EMAIL", "RETURNED_TO_ESCROW"]));
+  for (const payout of rows) {
     const { pact } = await loadMilestone(payout.milestoneId);
     if (pact.freelancerId !== freelancerId) continue;
-    await db.update(payouts).set({ receiverEmail: email, status: "QUEUED", updatedAt: new Date() }).where(eq(payouts.id, payout.id));
+    // A fresh sender_batch_id per attempt; PayPal rejects reuse for 30 days.
+    const base = `kept-${payout.milestoneId}`;
+    const attempt = payout.senderBatchId === base ? 2 : Number(payout.senderBatchId.split("-r").pop() ?? 1) + 1;
+    await db
+      .update(payouts)
+      .set({ receiverEmail: email, status: "QUEUED", senderBatchId: payout.status === "RETURNED_TO_ESCROW" ? `${base}-r${attempt}` : payout.senderBatchId, updatedAt: new Date() })
+      .where(eq(payouts.id, payout.id));
     await executePayout(payout.id);
   }
 }
@@ -277,6 +327,10 @@ export async function reconcileMoneyMovement() {
     try {
       const res = await gatewayFor({ simulated: p.simulated }).getPayoutBatch(p.paypalBatchId);
       const status = res.itemStatus ?? res.status;
+      if (res.itemStatus && PAYOUT_RETURNED_STATUSES.includes(res.itemStatus)) {
+        await markPayoutReturned(p.id, res.itemStatus);
+        continue;
+      }
       if (status !== p.status) {
         await db.update(payouts).set({ status, paypalItemId: res.itemId, raw: res.raw, updatedAt: new Date() }).where(eq(payouts.id, p.id));
       }

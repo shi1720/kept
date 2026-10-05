@@ -229,3 +229,28 @@ describe("chargeback shield", () => {
     expect((await loadMilestone(milestoneId)).milestone.status).toBe("in_review");
   });
 });
+
+describe("payout failure accounting", () => {
+  it("reverses a returned payout into escrow and re-sends with a fresh batch id", async () => {
+    const { markPayoutReturned, retryPayoutsForFreelancer } = await import("@/lib/domain/settlement");
+    const { milestoneId } = await activePact();
+    await fund(milestoneId);
+    await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
+    await runReview(milestoneId);
+    await approveMilestone(client, milestoneId);
+    const [p] = await db.select().from(payouts).where(eq(payouts.milestoneId, milestoneId));
+    await markPayoutReturned(p.id, "RETURNED");
+    await markPayoutReturned(p.id, "RETURNED"); // idempotent
+    let bal = await accountBalances(db);
+    const [returned] = await db.select().from(payouts).where(eq(payouts.id, p.id));
+    expect(returned.status).toBe("RETURNED_TO_ESCROW");
+    expect(Object.values(bal).reduce((s, x) => s + x, 0)).toBe(0);
+
+    await retryPayoutsForFreelancer(freelancer.id, "ana-new@example.com");
+    const [again] = await db.select().from(payouts).where(eq(payouts.id, p.id));
+    expect(again.status).toBe("SUCCESS");
+    expect(again.senderBatchId).toBe(`kept-${milestoneId}-r2`);
+    bal = await accountBalances(db);
+    expect(Object.values(bal).reduce((s, x) => s + x, 0)).toBe(0);
+  });
+});

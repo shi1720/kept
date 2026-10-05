@@ -84,16 +84,12 @@ export class LivePayPalGateway implements PayPalGateway {
                   sku: input.milestoneId,
                 },
                 {
+                  // One flat protection fee (it also covers payment processing). Never a separate
+                  // "PayPal fee" line: surcharging for paying with PayPal isn't allowed.
                   name: "Kept protection fee",
-                  description: "AI referee, dispute mediation and payout",
+                  description: "Escrow, AI referee, mediation, payout and processing",
                   quantity: "1",
-                  unitAmount: money(quote.platformFeeCents),
-                  category: ItemCategory.DigitalGoods,
-                },
-                {
-                  name: "Payment processing (PayPal, at cost)",
-                  quantity: "1",
-                  unitAmount: money(quote.processingFeeCents),
+                  unitAmount: money(quote.platformFeeCents + quote.processingFeeCents),
                   category: ItemCategory.DigitalGoods,
                 },
               ],

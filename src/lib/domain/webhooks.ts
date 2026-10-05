@@ -6,6 +6,7 @@ import { loadMilestone } from "./context";
 import { recordEvent } from "./events";
 import { onPayPalDispute, type PayPalDisputeResource } from "./chargebacks";
 import { captureFunding } from "./funding";
+import { markPayoutReturned, PAYOUT_RETURNED_STATUSES } from "./settlement";
 
 export interface PayPalWebhookEvent {
   id: string;
@@ -100,6 +101,12 @@ async function dispatch(event: PayPalWebhookEvent) {
     }
     default: {
       if (event.event_type.startsWith("PAYMENT.PAYOUTS-ITEM.") && r.payout_batch_id) {
+        const status = r.transaction_status ?? event.event_type.split(".").pop()!;
+        const [p] = await db.select().from(payouts).where(eq(payouts.paypalBatchId, r.payout_batch_id)).limit(1);
+        if (p && PAYOUT_RETURNED_STATUSES.includes(status.toUpperCase())) {
+          await markPayoutReturned(p.id, status.toUpperCase());
+          return;
+        }
         await db
           .update(payouts)
           .set({ status: r.transaction_status ?? event.event_type.split(".").pop()!, paypalItemId: r.payout_item_id, updatedAt: new Date() })

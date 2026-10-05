@@ -40,7 +40,7 @@ export default async function DashboardPage() {
       ? { label: "Paid out to you", value: formatMoney(d.stats.earnedCents), icon: Banknote, tone: "text-jade-700 bg-jade-50", hint: "Released via PayPal Payouts" }
       : { label: "Released to freelancers", value: formatMoney(d.stats.paidCents), icon: Banknote, tone: "text-jade-700 bg-jade-50", hint: "Only for work that passed" },
     { label: "Needs your attention", value: String(d.actions.length), icon: Hourglass, tone: "text-sky-600 bg-sky-50", hint: d.actions.length ? "See the queue below" : "Nothing waiting on you" },
-    { label: "Promises kept", value: String(d.stats.completed), icon: Sparkles, tone: "text-ember-700 bg-ember-50", hint: `${d.stats.active} active right now` },
+    { label: "Milestones kept", value: String(d.stats.milestonesKept), icon: Sparkles, tone: "text-ember-700 bg-ember-50", hint: `${d.stats.completed} pact${d.stats.completed === 1 ? "" : "s"} completed · ${d.stats.active} active` },
   ];
 
   const ade = user.demoWorkspace ? (user.name.startsWith("Ana") ? user : await demoCounterpart(user)) : null;

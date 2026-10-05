@@ -6,6 +6,7 @@ import { PactStatusBadge } from "@/components/app/status";
 import { Timeline } from "@/components/app/timeline";
 import { Seal } from "@/components/brand/seal";
 import { MilestoneCard } from "@/components/pact/milestone-card";
+import { ReturnCapture } from "@/components/pact/return-capture";
 import { CancelPactButton, CopyInvite, EditPactLink, SendPactButton } from "@/components/pact/pact-actions";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +49,15 @@ function Party({ user, fallback, role, signedAt }: { user: PublicUser | null; fa
   );
 }
 
-export default async function PactPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PactPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ paypal?: string; token?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
   const { user, detail } = await load(id);
   const { pact, milestones, totals, role, isCreator } = detail;
   const gateway = getPayPal();
@@ -61,10 +69,19 @@ export default async function PactPage({ params }: { params: Promise<{ id: strin
   const demo = Boolean(pact.demoWorkspace && pact.demoWorkspace === user.demoWorkspace);
   const done = milestones.filter((m) => ["released", "settled", "refunded", "cancelled"].includes(m.status)).length;
   const inviteUrl = `${env.appUrl}/invite/${pact.inviteToken}`;
+  // Returned from a PayPal approval link (redirect flow): capture that order.
+  const returning =
+    sp.paypal === "return" && sp.token && role === "client"
+      ? milestones.find((m) => m.status === "awaiting_funding" && m.pendingOrderIds.includes(sp.token!))
+      : undefined;
 
   return (
     <div className="flex flex-col gap-6 animate-fade-up">
       <Link href="/app" className="flex w-fit items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink"><ArrowLeft className="size-3.5" /> All pacts</Link>
+      {returning && <ReturnCapture milestoneId={returning.id} orderId={sp.token!} pactId={pact.id} />}
+      {sp.paypal === "cancel" && (
+        <p className="rounded-2xl border border-line bg-paper-2 px-5 py-3 text-[13px] text-ink-2">PayPal checkout was cancelled — nothing was charged.</p>
+      )}
 
       {/* Contract header */}
       <div className="relative overflow-hidden rounded-3xl border border-line bg-card shadow-card">

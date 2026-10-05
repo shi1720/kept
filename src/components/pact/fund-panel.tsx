@@ -116,8 +116,7 @@ function SimulatedCheckout({ milestoneId, total }: { milestoneId: string; total:
 export function FundPanel({ milestoneId, quote, paypal }: { milestoneId: string; quote: FundQuote; paypal: PayPalClientConfig }) {
   const rows = [
     { label: "Milestone (held in escrow)", value: quote.milestoneCents, strong: true },
-    { label: "Kept protection · AI referee & mediation", value: quote.platformFeeCents },
-    { label: "PayPal processing, at cost", value: quote.processingFeeCents },
+    { label: "Kept protection fee · referee, mediation, processing", value: quote.platformFeeCents + quote.processingFeeCents },
   ];
   return (
     <div className="rounded-2xl border border-amber-100 bg-gradient-to-b from-amber-50/70 to-card p-5">

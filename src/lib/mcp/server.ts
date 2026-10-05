@@ -11,6 +11,7 @@ import { MILESTONE_STATUS_LABEL } from "@/lib/domain/state";
 import { approveMilestone, requestRevision, runReview, submitWork } from "@/lib/domain/work";
 import { env } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Kept as an MCP server: lets any AI agent (Claude, ChatGPT, a custom
@@ -59,6 +60,7 @@ export function buildMcpServer(user: User): McpServer {
     },
     async ({ description, role, budget, counterparty_email }) =>
       safely(async () => {
+        rateLimit(`draft:${user.id}`, 30, 3_600_000);
         const { output, provider, model } = await draftPact({ sourceText: description, creatorRole: role, hints: budget ? { amount: budget } : undefined });
         const input = draftToInput(output, { creatorRole: role, sourceText: description, counterpartyEmail: counterparty_email ?? null });
         const pact = await createPact(user, input, "mcp");
@@ -193,6 +195,7 @@ export function buildMcpServer(user: User): McpServer {
           ...(urls ?? []).map((url) => ({ kind: "url" as const, url })),
           ...(github ?? []).map((url) => ({ kind: "github" as const, url })),
         ];
+        rateLimit(`review:${user.id}`, 40, 3_600_000);
         await submitWork(user, milestone_id, { note: note ?? "", items });
         await runReview(milestone_id);
         const v = await latestVerdict(milestone_id);
@@ -245,6 +248,7 @@ export function buildMcpServer(user: User): McpServer {
     { title: "Raise an issue", description: "Open AI mediation on a submitted milestone. Funds stay frozen; the mediator proposes a split.", inputSchema: { milestone_id: z.string(), reason: z.string().min(10) } },
     async ({ milestone_id, reason }) =>
       safely(async () => {
+        rateLimit(`mediate:${user.id}`, 30, 3_600_000);
         const d = await openDispute(user, milestone_id, reason);
         return ok(`Mediation opened. Proposal: release ${d.ruling?.releasePct}% to the freelancer. ${d.ruling?.rationale ?? ""}`, { dispute_id: d.id, ruling: d.ruling });
       }),

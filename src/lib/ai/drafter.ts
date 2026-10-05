@@ -50,7 +50,7 @@ export function normalizeDraft(d: DraftOutput, hintedTotal?: number): DraftOutpu
   }));
   return {
     ...d,
-    currency: /^[A-Z]{3}$/.test(d.currency) ? d.currency : "USD",
+    currency: "USD",
     milestones,
     terms: {
       ...d.terms,

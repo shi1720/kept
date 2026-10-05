@@ -39,7 +39,7 @@ export async function runDoctor(): Promise<{ checks: DoctorCheck[]; at: string }
         requestId: `doctor-${Date.now()}`,
       });
       push("paypal.orders", "ok", `Orders v2 create → ${order.status}${order.approveUrl ? " with approval link" : ""}`);
-      if (env.paypal.demoPayoutEmail) {
+      if (env.paypal.demoPayoutEmail && env.paypal.environment === "sandbox") {
         const p = await gw.createPayout({
           senderBatchId: `doctor-${Date.now()}`,
           senderItemId: "doctor",

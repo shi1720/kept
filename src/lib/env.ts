@@ -18,7 +18,7 @@ function int(name: string, fallback: number): number {
 }
 
 export const env = {
-  appUrl: str("APP_URL", "http://localhost:3000").replace(/\/$/, ""),
+  appUrl: (str("APP_URL") || str("RENDER_EXTERNAL_URL") || "http://localhost:3000").replace(/\/$/, ""),
   sessionSecret: str("SESSION_SECRET", "dev-only-insecure-secret-change-me-please-32b"),
   databaseUrl: str("DATABASE_URL", "file:./data/kept.db"),
   databaseAuthToken: str("DATABASE_AUTH_TOKEN"),
@@ -64,6 +64,14 @@ export const env = {
     enabled: str("DEMO_MODE", "true") === "true",
   },
 } as const;
+
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.NEXT_PHASE !== "phase-production-build" &&
+  env.sessionSecret === "dev-only-insecure-secret-change-me-please-32b"
+) {
+  throw new Error("SESSION_SECRET must be set in production");
+}
 
 export const paypalConfigured = () => Boolean(env.paypal.clientId && env.paypal.clientSecret);
 

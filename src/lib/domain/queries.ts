@@ -8,6 +8,7 @@ import {
   milestones,
   pacts,
   payments,
+  users,
   payouts,
   refunds,
   submissions,
@@ -77,7 +78,11 @@ export async function getPactDetail(viewer: User | null, pactId: string, opts: {
       })),
       verdicts: verds.filter((v) => v.milestoneId === m.id),
       dispute: disps.find((d) => d.milestoneId === m.id) ?? null,
-      payment: pays.find((p) => p.milestoneId === m.id && p.status !== "created") ?? null,
+      payment:
+        pays.find((p) => p.milestoneId === m.id && ["completed", "partially_refunded"].includes(p.status)) ??
+        pays.find((p) => p.milestoneId === m.id && p.status === "refunded") ??
+        null,
+      pendingOrderIds: pays.filter((p) => p.milestoneId === m.id && p.status === "created").map((p) => p.paypalOrderId),
       payout: pyos.find((p) => p.milestoneId === m.id) ?? null,
       refund: rfds.find((r) => r.milestoneId === m.id) ?? null,
     };
@@ -162,6 +167,11 @@ export async function getDashboard(user: User) {
   const asFreelancer = new Set(allMs.filter((m) => m.pact.role === "freelancer").map((m) => m.id));
   const asClient = new Set(allMs.filter((m) => m.pact.role === "client").map((m) => m.id));
 
+  const partyIds = [...new Set(list.flatMap((p) => [p.clientId, p.freelancerId, p.creatorId]).filter((x): x is string => Boolean(x)))];
+  const names = new Map(
+    (partyIds.length ? await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, partyIds)) : []).map((u) => [u.id, u.name]),
+  );
+
   const recentEvents = list.length
     ? await db.select().from(events).where(inArray(events.pactId, list.map((p) => p.id))).orderBy(desc(events.createdAt)).limit(14)
     : [];
@@ -172,7 +182,11 @@ export async function getDashboard(user: User) {
       title: p.title,
       status: p.status,
       role: p.role,
-      counterparty: p.invited ? "you're invited" : (p.counterpartyName ?? p.counterpartyEmail ?? "—"),
+      counterparty: p.invited
+        ? `invited by ${names.get(p.creatorId) ?? "the other party"}`
+        : (names.get((p.role === "client" ? p.freelancerId : p.clientId) ?? "") ??
+          (p.creatorId === user.id ? (p.counterpartyName ?? p.counterpartyEmail) : names.get(p.creatorId)) ??
+          "—"),
       creatorId: p.creatorId,
       amountCents: p.milestones.reduce((s, m) => s + m.amountCents, 0),
       heldCents: p.milestones.filter((m) => ["funded", "submitted", "in_review", "disputed"].includes(m.status)).reduce((s, m) => s + m.amountCents, 0),
@@ -191,6 +205,7 @@ export async function getDashboard(user: User) {
       refundedCents: myRefunds.filter((r) => asClient.has(r.milestoneId)).reduce((s, r) => s + r.amountCents, 0),
       active: list.filter((p) => p.status === "active").length,
       completed: list.filter((p) => p.status === "completed").length,
+      milestonesKept: allMs.filter((m) => m.status === "released" || m.status === "settled").length,
     },
     events: recentEvents,
     pactTitles: Object.fromEntries(list.map((p) => [p.id, p.title])),

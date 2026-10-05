@@ -1,29 +1,63 @@
 "use client";
 
 import type {
+  CellClickedEvent,
+  CellKeyDownEvent,
   ColDef,
   ColTypeDef,
+  FullWidthCellKeyDownEvent,
   GetRowIdParams,
   GridApi,
   GridReadyEvent,
   GridState,
   ICellRendererParams,
   IRowNode,
+  IsFullWidthRowParams,
   ModelUpdatedEvent,
+  PostSortRowsParams,
   RowClassParams,
   RowClassRules,
+  RowDataUpdatedEvent,
+  RowHeightParams,
   StateUpdatedEvent,
   ValueFormatterParams,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { ArrowUpRight, Download, RotateCcw, Search, X } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Download, RotateCcw, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { keptGridTheme } from "@/components/grid/theme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
+
+/* ------------------------------------------------------------------ */
+/* Small shared helpers                                                */
+/* ------------------------------------------------------------------ */
+
+/** Stable row-id getter for rows keyed by `id` (keep it module-level so grids get a stable prop). */
+export const byId = (r: { id: string }) => r.id;
+
+export const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
+
+/** `true` while the media query matches. Server render assumes `serverDefault`. */
+export function useMediaQuery(query: string, serverDefault = true) {
+  const subscribe = useCallback(
+    (cb: () => void) => {
+      const m = window.matchMedia(query);
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    [query],
+  );
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(query).matches,
+    () => serverDefault,
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Theme & column types                                                */
@@ -44,6 +78,8 @@ export const opsGridTheme = keptGridTheme.withParams({
   tooltipTextColor: "#faf8f3",
   tooltipBorder: false,
   inputFocusBorder: { color: "#148a6f" },
+  // Live updates: changed values glow jade, then fade.
+  valueChangeValueHighlightBackgroundColor: "#bfe3d5",
 });
 
 const DATE_FMT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
@@ -58,6 +94,7 @@ export const opsColumnTypes: Record<string, ColTypeDef> = {
     minWidth: 110,
     headerClass: "ag-right-aligned-header",
     cellClass: "ag-right-aligned-cell num",
+    enableCellChangeFlash: true,
     valueFormatter: (p: ValueFormatterParams) => {
       const v = centsOf(p.value);
       if (v == null) return p.node?.rowPinned ? "" : "—";
@@ -102,6 +139,7 @@ export const opsColumnTypes: Record<string, ColTypeDef> = {
     minWidth: 95,
     headerClass: "ag-right-aligned-header",
     cellClass: "ag-right-aligned-cell num",
+    enableCellChangeFlash: true,
     valueFormatter: (p: ValueFormatterParams) => (p.value == null ? (p.node?.rowPinned ? "" : "—") : `${p.value}%`),
     filter: "agNumberColumnFilter",
   },
@@ -211,251 +249,3 @@ export function FilterChips<K extends string>({ chips, value, onChange }: { chip
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* OpsGrid: one consistent wrapper for every console table             */
-/* ------------------------------------------------------------------ */
-
-const STATE_VERSION = 1;
-const storageKey = (id: string) => `kept.ops.grid.${id}.v${STATE_VERSION}`;
-
-function loadState(id: string): GridState | undefined {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const raw = window.localStorage.getItem(storageKey(id));
-    return raw ? (JSON.parse(raw) as GridState) : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function saveState(id: string, state: GridState) {
-  try {
-    // Persist the user's layout only — not selection, focus or scroll.
-    const { columnOrder, columnPinning, columnSizing, columnVisibility, sort, filter } = state;
-    window.localStorage.setItem(storageKey(id), JSON.stringify({ columnOrder, columnPinning, columnSizing, columnVisibility, sort, filter }));
-  } catch {
-    /* storage disabled — layout just won't persist */
-  }
-}
-
-function clearState(id: string) {
-  try {
-    window.localStorage.removeItem(storageKey(id));
-  } catch {
-    /* ignore */
-  }
-}
-
-export interface OpsGridProps<T> {
-  /** Stable id: storage key for column state and CSV file name. */
-  id: string;
-  rows: T[];
-  columns: ColDef<T>[];
-  getRowId: (row: T) => string;
-  /** Builds the pinned bottom row from the rows currently passing all filters. */
-  totals?: (rows: T[]) => Record<string, unknown>;
-  rowClassRules?: RowClassRules<T>;
-  /** External filter (e.g. chip bar). Change `externalFilterKey` to re-run it. */
-  externalFilter?: ((row: T) => boolean) | null;
-  externalFilterKey?: string;
-  toolbar?: React.ReactNode;
-  searchPlaceholder?: string;
-  emptyText?: string;
-  height?: number;
-  floatingFilters?: boolean;
-  pagination?: boolean;
-  enableCellSpan?: boolean;
-  context?: Record<string, unknown>;
-  onGridApi?: (api: GridApi<T>) => void;
-  className?: string;
-}
-
-export function OpsGrid<T>({
-  id,
-  rows,
-  columns,
-  getRowId,
-  totals,
-  rowClassRules,
-  externalFilter,
-  externalFilterKey,
-  toolbar,
-  searchPlaceholder = "Search…",
-  emptyText = "Nothing here yet.",
-  height = 520,
-  floatingFilters = false,
-  pagination = false,
-  enableCellSpan = false,
-  context,
-  onGridApi,
-  className,
-}: OpsGridProps<T>) {
-  const [api, setApi] = useState<GridApi<T> | null>(null);
-  const [quick, setQuick] = useState("");
-  const [shown, setShown] = useState(rows.length);
-  const [pinned, setPinned] = useState<Record<string, unknown>[] | undefined>(undefined);
-  const [initialState] = useState(() => loadState(id));
-  // Latest callbacks live in refs so the grid gets stable function props.
-  const filterRef = useRef(externalFilter);
-  const totalsRef = useRef(totals);
-  const rowIdRef = useRef(getRowId);
-  useEffect(() => {
-    filterRef.current = externalFilter;
-    totalsRef.current = totals;
-    rowIdRef.current = getRowId;
-  });
-
-  useEffect(() => {
-    api?.onFilterChanged();
-  }, [api, externalFilterKey]);
-
-  const defaultColDef = useMemo<ColDef<T>>(
-    () => ({
-      sortable: true,
-      resizable: true,
-      filter: "agTextColumnFilter",
-      floatingFilter: floatingFilters,
-      // With floating filters the funnel lives in the filter row; keep headers clean.
-      suppressHeaderFilterButton: floatingFilters,
-      suppressHeaderMenuButton: true,
-      minWidth: 80,
-      filterParams: { buttons: ["reset"], maxNumConditions: 1 },
-    }),
-    [floatingFilters],
-  );
-
-  // Stable callbacks so AG Grid never sees "new" options on re-render.
-  const gridRowId = useCallback((p: GetRowIdParams<T>) => (p.rowPinned ? `pinned-${p.rowPinned}` : rowIdRef.current(p.data)), []);
-  const isExternalFilterPresent = useCallback(() => Boolean(filterRef.current), []);
-  const doesExternalFilterPass = useCallback((node: IRowNode<T>) => (node.data && filterRef.current ? filterRef.current(node.data) : true), []);
-  const getRowStyle = useCallback((p: RowClassParams<T>) => (p.node.rowPinned === "bottom" ? { fontWeight: 600, background: "#faf8f3" } : undefined), []);
-  const onStateUpdated = useCallback((e: StateUpdatedEvent<T>) => saveState(id, e.state), [id]);
-  // Size fixed columns to their content once; flex columns soak up the remaining width.
-  // Skipped when the viewer has their own saved column widths.
-  const autoSizeStrategy = useMemo(() => {
-    if (initialState?.columnSizing) return undefined;
-    const colIds = columns.filter((c) => !c.flex && !c.hide).map((c) => c.colId ?? String(c.field));
-    return { type: "fitCellContents", colIds, defaultMaxWidth: 280 } as const;
-  }, [initialState, columns]);
-  const noRows = useMemo(
-    () => `<span style="font-size:13px;color:#8a857a;max-width:440px;text-align:center;line-height:1.55;padding:0 16px">${escapeHtml(emptyText)}</span>`,
-    [emptyText],
-  );
-
-  const recompute = useCallback((gridApi: GridApi<T>) => {
-    setShown(gridApi.getDisplayedRowCount());
-    const make = totalsRef.current;
-    if (!make) return;
-    const visible: T[] = [];
-    gridApi.forEachNodeAfterFilterAndSort((n) => n.data && visible.push(n.data));
-    const next = [make(visible)];
-    setPinned((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
-  }, []);
-
-  const onModelUpdated = useCallback((e: ModelUpdatedEvent<T>) => recompute(e.api), [recompute]);
-
-  const onGridReady = useCallback(
-    (e: GridReadyEvent<T>) => {
-      setApi(e.api);
-      onGridApi?.(e.api);
-    },
-    [onGridApi],
-  );
-
-  const exportCsv = () => {
-    if (!api) return;
-    type ExportCtx = { noExport?: boolean; alwaysExport?: boolean } | undefined;
-    const ctx = (c: { getColDef: () => ColDef<T> }) => c.getColDef().context as ExportCtx;
-    const columnKeys = [
-      ...api.getAllDisplayedColumns().filter((c) => !ctx(c)?.noExport),
-      ...(api.getColumns() ?? []).filter((c) => !c.isVisible() && ctx(c)?.alwaysExport),
-    ].map((c) => c.getColId());
-    api.exportDataAsCsv({ fileName: `kept-${id}-${new Date().toISOString().slice(0, 10)}.csv`, columnKeys });
-  };
-
-  const resetLayout = () => {
-    if (!api) return;
-    clearState(id);
-    api.resetColumnState();
-    api.setFilterModel(null);
-    setQuick("");
-    api.sizeColumnsToFit();
-  };
-
-  const filtered = shown !== rows.length;
-  // Shrink-wrap short tables, cap long ones (virtualised scrolling takes over).
-  // (+16 leaves room for a horizontal scrollbar on narrow screens.)
-  const chrome = 40 + (floatingFilters ? 40 : 0) + (totals ? 44 : 0) + (pagination ? 49 : 0) + 4 + 16;
-  const gridHeight = Math.min(height, chrome + Math.max(4, shown) * 44);
-
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-3", className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative w-full max-w-[230px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
-          <Input value={quick} onChange={(e) => setQuick(e.target.value)} placeholder={searchPlaceholder} className="h-8 rounded-full pl-9 pr-8 text-[13px]" aria-label={searchPlaceholder} />
-          {quick && (
-            <button onClick={() => setQuick("")} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-ink-3 hover:bg-paper-2 hover:text-ink" aria-label="Clear search">
-              <X className="size-3.5" />
-            </button>
-          )}
-        </div>
-        {toolbar}
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="num mr-1 text-[12px] text-ink-3">
-            {filtered ? (
-              <>
-                <b className="font-semibold text-ink-2">{shown}</b> of {rows.length}
-              </>
-            ) : (
-              <>{rows.length} rows</>
-            )}
-          </span>
-          <Button variant="ghost" size="sm" onClick={resetLayout} title="Reset columns, sorting and filters">
-            <RotateCcw /> Reset
-          </Button>
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download /> CSV
-          </Button>
-        </div>
-      </div>
-      {/* Let React cell renderers fill the cell so `items-center` really centres them. */}
-      <div style={{ height: gridHeight }} className="min-w-0 [&_.ag-cell-value]:h-full! [&_.ag-cell-wrapper]:h-full!">
-        <AgGridReact<T>
-          theme={opsGridTheme}
-          rowData={rows}
-          columnDefs={columns}
-          columnTypes={opsColumnTypes}
-          defaultColDef={defaultColDef}
-          getRowId={gridRowId}
-          initialState={initialState}
-          onStateUpdated={onStateUpdated}
-          autoSizeStrategy={autoSizeStrategy}
-          quickFilterText={quick}
-          isExternalFilterPresent={isExternalFilterPresent}
-          doesExternalFilterPass={doesExternalFilterPass}
-          pinnedBottomRowData={totals ? pinned : undefined}
-          rowClassRules={rowClassRules}
-          getRowStyle={getRowStyle}
-          onGridReady={onGridReady}
-          onModelUpdated={onModelUpdated}
-          context={context}
-          tooltipShowDelay={250}
-          tooltipShowMode="standard"
-          enableCellTextSelection
-          ensureDomOrder
-          enableCellSpan={enableCellSpan}
-          pagination={pagination}
-          paginationPageSize={50}
-          paginationPageSizeSelector={[25, 50, 100, 250]}
-          animateRows
-          overlayNoRowsTemplate={noRows}
-        />
-      </div>
-    </div>
-  );
-}
-
-function escapeHtml(s: string) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-}
