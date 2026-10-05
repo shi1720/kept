@@ -20,7 +20,7 @@ beforeAll(async () => {
   client = await createUser({ name: "Maya Chen", email: "maya@example.com", password: "password123", demoWorkspace: "ws1" });
   freelancer = await createUser({
     name: "Ana Reyes",
-    email: "ade@example.com",
+    email: "ana@example.com",
     password: "password123",
     paypalEmail: "ana-paypal@example.com",
     demoWorkspace: "ws1",
