@@ -91,6 +91,8 @@ function ModeCell(p: ICellRendererParams<MovementRow, unknown, { paypalEnv: stri
   return centered(<Badge tone={p.context.paypalEnv === "live" ? "jade" : "sky"}>{p.context.paypalEnv === "live" ? "Live" : "Sandbox"}</Badge>);
 }
 
+const movementId = (r: MovementRow) => `${r.type}:${r.id}`;
+
 const ROW_RULES = {
   "bg-rose-50/50!": (p: { data?: MovementRow }) => Boolean(p.data?.paypalDispute && p.data.paypalDispute.status !== "RESOLVED"),
   "bg-rose-50/70!": (p: { data?: MovementRow }) => Boolean(p.data && FAILED.has(p.data.status)),
@@ -121,7 +123,7 @@ export function MovementsGrid({ rows, paypalEnv }: { rows: MovementRow[]; paypal
       },
       { field: "at", headerName: "When", type: "timestamp", sort: "desc" },
       pactColumn<MovementRow>({ pinned: null }),
-      { field: "status", headerName: "Status", cellRenderer: StatusCell, width: 170, filterValueGetter: (p) => (p.data ? statusLabel(p.data.status) : "") },
+      { field: "status", headerName: "Status", cellRenderer: StatusCell, width: 170, enableCellChangeFlash: true, filterValueGetter: (p) => (p.data ? statusLabel(p.data.status) : "") },
       { field: "amountCents", headerName: "Gross", type: "money", cellRenderer: AmountCell, headerTooltip: "Signed from Kept's books: + into PayPal balance, − out" },
       { field: "paypalFeeCents", headerName: "PayPal fee", type: "money", width: 115 },
       { field: "netCents", headerName: "Net", type: "money", cellRenderer: AmountCell },
@@ -157,7 +159,8 @@ export function MovementsGrid({ rows, paypalEnv }: { rows: MovementRow[]; paypal
       id="paypal"
       rows={rows}
       columns={columns}
-      getRowId={(r) => `${r.type}:${r.id}`}
+      getRowId={movementId}
+      noun={["movement", "movements"]}
       context={{ paypalEnv }}
       externalFilter={type === "all" ? null : (r) => r.type === type}
       externalFilterKey={type}

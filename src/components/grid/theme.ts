@@ -22,4 +22,8 @@ export const keptGridTheme = themeQuartz.withParams({
   headerHeight: 42,
   spacing: 7,
   oddRowBackgroundColor: "#ffffff",
+  // Short grids shrink-wrap their rows (domLayout="autoHeight") instead of padding to 150px.
+  autoHeightMinBodyHeight: 56,
+  // Live updates: changed values glow jade, then fade.
+  valueChangeValueHighlightBackgroundColor: "#bfe3d5",
 });

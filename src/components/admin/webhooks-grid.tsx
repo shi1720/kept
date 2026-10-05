@@ -5,7 +5,7 @@ import { AlertTriangle, BadgeCheck, CircleDashed, ShieldX } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { WebhookRow } from "@/lib/domain/ops";
-import { centered, FilterChips, fmtDateTime, OpsGrid } from "./grid-kit";
+import { byId, centered, FilterChips, fmtDateTime, OpsGrid } from "./grid-kit";
 
 function EventCell(p: ICellRendererParams<WebhookRow>) {
   if (!p.data) return null;
@@ -59,7 +59,7 @@ export function WebhooksGrid({ rows, scoped }: { rows: WebhookRow[]; scoped: boo
       { field: "eventType", headerName: "Event", cellRenderer: EventCell, width: 260 },
       { field: "resourceId", headerName: "Resource id", type: "paypalId" },
       { field: "verified", headerName: "Verification", cellRenderer: VerifiedCell, width: 180, filterValueGetter: (p) => (p.data?.verified ? "verified" : "unverified") },
-      { field: "processedAt", headerName: "Processed", cellRenderer: ProcessedCell, width: 140, type: "timestamp" },
+      { field: "processedAt", headerName: "Processed", cellRenderer: ProcessedCell, type: "timestamp", enableCellChangeFlash: true },
       { field: "error", headerName: "Error", flex: 1, minWidth: 200, cellClass: "text-rose-700", tooltip: (p) => p.value ?? undefined, valueFormatter: (p) => p.value ?? "" },
       { field: "paypalEventId", headerName: "PayPal event id", type: "paypalId", width: 220 },
     ],
@@ -71,7 +71,8 @@ export function WebhooksGrid({ rows, scoped }: { rows: WebhookRow[]; scoped: boo
       id="webhooks"
       rows={rows}
       columns={columns}
-      getRowId={(r) => r.id}
+      getRowId={byId}
+      noun={["event", "events"]}
       externalFilter={view === "issues" ? (r) => Boolean(r.error || !r.verified) : null}
       externalFilterKey={view}
       toolbar={

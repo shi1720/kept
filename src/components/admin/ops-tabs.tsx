@@ -1,26 +1,24 @@
 "use client";
 
 import { BookOpen, BrainCircuit, Gavel, Landmark, Vault, Webhook } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { OpsConsole } from "@/lib/domain/ops";
 import { cn } from "@/lib/cn";
 import { DecisionsPanel } from "./decisions-grid";
 import { DisputesQueue } from "./disputes-grid";
 import { EscrowGrid } from "./escrow-grid";
 import { LedgerPanel } from "./ledger-grid";
 import { MovementsGrid } from "./movements-grid";
+import { useOpsLive } from "./ops-live";
 import type { OpsTab } from "./tab-keys";
 import { WebhooksGrid } from "./webhooks-grid";
 
-
-type Data = Pick<OpsConsole, "escrow" | "ledger" | "balances" | "movements" | "verdicts" | "disputes" | "webhooks">;
-
-export function OpsTabs({ data, initialTab, paypalEnv, showWorkspace }: { data: Data; initialTab: OpsTab; paypalEnv: string; showWorkspace: boolean }) {
+export function OpsTabs({ initialTab, paypalEnv, showWorkspace }: { initialTab: OpsTab; paypalEnv: string; showWorkspace: boolean }) {
+  const { data } = useOpsLive();
   const [tab, setTab] = useState<OpsTab>(initialTab);
   const queue = data.disputes.filter((d) => d.status !== "resolved").length;
   const webhookIssues = data.webhooks.filter((w) => w.error || !w.verified).length;
-  const rulings = data.disputes.filter((d) => d.proposedPct != null);
+  const rulings = useMemo(() => data.disputes.filter((d) => d.proposedPct != null), [data.disputes]);
 
   const tabs: { key: OpsTab; label: string; icon: React.ReactNode; count: number; alert?: boolean }[] = [
     { key: "escrow", label: "Escrow book", icon: <Vault />, count: data.escrow.length },

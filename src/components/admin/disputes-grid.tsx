@@ -14,7 +14,7 @@ import { api } from "@/lib/client-api";
 import { cn } from "@/lib/cn";
 import { formatMoney, splitByPct } from "@/lib/money";
 import { DISPUTE_STATUS, DisputeStatusCell } from "./decisions-grid";
-import { centered, FilterChips, OpsGrid, pactColumn } from "./grid-kit";
+import { byId, centered, FilterChips, OpsGrid, pactColumn } from "./grid-kit";
 
 type Ctx = { onArbitrate: (d: DisputeRow) => void };
 
@@ -34,7 +34,7 @@ function ProposalCell(p: ICellRendererParams<DisputeRow>) {
 
 function AcceptPill({ ok, who }: { ok: boolean; who: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-medium", ok ? "bg-jade-50 text-jade-700" : "bg-paper-2 text-ink-3")}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-medium leading-4", ok ? "bg-jade-50 text-jade-700" : "bg-paper-2 text-ink-3")}>
       {ok && <Check className="size-3" />}
       {who}
     </span>
@@ -47,6 +47,16 @@ function AcceptanceCell(p: ICellRendererParams<DisputeRow>) {
     <div className="flex h-full items-center gap-1">
       <AcceptPill ok={p.data.clientAccepted} who="Client" />
       <AcceptPill ok={p.data.freelancerAccepted} who="Freelancer" />
+    </div>
+  );
+}
+
+/** Reason wraps onto two lines (full text in the tooltip and the Arbitrate dialog). */
+function ReasonCell(p: ICellRendererParams<DisputeRow>) {
+  if (!p.data) return null;
+  return (
+    <div className="flex h-full items-center">
+      <span className="line-clamp-2 whitespace-normal text-[12.5px] leading-[1.35] text-ink-2">{p.data.reason}</span>
     </div>
   );
 }
@@ -82,14 +92,31 @@ export function DisputesQueue({ rows }: { rows: DisputeRow[] }) {
   const columns = useMemo<ColDef<DisputeRow>[]>(
     () => [
       pactColumn<DisputeRow>(),
-      { field: "status", headerName: "Status", cellRenderer: DisputeStatusCell, width: 180, filterValueGetter: (p) => (p.data ? DISPUTE_STATUS[p.data.status].label : "") },
+      {
+        field: "status",
+        headerName: "Status",
+        cellRenderer: DisputeStatusCell,
+        width: 180,
+        enableCellChangeFlash: true,
+        filterValueGetter: (p) => (p.data ? DISPUTE_STATUS[p.data.status].label : ""),
+      },
+      { field: "proposedPct", headerName: "AI proposal", cellRenderer: ProposalCell, width: 130, filter: "agNumberColumnFilter", enableCellChangeFlash: true },
+      {
+        colId: "acceptance",
+        headerName: "Accepted by",
+        valueGetter: (p) => (p.data ? [p.data.clientAccepted && "client", p.data.freelancerAccepted && "freelancer"].filter(Boolean).join(" + ") || "nobody" : null),
+        cellRenderer: AcceptanceCell,
+        width: 170,
+        sortable: false,
+        filter: false,
+        enableCellChangeFlash: true,
+        context: { noExport: true },
+      },
       { field: "amountCents", headerName: "In escrow", type: "money", width: 120 },
+      { field: "reason", headerName: "Reason", flex: 1, minWidth: 240, cellRenderer: ReasonCell, tooltip: (p) => p.value ?? undefined, cellClass: "py-0!" },
       { field: "createdAt", headerName: "Opened", type: "timestamp", sort: "desc" },
       { colId: "age", headerName: "Age", width: 80, valueGetter: (p) => (p.data ? (p.data.resolvedAt ?? Date.now()) - p.data.createdAt : null), cellRenderer: AgeCell, filter: false },
       { field: "openedBy", headerName: "Raised by", width: 140, cellClass: "text-ink-2", valueFormatter: (p) => p.value ?? "—" },
-      { field: "reason", headerName: "Reason", flex: 1, minWidth: 220, cellClass: "text-ink-2", tooltip: (p) => p.value ?? undefined },
-      { field: "proposedPct", headerName: "AI proposal", cellRenderer: ProposalCell, width: 130, filter: "agNumberColumnFilter" },
-      { colId: "acceptance", headerName: "Accepted by", cellRenderer: AcceptanceCell, width: 170, sortable: false, filter: false, context: { noExport: true } },
       { colId: "action", headerName: "", cellRenderer: ActionCell, width: 130, pinned: "right", sortable: false, filter: false, resizable: false, context: { noExport: true }, suppressSizeToFit: true },
     ],
     [],
@@ -103,7 +130,8 @@ export function DisputesQueue({ rows }: { rows: DisputeRow[] }) {
         id="disputes"
         rows={rows}
         columns={columns}
-        getRowId={(r) => r.id}
+        getRowId={byId}
+        noun={["dispute", "disputes"]}
         context={context}
         externalFilter={view === "queue" ? (r) => r.status !== "resolved" : null}
         externalFilterKey={view}

@@ -3,6 +3,8 @@ import { alias } from "drizzle-orm/sqlite-core";
 import { db } from "@/lib/db/client";
 import { ensureMigrated } from "@/lib/db/migrate";
 import {
+  artifacts,
+  criteria as criteriaTable,
   disputes,
   ledgerEntries,
   milestones,
@@ -13,10 +15,12 @@ import {
   users,
   verdicts,
   webhookEvents,
+  type CriterionResult,
   type LedgerAccount,
   type MilestoneStatus,
   type User,
 } from "@/lib/db/schema";
+import { extractHiddenHtmlText, scanForInjection } from "@/lib/evidence/injection";
 import { ACCOUNT_LABELS, accountBalances } from "./ledger";
 import { HOLDING_FUNDS } from "./state";
 
@@ -121,6 +125,24 @@ export interface VerdictRow {
   injectionDetected: boolean;
   latencyMs: number;
   summary: string;
+  /** Per-criterion judgment, joined with the criterion text (for the expandable audit row). */
+  criteria: VerdictCriterion[];
+  /** Probes Kept's evidence engine ran before the model saw anything. */
+  evidence: { probe: string; label: string; detail: string; ok: boolean | null }[];
+  /** Text in the deliverable that tried to instruct the referee (re-scanned from stored text artifacts). */
+  injectionFindings: { source: string; snippet: string }[];
+}
+
+export interface VerdictCriterion {
+  id: string;
+  position: number;
+  text: string;
+  kind: "objective" | "subjective" | null;
+  result: CriterionResult["result"];
+  confidence: number;
+  evidence: string;
+  reasoning: string;
+  machineCheck: { type: string; passed: boolean; detail: string } | null;
 }
 
 export type DisputeStatus = "open" | "ruling_proposed" | "escalated" | "resolved";
@@ -291,6 +313,8 @@ export async function getOpsConsole(scope: OpsScope): Promise<OpsConsole> {
             score: verdicts.score,
             recommendedReleasePct: verdicts.recommendedReleasePct,
             criteriaResults: verdicts.criteriaResults,
+            evidence: verdicts.evidence,
+            submissionId: verdicts.submissionId,
             injectionDetected: verdicts.injectionDetected,
             latencyMs: verdicts.latencyMs,
             summary: verdicts.summary,
@@ -464,6 +488,34 @@ export async function getOpsConsole(scope: OpsScope): Promise<OpsConsole> {
     })),
   ].sort((a, b) => b.at - a.at);
 
+  /* Criterion texts + injection snippets for the verdict audit rows. */
+  const criteriaRows = verdictRows.length
+    ? await db
+        .select({ id: criteriaTable.id, text: criteriaTable.text, kind: criteriaTable.kind, position: criteriaTable.position })
+        .from(criteriaTable)
+        .innerJoin(milestones, eq(milestones.id, criteriaTable.milestoneId))
+        .innerJoin(pacts, eq(pacts.id, milestones.pactId))
+        .where(and(pactScope, inArray(criteriaTable.milestoneId, [...new Set(verdictRows.map(({ v }) => v.milestoneId))].slice(0, 2000))))
+    : [];
+  const criterionById = new Map(criteriaRows.map((c) => [c.id, c]));
+  const flaggedSubmissions = [...new Set(verdictRows.filter(({ v }) => v.injectionDetected).map(({ v }) => v.submissionId))].slice(0, 500);
+  const findingsBySubmission = new Map<string, { source: string; snippet: string }[]>();
+  if (flaggedSubmissions.length) {
+    const texts = await db
+      .select({ submissionId: artifacts.submissionId, name: artifacts.name, content: artifacts.content })
+      .from(artifacts)
+      .where(and(inArray(artifacts.submissionId, flaggedSubmissions), eq(artifacts.kind, "text")));
+    for (const a of texts) {
+      if (!a.content) continue;
+      const hidden = /<[a-z][\s\S]*>/i.test(a.content) ? extractHiddenHtmlText(a.content) : "";
+      const found = [...(hidden ? scanForInjection(`${a.name} (hidden HTML)`, hidden) : []), ...scanForInjection(a.name, a.content)];
+      if (!found.length) continue;
+      const list = findingsBySubmission.get(a.submissionId) ?? [];
+      for (const f of found) if (!list.some((x) => x.snippet === f.snippet)) list.push(f);
+      findingsBySubmission.set(a.submissionId, list.slice(0, 5));
+    }
+  }
+
   const verdictOut: VerdictRow[] = verdictRows.map(({ v, pactId, pactTitle, milestoneTitle }) => ({
     id: v.id,
     createdAt: v.createdAt.getTime(),
@@ -480,6 +532,22 @@ export async function getOpsConsole(scope: OpsScope): Promise<OpsConsole> {
     injectionDetected: v.injectionDetected,
     latencyMs: v.latencyMs,
     summary: v.summary,
+    criteria: v.criteriaResults.map((c, i) => {
+      const def = criterionById.get(c.criterionId);
+      return {
+        id: c.criterionId,
+        position: def?.position ?? i,
+        text: def?.text ?? `Criterion ${i + 1}`,
+        kind: def?.kind ?? null,
+        result: c.result,
+        confidence: c.confidence,
+        evidence: c.evidence,
+        reasoning: c.reasoning,
+        machineCheck: c.machineCheck ? { type: c.machineCheck.type, passed: c.machineCheck.passed, detail: c.machineCheck.detail } : null,
+      };
+    }),
+    evidence: (v.evidence ?? []).map((f) => ({ probe: f.probe, label: f.label, detail: f.detail, ok: f.ok ?? null })),
+    injectionFindings: findingsBySubmission.get(v.submissionId) ?? [],
   }));
 
   const disputeOut: DisputeRow[] = disputeRows.map((r) => ({

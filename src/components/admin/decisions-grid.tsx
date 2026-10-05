@@ -6,7 +6,8 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { DisputeRow, VerdictRow } from "@/lib/domain/ops";
 import { cn } from "@/lib/cn";
-import { centered, OpsGrid, pactColumn, ScoreBar } from "./grid-kit";
+import { byId, centered, OpsGrid, pactColumn, ScoreBar } from "./grid-kit";
+import { VERDICT_DETAIL } from "./verdict-detail";
 
 const PROVIDER: Record<string, string> = { anthropic: "Claude", gemini: "Gemini", offline: "Offline engine" };
 export const providerLabel = (p: string) => PROVIDER[p] ?? p;
@@ -108,12 +109,19 @@ export function DecisionsPanel({ verdicts, rulings }: { verdicts: VerdictRow[]; 
     () => [
       { field: "createdAt", headerName: "When", type: "timestamp", sort: "desc" },
       pactColumn(),
-      { colId: "model", headerName: "Referee", valueGetter: (p) => (p.data ? `${providerLabel(p.data.provider)} ${p.data.model}` : null), cellRenderer: ModelCell, width: 180 },
-      { field: "overall", headerName: "Overall", cellRenderer: OverallCell, width: 105 },
-      { field: "score", headerName: "Score", cellRenderer: ScoreCell, width: 130, filter: "agNumberColumnFilter" },
+      { field: "overall", headerName: "Overall", cellRenderer: OverallCell, width: 105, enableCellChangeFlash: true },
+      { field: "score", headerName: "Score", cellRenderer: ScoreCell, width: 130, filter: "agNumberColumnFilter", enableCellChangeFlash: true },
+      {
+        field: "injectionDetected",
+        headerName: "Prompt injection",
+        cellRenderer: InjectionCell,
+        width: 165,
+        filterValueGetter: (p) => (p.data?.injectionDetected ? "injection caught" : "clean"),
+        headerTooltip: "Flagged by Kept's deterministic scanner, independently of the model",
+      },
       { colId: "criteria", headerName: "Criteria met", valueGetter: (p) => (p.data ? p.data.criteriaMet / Math.max(1, p.data.criteriaTotal) : null), cellRenderer: CriteriaCell, width: 150, filter: "agNumberColumnFilter" },
       { field: "recommendedReleasePct", headerName: "Recommends", type: "pct", width: 120, headerTooltip: "Share the referee recommends releasing to the freelancer" },
-      { field: "injectionDetected", headerName: "Prompt injection", cellRenderer: InjectionCell, width: 160, filterValueGetter: (p) => (p.data?.injectionDetected ? "injection caught" : "clean") },
+      { colId: "model", headerName: "Referee", valueGetter: (p) => (p.data ? `${providerLabel(p.data.provider)} ${p.data.model}` : null), cellRenderer: ModelCell, width: 180 },
       { field: "latencyMs", headerName: "Latency", cellRenderer: LatencyCell, width: 100, filter: "agNumberColumnFilter", cellClass: "ag-right-aligned-cell", headerClass: "ag-right-aligned-header" },
       { field: "summary", headerName: "Summary", flex: 1, minWidth: 240, cellClass: "text-ink-2", tooltip: (p) => p.value ?? undefined },
     ],
@@ -127,7 +135,7 @@ export function DecisionsPanel({ verdicts, rulings }: { verdicts: VerdictRow[]; 
       { field: "mediator", headerName: "Mediator", width: 200, cellClass: "font-mono text-[11.5px] text-ink-2" },
       { field: "proposedPct", headerName: "AI proposal", cellRenderer: SplitCell, width: 140, filter: "agNumberColumnFilter", headerTooltip: "Share the AI mediator proposed releasing to the freelancer" },
       { field: "finalPct", headerName: "Final", cellRenderer: SplitCell, width: 130, filter: "agNumberColumnFilter" },
-      { field: "status", headerName: "Status", cellRenderer: DisputeStatusCell, width: 170, filterValueGetter: (p) => (p.data ? DISPUTE_STATUS[p.data.status].label : "") },
+      { field: "status", headerName: "Status", cellRenderer: DisputeStatusCell, width: 170, enableCellChangeFlash: true, filterValueGetter: (p) => (p.data ? DISPUTE_STATUS[p.data.status].label : "") },
       { field: "rationale", headerName: "Rationale", flex: 1, minWidth: 260, cellClass: "text-ink-2", tooltip: (p) => p.value ?? undefined },
     ],
     [],
@@ -136,13 +144,15 @@ export function DecisionsPanel({ verdicts, rulings }: { verdicts: VerdictRow[]; 
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <SectionTitle icon={<Sparkles />} title="Referee verdicts" hint="Every evidence-backed review and the model that made it. Text in a deliverable that tries to instruct the referee is flagged by a deterministic scanner, independently of the model." />
+        <SectionTitle icon={<Sparkles />} title="Referee verdicts" hint="Every evidence-backed review and the model that made it. Click a verdict (or press Enter) for its per-criterion audit. Text in a deliverable that tries to instruct the referee is flagged by a deterministic scanner, independently of the model." />
         <OpsGrid<VerdictRow>
           id="verdicts"
           rows={verdicts}
           columns={verdictCols}
-          getRowId={(r) => r.id}
+          getRowId={byId}
           rowClassRules={VERDICT_RULES}
+          detail={VERDICT_DETAIL}
+          noun={["verdict", "verdicts"]}
           searchPlaceholder="Search verdicts…"
           emptyText="The referee hasn't reviewed any work yet."
           height={420}
@@ -154,7 +164,8 @@ export function DecisionsPanel({ verdicts, rulings }: { verdicts: VerdictRow[]; 
           id="rulings"
           rows={rulings}
           columns={rulingCols}
-          getRowId={(r) => r.id}
+          getRowId={byId}
+          noun={["ruling", "rulings"]}
           searchPlaceholder="Search rulings…"
           emptyText="No disputes have been mediated yet."
           height={300}

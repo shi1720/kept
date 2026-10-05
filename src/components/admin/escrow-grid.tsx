@@ -7,7 +7,9 @@ import type { MilestoneStatus } from "@/lib/db/schema";
 import type { EscrowRow } from "@/lib/domain/ops";
 import { MILESTONE_STATUS_LABEL } from "@/lib/domain/state";
 import { cn } from "@/lib/cn";
-import { centered, FilterChips, OpsGrid, pactColumn, ScoreBar, type Chip } from "./grid-kit";
+import { formatMoney } from "@/lib/money";
+import { ChartCard, EscrowStatusChart } from "./chart-card";
+import { byId, centered, FilterChips, OpsGrid, pactColumn, ScoreBar, type Chip } from "./grid-kit";
 
 type Bucket = "all" | "holding" | "awaiting" | "released" | "settled" | "closed";
 
@@ -58,6 +60,42 @@ function DaysCell(p: ICellRendererParams<EscrowRow>) {
   );
 }
 
+/** Chart categories: fixed order and colour per entity, so filtering never repaints a bar. */
+const CHART_BUCKETS: { key: string; label: string; color: string; statuses: MilestoneStatus[] }[] = [
+  { key: "holding", label: "Holding", color: "#c98a1c", statuses: ["funded", "submitted", "in_review"] },
+  { key: "disputed", label: "Disputed", color: "#c2410c", statuses: ["disputed"] },
+  { key: "released", label: "Released", color: "#148a6f", statuses: ["released"] },
+  { key: "settled", label: "Settled", color: "#3266e3", statuses: ["settled", "refunded"] },
+  { key: "unfunded", label: "Unfunded", color: "#b9b1a2", statuses: ["draft", "awaiting_funding"] },
+];
+
+function EscrowChartCard({ visible, total }: { visible: EscrowRow[]; total: number }) {
+  const data = useMemo(
+    () =>
+      CHART_BUCKETS.map((b) => {
+        const rs = visible.filter((r) => b.statuses.includes(r.status));
+        return { key: b.key, label: b.label, color: b.color, cents: rs.reduce((s, r) => s + r.amountCents, 0), count: rs.length };
+      }),
+    [visible],
+  );
+  const inView = visible.reduce((s, r) => s + r.amountCents, 0);
+  const held = data.filter((d) => d.key === "holding" || d.key === "disputed").reduce((s, d) => s + d.cents, 0);
+  return (
+    <ChartCard
+      title="Escrow by milestone status"
+      shown={visible.length}
+      total={total}
+      noun="milestones"
+      stats={[
+        { label: "Value in view", value: formatMoney(inView) },
+        { label: "Held right now", value: formatMoney(held), swatch: "#c98a1c" },
+      ]}
+    >
+      <EscrowStatusChart data={data} />
+    </ChartCard>
+  );
+}
+
 const ROW_RULES = { "bg-rose-50/60!": (p: { data?: EscrowRow }) => p.data?.status === "disputed" };
 
 export function EscrowGrid({ rows, showWorkspace }: { rows: EscrowRow[]; showWorkspace: boolean }) {
@@ -79,13 +117,30 @@ export function EscrowGrid({ rows, showWorkspace }: { rows: EscrowRow[]; showWor
         width: 175,
         minWidth: 170,
         cellRenderer: StatusCell,
+        enableCellChangeFlash: true,
         filterValueGetter: (p) => (p.data ? MILESTONE_STATUS_LABEL[p.data.status] : ""),
         getQuickFilterText: (p) => MILESTONE_STATUS_LABEL[p.data.status as MilestoneStatus],
       },
       { field: "amountCents", headerName: "Amount", type: "money", sort: "desc" },
-      { colId: "parties", headerName: "Client → freelancer", valueGetter: (p) => (p.data ? `${p.data.client ?? ""} → ${p.data.freelancer ?? ""}` : null), cellRenderer: PartiesCell, flex: 1, minWidth: 170 },
+      {
+        colId: "parties",
+        headerName: "Client → freelancer",
+        valueGetter: (p) => (p.data ? `${p.data.client ?? ""} → ${p.data.freelancer ?? ""}` : null),
+        cellRenderer: PartiesCell,
+        flex: 1,
+        minWidth: 170,
+      },
       { field: "fundedAt", headerName: "Funded", type: "timestamp" },
-      { colId: "days", headerName: "Days held", valueGetter: (p) => (p.data ? daysHeld(p.data) : null), cellRenderer: DaysCell, width: 110, minWidth: 105, filter: "agNumberColumnFilter", headerTooltip: "Days between capture and release (live for milestones still holding funds)" },
+      {
+        colId: "days",
+        headerName: "Days held",
+        valueGetter: (p) => (p.data ? daysHeld(p.data) : null),
+        cellRenderer: DaysCell,
+        width: 110,
+        minWidth: 105,
+        filter: "agNumberColumnFilter",
+        headerTooltip: "Days between capture and release (live for milestones still holding funds)",
+      },
       { field: "captureId", headerName: "PayPal capture", type: "paypalId" },
       { field: "verdictScore", headerName: "Referee", width: 140, minWidth: 130, cellRenderer: VerdictCell, filter: "agNumberColumnFilter" },
       { field: "releasedPct", headerName: "Released", type: "pct", width: 105, headerTooltip: "Final share released to the freelancer" },
@@ -97,25 +152,31 @@ export function EscrowGrid({ rows, showWorkspace }: { rows: EscrowRow[]; showWor
 
   const statuses = bucket === "all" ? null : new Set(BUCKETS[bucket].statuses);
   const filter = statuses ? (r: EscrowRow) => statuses.has(r.status) : null;
+  const [visible, setVisible] = useState<EscrowRow[] | null>(null);
 
   return (
-    <OpsGrid<EscrowRow>
-      id="escrow"
-      rows={rows}
-      columns={columns}
-      getRowId={(r) => r.id}
-      externalFilter={filter}
-      externalFilterKey={bucket}
-      toolbar={<FilterChips chips={chips} value={bucket} onChange={setBucket} />}
-      searchPlaceholder="Search milestones…"
-      emptyText="No milestones in this view."
-      floatingFilters
-      totals={(visible) => ({
-        pactTitle: `Total · ${visible.length} milestone${visible.length === 1 ? "" : "s"}`,
-        amountCents: visible.reduce((s, r) => s + r.amountCents, 0),
-        currency: "USD",
-      })}
-      rowClassRules={ROW_RULES}
-    />
+    <div className="flex flex-col gap-4">
+      <EscrowChartCard visible={visible ?? (filter ? rows.filter(filter) : rows)} total={rows.length} />
+      <OpsGrid<EscrowRow>
+        id="escrow"
+        rows={rows}
+        columns={columns}
+        getRowId={byId}
+        onDisplayedRowsChange={setVisible}
+        noun={["milestone", "milestones"]}
+        externalFilter={filter}
+        externalFilterKey={bucket}
+        toolbar={<FilterChips chips={chips} value={bucket} onChange={setBucket} />}
+        searchPlaceholder="Search milestones…"
+        emptyText="No milestones in this view."
+        floatingFilters
+        totals={(visible) => ({
+          pactTitle: `Total · ${visible.length} milestone${visible.length === 1 ? "" : "s"}`,
+          amountCents: visible.reduce((s, r) => s + r.amountCents, 0),
+          currency: "USD",
+        })}
+        rowClassRules={ROW_RULES}
+      />
+    </div>
   );
 }

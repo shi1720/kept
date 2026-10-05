@@ -1,5 +1,6 @@
 import { Code2, LayoutDashboard, Settings, ShieldHalf } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ModePills } from "@/components/app/mode-pills";
 import { NavLink, NotificationBell, UserMenu } from "@/components/app/shell-client";
@@ -52,7 +53,28 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <UserMenu name={user.name} email={user.email} hue={user.avatarHue} handle={user.handle} />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-8 sm:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 pb-28 pt-8 sm:px-8 lg:pb-8">{children}</main>
+        <nav
+          aria-label="Primary"
+          className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-line bg-paper/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 backdrop-blur-md lg:hidden"
+        >
+          {[
+            { href: "/app", icon: <LayoutDashboard />, label: "Overview", active: false },
+            { href: "/admin", icon: <ShieldHalf />, label: "Ops", active: true },
+            { href: "/app/developers", icon: <Code2 />, label: "Agents", active: false },
+            { href: "/app/settings", icon: <Settings />, label: "Settings", active: false },
+          ].map((i) => (
+            <Link
+              key={i.href}
+              href={i.href}
+              aria-current={i.active ? "page" : undefined}
+              className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-[10.5px] font-medium [&_svg]:size-5 ${i.active ? "text-jade-700" : "text-ink-2"}`}
+            >
+              {i.icon}
+              {i.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   );
