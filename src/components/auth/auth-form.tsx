@@ -68,15 +68,18 @@ export function AuthForm({ mode, paypalLogin }: { mode: "login" | "signup"; payp
   const next = requested && /^\/(?![/\\])/.test(requested) ? requested : "/app";
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
-      await api(mode === "login" ? "/api/auth/login" : "/api/auth/signup", { body: form });
+      await api(mode === "login" ? "/api/auth/login" : "/api/auth/signup", { body: form, quiet: true });
       router.push(next);
       router.refresh();
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -86,7 +89,7 @@ export function AuthForm({ mode, paypalLogin }: { mode: "login" | "signup"; payp
       <form onSubmit={submit} className="flex flex-col gap-4">
         {mode === "signup" && (
           <Field label="Your name">
-            <Input required autoComplete="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Shivam Gupta" />
+            <Input required autoComplete="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Alex Rivera" />
           </Field>
         )}
         <Field label="Email">
@@ -104,8 +107,13 @@ export function AuthForm({ mode, paypalLogin }: { mode: "login" | "signup"; payp
             )
           }
         >
-          <Input required type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "signup" ? 8 : 1} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" />
+          <Input required type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "signup" ? 8 : 1} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </Field>
+        {error && (
+          <p role="alert" className="rounded-xl border border-rose-100 bg-rose-50 px-3.5 py-2.5 text-[13px] text-rose-700">
+            {error}
+          </p>
+        )}
         <Button type="submit" size="lg" loading={loading} className="mt-1">
           {mode === "login" ? "Sign in" : "Create account"} <ArrowRight />
         </Button>

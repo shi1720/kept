@@ -47,14 +47,32 @@ Input.displayName = "Input";
 
 export const Textarea = React.forwardRef<
   HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>
->(({ className, ...rest }, ref) => {
+  React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+    /** Grow to fit the text at any width (no hidden lines on phones), instead of a fixed row count. */
+    autoGrow?: boolean;
+  }
+>(({ className, autoGrow, ...rest }, ref) => {
   const props = useFieldProps(rest);
+  const inner = React.useRef<HTMLTextAreaElement | null>(null);
+  React.useImperativeHandle(ref, () => inner.current!, []);
+  React.useLayoutEffect(() => {
+    const el = inner.current;
+    if (!autoGrow || !el) return;
+    const fit = () => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [autoGrow, props.value]);
   return (
     <textarea
-      ref={ref}
+      ref={inner}
       className={cn(
         "w-full rounded-xl border border-line-2 bg-card px-3.5 py-3 text-sm leading-relaxed text-ink placeholder:text-ink-3 transition-shadow outline-none focus:border-jade-500 focus:shadow-glow disabled:opacity-60",
+        autoGrow && "resize-none overflow-hidden",
         className,
       )}
       {...props}

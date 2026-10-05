@@ -6,6 +6,7 @@ import {
   Bot,
   Cpu,
   FileSignature,
+  History,
   Lightbulb,
   Plus,
   Save,
@@ -15,7 +16,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,51 @@ function ClarityGauge({ score }: { score: number }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Unsaved-draft storage (this browser only)                            */
+/* ------------------------------------------------------------------ */
+
+const DRAFT_KEY = "kept.composer.v1";
+interface StoredDraft {
+  stage: "source" | "edit";
+  role: Role;
+  source: string;
+  budget: string;
+  pact: PactInput;
+  ai: AiMeta | null;
+  at: number;
+}
+const noopSubscribe = () => () => {};
+function readDraft(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function parseDraft(raw: string): StoredDraft | null {
+  try {
+    const d = JSON.parse(raw) as StoredDraft;
+    return Date.now() - d.at < 7 * 86_400_000 && (d.stage === "edit" || d.source.trim()) ? d : null;
+  } catch {
+    return null;
+  }
+}
+function writeDraft(key: string, d: StoredDraft) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(d));
+  } catch {
+    /* storage full or blocked: the leave warning still protects the work */
+  }
+}
+function clearDraft(key: string) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function Composer({ initial, editId, editingSent, defaultRole }: { initial?: PactInput; editId?: string; editingSent?: boolean; defaultRole: Role }) {
   const router = useRouter();
   const [stage, setStage] = useState<"source" | "compiling" | "edit">(initial ? "edit" : "source");
@@ -136,6 +182,40 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
   const [saving, setSaving] = useState<"draft" | "send" | null>(null);
   const [ackRisk, setAckRisk] = useState(false);
   const highRisk = pact.riskFlags.some((r) => r.severity === "high");
+
+  // New pacts survive a reload or an accidental tab close: the work in progress is kept in this
+  // browser until it's saved, and offered back when the composer opens again. (Edits of a saved pact
+  // always start from the server's copy.)
+  const storageKey = editId ? null : DRAFT_KEY;
+  const savedDraft = useSyncExternalStore(noopSubscribe, () => (storageKey ? readDraft(storageKey) : null), () => null);
+  const [offerHandled, setOfferHandled] = useState(false);
+  const hasWork = source.trim().length > 0 || stage === "edit";
+  useEffect(() => {
+    if (!storageKey || stage === "compiling" || !hasWork) return;
+    writeDraft(storageKey, { stage: stage === "edit" ? "edit" : "source", role, source, budget, pact, ai, at: Date.now() });
+  }, [storageKey, hasWork, stage, role, source, budget, pact, ai]);
+  useEffect(() => {
+    if (!storageKey || !hasWork) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [storageKey, hasWork]);
+  const restoreDraft = () => {
+    const d = savedDraft ? parseDraft(savedDraft) : null;
+    setOfferHandled(true);
+    if (!d) return;
+    setRole(d.role);
+    setSource(d.source);
+    setBudget(d.budget);
+    setPact(d.pact);
+    setAi(d.ai);
+    setStage(d.stage);
+  };
+  const discardDraft = () => {
+    if (storageKey) clearDraft(storageKey);
+    setOfferHandled(true);
+  };
+  const offerRestore = Boolean(storageKey && savedDraft && !offerHandled && stage === "source" && !source.trim());
 
   const total = useMemo(() => pact.milestones.reduce((s, m) => s + (Number(m.amount) || 0), 0), [pact.milestones]);
   const counterpartyRole = pact.creatorRole === "client" ? "freelancer" : "client";
@@ -184,6 +264,9 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
         await navigator.clipboard?.writeText(r.inviteUrl).catch(() => {});
         toast.success("Signed & sent — invite link copied to your clipboard.");
       } else toast.success("Draft saved.");
+      if (storageKey) clearDraft(storageKey);
+      setSource("");
+      setStage("compiling"); // leaving the page: don't re-save or warn on the way out
       router.push(`/app/pacts/${id}`);
       router.refresh();
     } catch {
@@ -196,6 +279,20 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
   if (stage === "source") {
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-6 animate-fade-up">
+        {offerRestore && (
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-[13.5px] text-sky-600" role="status">
+            <History className="size-4 shrink-0" />
+            <p className="min-w-0 flex-1 basis-[220px]">You have an unsaved pact from earlier in this browser.</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" onClick={discardDraft}>
+                Discard
+              </Button>
+              <Button size="sm" onClick={restoreDraft}>
+                Restore it
+              </Button>
+            </div>
+          </div>
+        )}
         <div>
           <Badge tone="ember"><Sparkles /> Contract compiler</Badge>
           <h1 className="display mt-3 text-[46px]">Where was the deal made?</h1>
@@ -203,10 +300,12 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
             Paste the DM, email or Discord thread — or just describe the job. Kept’s AI turns it into milestones with acceptance criteria a neutral referee can check, flags vague terms before they become disputes, and warns you about scam patterns.
           </p>
         </div>
-        <div className="inline-flex w-fit rounded-full border border-line bg-paper-2 p-1">
+        <div className="inline-flex w-fit rounded-full border border-line bg-paper-2 p-1" role="group" aria-label="Your side of the deal">
           {(["client", "freelancer"] as Role[]).map((r) => (
             <button
               key={r}
+              type="button"
+              aria-pressed={role === r}
               onClick={() => setRole(r)}
               className={cn("rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors", role === r ? "bg-card text-ink shadow-card" : "text-ink-3 hover:text-ink")}
             >
@@ -219,13 +318,14 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
             value={source}
             onChange={(e) => setSource(e.target.value)}
             rows={11}
-            className="rounded-none border-0 px-6 py-5 text-[14.5px] focus:shadow-none"
+            aria-label="The conversation or job description"
+            className="rounded-none border-0 px-6 py-5 text-[14.5px] focus:shadow-none max-sm:h-44"
             placeholder={"Rosa: hi!! saw your work on insta…\nKai: thank you! what are you looking for?\nRosa: a logo for my bakery, budget is like $450…"}
           />
           <div className="flex flex-wrap items-center gap-3 border-t border-line bg-paper/60 px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="text-xs text-ink-3">Budget (optional)</span>
-              <Input value={budget} onChange={(e) => setBudget(e.target.value.replace(/[^\d.]/g, ""))} placeholder="$" className="h-8 w-24" inputMode="decimal" />
+              <Input value={budget} onChange={(e) => setBudget(e.target.value.replace(/[^\d.]/g, ""))} placeholder="$" className="h-8 w-24" inputMode="decimal" aria-label="Budget in US dollars (optional)" />
             </div>
             <span className="ml-auto text-xs text-ink-3">{source.trim().length} characters</span>
             <Button variant="jade" size="lg" disabled={source.trim().length < 20} onClick={compile}>
@@ -308,7 +408,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                 <Input value={pact.title} onChange={(e) => setPact({ ...pact, title: e.target.value })} placeholder="Logo design for Pan de Rosa" className="text-[15px] font-medium" />
               </Field>
               <Field label="Summary" className="sm:col-span-2">
-                <Textarea rows={Math.max(2, Math.ceil(pact.summary.length / 95))} value={pact.summary} onChange={(e) => setPact({ ...pact, summary: e.target.value })} placeholder="What's being delivered, in two sentences." />
+                <Textarea autoGrow rows={2} value={pact.summary} onChange={(e) => setPact({ ...pact, summary: e.target.value })} placeholder="What's being delivered, in two sentences." />
               </Field>
               <Field label={`The ${counterpartyRole}'s name`}>
                 <Input value={pact.counterpartyName ?? ""} onChange={(e) => setPact({ ...pact, counterpartyName: e.target.value })} placeholder="Optional" />
@@ -339,7 +439,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                 )}
               </div>
               <CardContent className="flex flex-col gap-4">
-                <Textarea rows={Math.max(2, Math.ceil(m.description.length / 95))} value={m.description} onChange={(e) => updateMilestone(mi, { description: e.target.value })} placeholder="What this milestone delivers" />
+                <Textarea autoGrow rows={2} value={m.description} onChange={(e) => updateMilestone(mi, { description: e.target.value })} placeholder="What this milestone delivers" />
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-3">Acceptance criteria</p>
                   <ul className="flex flex-col gap-2">
@@ -348,7 +448,9 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                         <div className="flex gap-2">
                           <span className="mt-2 text-xs text-ink-3">{ci + 1}.</span>
                           <Textarea
-                            rows={Math.max(1, Math.ceil(c.text.length / 70))}
+                            autoGrow
+                            rows={1}
+                            aria-label={`Criterion ${ci + 1}`}
                             value={c.text}
                             onChange={(e) => updateCriterion(mi, ci, { text: e.target.value })}
                             className="min-h-0 resize-none border-0 px-1 py-1.5 focus:shadow-none"
@@ -356,8 +458,8 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                           />
                           <button
                             onClick={() => updateMilestone(mi, { criteria: m.criteria.filter((_, j) => j !== ci) })}
-                            className="mt-1 self-start rounded-lg p-1.5 text-ink-3 opacity-0 transition-opacity hover:bg-paper-2 hover:text-rose-600 group-hover:opacity-100"
-                            aria-label="Remove criterion"
+                            className="mt-1 self-start rounded-lg p-1.5 text-ink-3 transition-opacity hover:bg-paper-2 hover:text-rose-600 focus-visible:opacity-100 group-hover:opacity-100 md:opacity-0 md:group-focus-within:opacity-100"
+                            aria-label={`Remove criterion ${ci + 1}`}
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -403,7 +505,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                 <Input type="number" min={1} max={720} value={pact.terms.reviewWindowHours} onChange={(e) => setPact({ ...pact, terms: { ...pact.terms, reviewWindowHours: Number(e.target.value) } })} />
               </Field>
               <Field label="Ownership / IP" className="sm:col-span-3">
-                <Input value={pact.terms.ipTransfer} onChange={(e) => setPact({ ...pact, terms: { ...pact.terms, ipTransfer: e.target.value } })} />
+                <Textarea autoGrow rows={1} value={pact.terms.ipTransfer} onChange={(e) => setPact({ ...pact, terms: { ...pact.terms, ipTransfer: e.target.value } })} />
               </Field>
             </CardContent>
           </Card>

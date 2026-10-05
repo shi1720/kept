@@ -154,3 +154,24 @@ describe("offline drafter", () => {
     expect(d.terms.reviewWindowHours).toBe(24);
   });
 });
+
+describe("validation messages", () => {
+  it("turn schema errors into sentences a person can act on", async () => {
+    const { describeIssue } = await import("@/lib/http");
+    const { pactInput } = await import("@/lib/domain/pacts");
+    const r = pactInput.safeParse({
+      title: "Logo",
+      summary: "A logo",
+      creatorRole: "client",
+      currency: "USD",
+      terms: { revisionsIncluded: 1, reviewWindowHours: 72, ipTransfer: "Client owns it" },
+      milestones: [{ title: "a", description: "", amount: 0, criteria: [] }],
+    });
+    expect(r.success).toBe(false);
+    const messages = r.success ? [] : r.error.issues.map(describeIssue);
+    expect(messages).toContain("Milestone 1 title is too short (at least 2 characters)");
+    expect(messages).toContain("Milestone 1 amount must be more than 0");
+    expect(messages).toContain("Milestone 1 needs at least 1 acceptance criterion");
+    expect(messages.join(" ")).not.toMatch(/milestones\.0|Too small|expected/);
+  });
+});
