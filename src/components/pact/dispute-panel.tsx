@@ -51,7 +51,7 @@ export function DisputePanel({
     <div className="overflow-hidden rounded-2xl border border-rose-100 bg-card">
       <div className="flex items-center gap-2.5 border-b border-rose-100 bg-rose-50/70 px-5 py-3">
         <Gavel className="size-4 text-rose-600" />
-        <span className="text-[13.5px] font-semibold text-rose-700">In mediation · {formatMoney(amountCents)} frozen in escrow</span>
+        <span className="text-[13.5px] font-semibold text-rose-700">{dispute.status === "resolved" ? "Mediation agreement · accepted by both parties" : `In mediation · ${formatMoney(amountCents)} frozen in escrow`}</span>
         {dispute.status === "escalated" && <Badge tone="rose" className="ml-auto">Escalated to a human arbitrator</Badge>}
       </div>
 

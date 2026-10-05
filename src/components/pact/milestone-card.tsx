@@ -163,6 +163,13 @@ export function MilestoneCard({
           </div>
         )}
 
+        {m.status === "settled" && m.dispute?.status === "resolved" && (
+          <details className="rounded-2xl border border-line bg-card p-4">
+            <summary className="cursor-pointer text-sm font-medium text-jade-700">View the agreed mediation proposal</summary>
+            <div className="mt-4"><DisputePanel dispute={m.dispute} amountCents={m.amountCents} role={role} clientName={clientName} freelancerName={freelancerName} /></div>
+          </details>
+        )}
+
         {/* Deliveries */}
         {latest && (
           <div>
