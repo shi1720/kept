@@ -1,6 +1,7 @@
 import type { Criterion, CriterionResult, Milestone, Pact } from "@/lib/db/schema";
 import type { EvidencePack } from "@/lib/evidence";
 import type { ContentPart } from "./provider";
+import { env } from "@/lib/env";
 import { generateWithFallback } from "./provider";
 import { verdictSchema, type VerdictOutput } from "./schemas";
 
@@ -168,7 +169,7 @@ export async function runReferee(input: {
       system: SYSTEM,
       content: buildPrompt(pact, milestone, criteria, pack, input.submissionNote),
       schema: verdictSchema,
-      effort: "high",
+      effort: env.ai.judgeEffort,
     },
     () => offlineVerdict(criteria, pack),
   );

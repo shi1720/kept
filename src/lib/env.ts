@@ -46,6 +46,8 @@ export const env = {
     geminiModel: str("GEMINI_MODEL", "gemini-2.5-flash"),
     /** Force a provider: "anthropic" | "gemini" | "offline". Defaults to the first configured. */
     provider: str("AI_PROVIDER"),
+    /** Reasoning effort for money-moving judgments (referee, mediator): low | medium | high. */
+    judgeEffort: (["low", "medium", "high"].includes(str("AI_JUDGE_EFFORT")) ? str("AI_JUDGE_EFFORT") : "medium") as "low" | "medium" | "high",
   },
 
   github: {

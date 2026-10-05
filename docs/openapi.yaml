@@ -1,0 +1,423 @@
+openapi: 3.1.0
+info:
+  title: Kept API
+  version: 1.0.0
+  summary: Escrow with an AI referee, built on PayPal.
+  description: |
+    Programmatic access to Kept for apps and AI agents. Authenticate with an API key
+    (`Authorization: Bearer kept_sk_…`, create one under **Agents & API**) or a browser session.
+
+    Money only moves through PayPal: funding uses PayPal Orders v2, releases use PayPal Payouts,
+    and refunds/splits use PayPal Payments v2 refunds. Every money-moving endpoint is a state-machine
+    transition and is safe to retry.
+
+    Agents may prefer the MCP endpoint at `/api/mcp` (Streamable HTTP), which wraps the same operations as tools.
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: https://kept.onrender.com
+    description: Hosted demo (PayPal sandbox)
+  - url: http://localhost:3000
+    description: Local
+security:
+  - bearerAuth: []
+tags:
+  - name: Pacts
+  - name: Milestones
+  - name: Disputes
+  - name: AI
+  - name: System
+paths:
+  /api/ai/draft:
+    post:
+      tags: [AI]
+      summary: Compile a conversation or description into a pact draft (not saved)
+      operationId: draftPact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceText, creatorRole]
+              properties:
+                sourceText: { type: string, minLength: 20, maxLength: 20000, description: Pasted DM/email/Discord thread or a job description }
+                creatorRole: { $ref: "#/components/schemas/Role" }
+                amount: { type: number, description: Optional total budget in USD }
+      responses:
+        "200":
+          description: Draft pact plus AI metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/PactInput" }
+                  ai:
+                    type: object
+                    properties:
+                      provider: { type: string }
+                      model: { type: string }
+                      degraded: { type: boolean }
+                      latencyMs: { type: integer }
+        default: { $ref: "#/components/responses/Error" }
+  /api/pacts:
+    get:
+      tags: [Pacts]
+      summary: List pacts you are a party to
+      operationId: listPacts
+      responses:
+        "200":
+          description: Pacts with milestones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pacts: { type: array, items: { $ref: "#/components/schemas/Pact" } }
+    post:
+      tags: [Pacts]
+      summary: Create a draft pact
+      operationId: createPact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PactInput" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pact: { $ref: "#/components/schemas/Pact" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/pacts/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [Pacts]
+      summary: Full pact detail (milestones, criteria, verdicts, disputes, PayPal payments, payouts, refunds, events)
+      operationId: getPact
+      responses:
+        "200": { description: Pact detail }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Pacts]
+      summary: Replace the terms of a draft pact (author only; clears signatures)
+      operationId: updatePact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PactInput" }
+      responses:
+        "200": { description: Updated }
+        default: { $ref: "#/components/responses/Error" }
+  /api/pacts/{id}/send:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Pacts]
+      summary: Sign as the author and get the countersignature link
+      operationId: sendPact
+      responses:
+        "200":
+          description: Signed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inviteUrl: { type: string, format: uri }
+        default: { $ref: "#/components/responses/Error" }
+  /api/invites/{token}/accept:
+    parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Pacts]
+      summary: Countersign a pact from its invitation; milestones become fundable
+      operationId: acceptInvite
+      responses:
+        "200": { description: Pact is active }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/order:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Create a PayPal order to fund a milestone (client only)
+      description: Returns the PayPal order id (for the JS SDK) and, for redirect flows, the PayPal approval URL.
+      operationId: createFundingOrder
+      responses:
+        "200":
+          description: PayPal order created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId: { type: string }
+                  approveUrl: { type: string, format: uri }
+                  mode: { type: string, enum: [sandbox, live, simulator] }
+                  quote: { $ref: "#/components/schemas/Quote" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/capture:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Capture an approved PayPal order into escrow (idempotent)
+      operationId: captureFunding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId]
+              properties:
+                orderId: { type: string }
+      responses:
+        "200": { description: Funded }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/submit:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Submit deliverables (freelancer only); the AI referee reviews them asynchronously
+      operationId: submitWork
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                note: { type: string }
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    oneOf:
+                      - type: object
+                        required: [kind, content]
+                        properties: { kind: { const: text }, name: { type: string }, content: { type: string } }
+                      - type: object
+                        required: [kind, url]
+                        properties: { kind: { const: url }, url: { type: string, format: uri } }
+                      - type: object
+                        required: [kind, url]
+                        properties: { kind: { const: github }, url: { type: string, description: "owner/repo or GitHub URL" } }
+                      - type: object
+                        required: [kind, name, mime, base64]
+                        properties: { kind: { const: file }, name: { type: string }, mime: { type: string }, base64: { type: string } }
+      responses:
+        "200": { description: Submitted }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/review:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [AI]
+      summary: Run (or re-run) the AI referee synchronously
+      operationId: runReview
+      responses:
+        "200": { description: Verdict id }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/approve:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Approve and release 100% via PayPal Payouts (client only)
+      operationId: approveMilestone
+      responses:
+        "200": { description: Released }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/revision:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Request a revision (client only; limited by the pact's revisions)
+      operationId: requestRevision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [note], properties: { note: { type: string } } }
+      responses:
+        "200": { description: Revision requested }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/dispute:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Disputes]
+      summary: Raise an issue; the AI mediator proposes a split
+      operationId: openDispute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 10 } } }
+      responses:
+        "200": { description: Dispute with proposed ruling }
+        default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/refund:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Freelancer refunds the client in full via PayPal
+      operationId: refundMilestone
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        "200": { description: Refunded }
+        default: { $ref: "#/components/responses/Error" }
+  /api/disputes/{id}/statement:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Disputes]
+      summary: Add your side of the story; the mediator re-evaluates
+      operationId: addStatement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [statement], properties: { statement: { type: string } } }
+      responses:
+        "200": { description: Updated dispute }
+        default: { $ref: "#/components/responses/Error" }
+  /api/disputes/{id}/respond:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Disputes]
+      summary: Accept or reject the proposed split; when both accept, PayPal settles it
+      operationId: respondToRuling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [accept], properties: { accept: { type: boolean } } }
+      responses:
+        "200": { description: Updated dispute }
+        default: { $ref: "#/components/responses/Error" }
+  /api/webhooks/paypal:
+    post:
+      tags: [System]
+      security: []
+      summary: PayPal webhook receiver (signature-verified, de-duplicated)
+      operationId: paypalWebhook
+      responses:
+        "200": { description: Processed }
+        "202": { description: Stored but not trusted (signature could not be verified) }
+  /api/health:
+    get:
+      tags: [System]
+      security: []
+      summary: Liveness and active integration modes
+      operationId: health
+      responses:
+        "200": { description: OK }
+  /api/doctor:
+    get:
+      tags: [System]
+      security: []
+      summary: Live integration self-test (cached 10 minutes, no secrets)
+      operationId: doctor
+      responses:
+        "200": { description: Check results }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "Kept API key, e.g. kept_sk_…"
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code: { type: string, enum: [unauthorized, forbidden, not_found, invalid_request, invalid_state, conflict, payment_failed, ai_unavailable, rate_limited, internal] }
+                  message: { type: string }
+  schemas:
+    Role: { type: string, enum: [client, freelancer] }
+    MachineCheck:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [none, min_words, max_words, min_files, file_types, url_reachable, page_contains, repo_has_path, keywords_present, min_image_resolution] }
+        value: { type: [number, "null"] }
+        values: { type: [array, "null"], items: { type: string } }
+        width: { type: [number, "null"] }
+        height: { type: [number, "null"] }
+    PactInput:
+      type: object
+      required: [title, creatorRole, terms, milestones]
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        currency: { type: string, default: USD }
+        creatorRole: { $ref: "#/components/schemas/Role" }
+        counterpartyName: { type: [string, "null"] }
+        counterpartyEmail: { type: [string, "null"], format: email }
+        terms:
+          type: object
+          required: [revisionsIncluded, reviewWindowHours, ipTransfer]
+          properties:
+            revisionsIncluded: { type: integer }
+            reviewWindowHours: { type: integer }
+            ipTransfer: { type: string }
+        milestones:
+          type: array
+          items:
+            type: object
+            required: [title, amount, criteria]
+            properties:
+              title: { type: string }
+              description: { type: string }
+              amount: { type: number, description: USD }
+              dueInDays: { type: [integer, "null"] }
+              criteria:
+                type: array
+                items:
+                  type: object
+                  required: [text]
+                  properties:
+                    text: { type: string }
+                    kind: { type: string, enum: [objective, subjective] }
+                    check: { $ref: "#/components/schemas/MachineCheck" }
+    Pact:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        status: { type: string, enum: [draft, pending_acceptance, active, completed, cancelled] }
+        role: { $ref: "#/components/schemas/Role" }
+        milestones:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              title: { type: string }
+              amountCents: { type: integer }
+              status: { type: string, enum: [draft, awaiting_funding, funded, submitted, in_review, released, disputed, settled, refunded, cancelled] }
+    Quote:
+      type: object
+      properties:
+        milestoneCents: { type: integer }
+        platformFeeCents: { type: integer }
+        processingFeeCents: { type: integer }
+        totalCents: { type: integer }

@@ -1,4 +1,5 @@
 import type { Criterion, Dispute, Milestone, Pact, Ruling, Verdict } from "@/lib/db/schema";
+import { env } from "@/lib/env";
 import { generateWithFallback } from "./provider";
 import { rulingSchema, type RulingOutput } from "./schemas";
 
@@ -44,7 +45,7 @@ FREELANCER STATEMENT:
 <statement party="freelancer">${dispute.freelancerStatement ?? "(none provided)"}</statement>`;
 
   const gen = await generateWithFallback(
-    { system: SYSTEM, content: [{ type: "text", text }], schema: rulingSchema, effort: "high" },
+    { system: SYSTEM, content: [{ type: "text", text }], schema: rulingSchema, effort: env.ai.judgeEffort },
     () => offlineRuling(verdict),
   );
   return {

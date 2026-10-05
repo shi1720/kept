@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kept — pitch deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #faf8f3; --paper2: #f3efe6; --card: #fff; --ink: #16140f; --ink2: #4a463e; --ink3: #8a857a; --line: #e7e1d5;
+    --jade: #0f6b57; --jade50: #eaf4f0; --jade300: #7fbea8; --ember: #c2410c; --ember50: #fdf1ea; --amber: #a86d10; --amber50: #fbf4e6; --rose: #be123c; --rose50: #fdf0f2; --sky: #1d4ed8; --sky50: #eef4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #2b2925; }
+  body { font-family: Inter, system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  @page { size: 1920px 1080px; margin: 0; }
+  .slide { width: 1920px; height: 1080px; position: relative; overflow: hidden; background: var(--paper); padding: 110px 140px; page-break-after: always; margin: 0 auto 40px; display: flex; flex-direction: column; }
+  @media print { .slide { margin: 0; } html, body { background: var(--paper); } }
+  .dark { background: var(--ink); color: var(--paper); }
+  .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; letter-spacing: -0.01em; line-height: 1.02; }
+  .kicker { font-size: 22px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ember); }
+  .dark .kicker { color: #f0a37a; }
+  h1 { font-size: 150px; }
+  h2 { font-size: 92px; margin-top: 22px; }
+  .lead { font-size: 34px; line-height: 1.45; color: var(--ink2); max-width: 1400px; margin-top: 30px; }
+  .dark .lead { color: rgba(250,248,243,.72); }
+  .grid { display: grid; gap: 30px; margin-top: 60px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 28px; padding: 40px; box-shadow: 0 1px 0 rgba(22,20,15,.04), 0 12px 32px -18px rgba(22,20,15,.25); }
+  .stat { font-size: 104px; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .src { font-size: 17px; color: var(--ink3); margin-top: 14px; }
+  .muted { color: var(--ink3); }
+  .foot { position: absolute; left: 140px; right: 140px; bottom: 50px; display: flex; justify-content: space-between; font-size: 18px; color: var(--ink3); }
+  .dark .foot { color: rgba(250,248,243,.45); }
+  .logo { display: inline-flex; align-items: center; gap: 18px; }
+  .pill { display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; padding: 10px 22px; font-size: 22px; font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: 25px; }
+  th { text-align: left; font-size: 18px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); padding: 16px 20px; border-bottom: 2px solid var(--line); }
+  td { padding: 22px 20px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr.us td { background: var(--jade50); font-weight: 600; }
+  .step { display: flex; gap: 26px; align-items: flex-start; }
+  .num { width: 64px; height: 64px; border-radius: 50%; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+  .shot { border-radius: 24px; border: 1px solid var(--line); box-shadow: 0 30px 80px -30px rgba(22,20,15,.45); width: 100%; display: block; }
+  code, .mono { font-family: "JetBrains Mono", monospace; }
+  .glow1 { position: absolute; width: 900px; height: 900px; border-radius: 50%; background: rgba(15,107,87,.35); filter: blur(140px); right: -300px; top: -300px; }
+  .glow2 { position: absolute; width: 700px; height: 700px; border-radius: 50%; background: rgba(194,65,12,.22); filter: blur(140px); left: -250px; bottom: -300px; }
+</style>
+</head>
+<body>
+
+<!-- 1. Title -->
+<section class="slide dark">
+  <div class="glow1"></div><div class="glow2"></div>
+  <div class="logo" style="position:relative">
+    <svg width="72" height="72" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#0f6b57"/><path d="M20 16v32M20 33l16-17M27 27l15 21" stroke="#faf8f3" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="46" cy="18" r="5" fill="#d9541e"/></svg>
+    <span class="serif" style="font-size:64px">Kept</span>
+  </div>
+  <div style="margin-top:auto; position:relative">
+    <div class="kicker">PayPal AI Hackathon 2026</div>
+    <h1 class="serif" style="margin-top:24px">Promises, <i style="color:#7fbea8">kept.</i></h1>
+    <p class="lead" style="font-size:40px">Escrow with an AI referee, built on PayPal — for freelance work agreed anywhere on the internet.</p>
+  </div>
+  <div class="foot"><span>Shivam Gupta</span><span>github.com/shi1720/paypal-ai</span></div>
+</section>
+
+<!-- 2. Problem -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2 class="serif">The deal was made in a DM.<br/>It's paid on trust.</h2>
+  <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card"><div class="stat" style="color:var(--rose)">71%</div><p style="font-size:28px;margin-top:10px">of US freelancers have struggled to get paid — losing <b>$5,968</b> on average</p><p class="src">Freelancers Union, 2015</p></div>
+    <div class="card"><div class="stat">&lt;1%</div><p style="font-size:28px;margin-top:10px">of stiffed New York freelancers ever went to court (62% had been stiffed)</p><p class="src">Authors Guild / Freelancers Union, 2022</p></div>
+    <div class="card"><div class="stat" style="color:var(--jade)">58%</div><p style="font-size:28px;margin-top:10px">of US independents don't rely primarily on platforms — so no escrow, no referee</p><p class="src">MBO Partners, 2025</p></div>
+  </div>
+  <p class="lead" style="font-size:28px;margin-top:50px">Clients have the mirror-image fear: pay upfront and hope the work arrives. And PayPal Purchase Protection excludes <i>"Significantly Not as Described claims for wholly or partly custom-made items."</i></p>
+</section>
+
+<!-- 3. Status quo -->
+<section class="slide">
+  <div class="kicker">Today's options</div>
+  <h2 class="serif">Expensive, slow, or blind.</h2>
+  <table style="margin-top:56px">
+    <tr><th>Option</th><th>What it costs</th><th>Off-platform deals?</th><th>Who judges the work?</th></tr>
+    <tr><td>Upwork</td><td>~20% blended take; $337.50/side arbitration</td><td>Mostly no</td><td>Humans, days</td></tr>
+    <tr><td>Fiverr</td><td>20% seller + 5.5% buyer</td><td>No</td><td>Support tickets</td></tr>
+    <tr><td>Escrow.com</td><td>$50 minimum (~10% of a $500 milestone with card)</td><td>Yes</td><td>Nobody checks the work</td></tr>
+    <tr><td>"Just trust them"</td><td>Free — until it isn't</td><td>Yes</td><td>Nobody</td></tr>
+    <tr class="us"><td>Kept</td><td>Freelancer keeps 100% · client pays 2.9% + PayPal at cost</td><td>Built for it</td><td>AI referee in ~1 minute, with evidence; humans on appeal</td></tr>
+  </table>
+</section>
+
+<!-- 4. Insight -->
+<section class="slide dark">
+  <div class="glow1"></div>
+  <div class="kicker" style="position:relative">The insight</div>
+  <h2 class="serif" style="position:relative;font-size:104px">Escrow was never the hard part.<br/><i style="color:#7fbea8">The judge was.</i></h2>
+  <p class="lead" style="position:relative;font-size:36px">A neutral judge that reads the agreement, looks at the work and decides — cheaply, quickly, with receipts. In 2026 an LLM can be that judge, if you give it a contract written to be checked, evidence computed by code, and a payment rail that can pay, refund or split.</p>
+</section>
+
+<!-- 5. Product -->
+<section class="slide">
+  <div class="kicker">How it works</div>
+  <h2 class="serif">From DM to paid, in five steps.</h2>
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 44px 80px; margin-top: 70px;">
+    <div class="step"><div class="num">1</div><div><p style="font-size:32px;font-weight:600">Compile</p><p style="font-size:24px;color:var(--ink2);margin-top:8px">Paste the chat → milestones and machine-checkable criteria. Vague terms rewritten, scam signals flagged.</p></div></div>
+    <div class="step"><div class="num">2</div><div><p style="font-size:32px;font-weight:600">Seal & fund</p><p style="font-size:24px;color:var(--ink2);margin-top:8px">Both sign. Client funds each milestone with PayPal Checkout; money held in escrow.</p></div></div>
+    <div class="step"><div class="num">3</div><div><p style="font-size:32px;font-weight:600">Deliver & judge</p><p style="font-size:24px;color:var(--ink2);margin-top:8px">Evidence engine measures files, links and repos; the AI referee rules per criterion with citations.</p></div></div>
+    <div class="step"><div class="num">4</div><div><p style="font-size:32px;font-weight:600">Settle</p><p style="font-size:24px;color:var(--ink2);margin-top:8px">Approve → PayPal Payout. Dispute → AI-mediated split as Payout + partial refund. Reject → human.</p></div></div>
+    <div class="step"><div class="num">5</div><div><p style="font-size:32px;font-weight:600">No ghosting</p><p style="font-size:24px;color:var(--ink2);margin-top:8px">Client silent past the window? Passing work auto-releases; failing work goes to mediation.</p></div></div>
+    <div class="step"><div class="num" style="background:var(--sky)">+</div><div><p style="font-size:32px;font-weight:600">Agents hire too</p><p style="font-size:24px;color:var(--ink2);margin-top:8px">MCP server: AI agents create pacts, get PayPal approval links for humans, submit work, read verdicts.</p></div></div>
+  </div>
+</section>
+
+<!-- 6. Demo screenshot -->
+<section class="slide" style="padding:80px 120px">
+  <div class="kicker">The product</div>
+  <div style="display:grid;grid-template-columns: 1.55fr 1fr; gap: 60px; margin-top: 30px; align-items:center; flex:1">
+    <img class="shot" src="../screenshots/verdict.png" alt="AI referee verdict" />
+    <div>
+      <h2 class="serif" style="font-size:76px">Every ruling shows its work.</h2>
+      <p class="lead" style="font-size:28px">A score computed in code, a result per criterion, the exact evidence quoted, machine checks that override the model — and a red flag when a deliverable tries to talk to the referee.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7. AI safety -->
+<section class="slide">
+  <div class="kicker">AI you can put next to money</div>
+  <h2 class="serif">Code measures. The model judges.<br/>People decide.</h2>
+  <div class="grid" style="grid-template-columns: repeat(3,1fr)">
+    <div class="card"><p style="font-size:30px;font-weight:600">Deterministic evidence</p><p style="font-size:23px;color:var(--ink2);margin-top:12px;line-height:1.5">Word counts, live links, page contents, repo paths, image sizes, PDF/DOCX text — computed by code and authoritative over the model.</p></div>
+    <div class="card"><p style="font-size:30px;font-weight:600">Injection-proof</p><p style="font-size:23px;color:var(--ink2);margin-top:12px;line-height:1.5">Untrusted content is fenced; a scanner reads text hidden from humans. Manipulated deliverables never auto-release.</p></div>
+    <div class="card"><p style="font-size:30px;font-weight:600">Humans hold the pen</p><p style="font-size:23px;color:var(--ink2);margin-top:12px;line-height:1.5">The mediator only proposes. Both parties must accept a split, or it escalates to a human arbitrator.</p></div>
+  </div>
+</section>
+
+<!-- 8. PayPal -->
+<section class="slide">
+  <div class="kicker">Built on PayPal</div>
+  <h2 class="serif">Every rail does real work.</h2>
+  <table style="margin-top:50px;font-size:24px">
+    <tr><th>PayPal capability</th><th>In Kept</th></tr>
+    <tr><td><b>Orders v2</b> via the PayPal Server SDK (APIMatic)</td><td>Fund each milestone; itemised fees; idempotent create/capture; real PayPal fee read into the ledger</td></tr>
+    <tr><td><b>JS SDK v6</b></td><td>PayPal + guest card buttons in the pact room</td></tr>
+    <tr><td><b>Payouts</b></td><td>Release escrow to the freelancer; deterministic sender_batch_id = no double pay</td></tr>
+    <tr><td><b>Payments v2 refunds</b></td><td>Full refunds and partial refunds for AI-mediated splits</td></tr>
+    <tr><td><b>Webhooks</b> + signature verification</td><td>Self-healing capture if the browser closes; payout/refund reconciliation</td></tr>
+    <tr><td><b>Log in with PayPal</b></td><td>Sign in and link a verified payout account</td></tr>
+  </table>
+</section>
+
+<!-- 9. Agents -->
+<section class="slide dark">
+  <div class="glow2"></div>
+  <div class="kicker" style="position:relative">Agentic commerce</div>
+  <h2 class="serif" style="position:relative">Agents can pay for things.<br/><i style="color:#7fbea8">Kept lets them pay for work.</i></h2>
+  <div style="position:relative;margin-top:56px;background:#0d0c09;border:1px solid rgba(250,248,243,.12);border-radius:24px;padding:40px 46px;font-size:24px;line-height:1.7" class="mono">
+    <div style="color:rgba(250,248,243,.5)">$ claude mcp add --transport http kept https://kept.onrender.com/api/mcp --header "Authorization: Bearer kept_sk_…"</div>
+    <div style="margin-top:18px">› Hire a designer for 3 Instagram carousels for my yoga studio, $300, with escrow.</div>
+    <div style="color:#7fbea8">⏺ kept · create_pact → pct_… “Instagram carousel designs” · 4 criteria · 2 auto-checked</div>
+    <div style="color:#7fbea8">⏺ kept · create_funding_order → PayPal approval link for you to approve</div>
+    <div style="color:#f0a37a">⏺ kept · get_verdict → PASS 92/100 · approve_milestone → PayPal Payout sent</div>
+  </div>
+</section>
+
+<!-- 10. Business -->
+<section class="slide">
+  <div class="kicker">Business model</div>
+  <h2 class="serif">Freelancers keep 100%.</h2>
+  <div class="grid" style="grid-template-columns: 1.1fr 1fr; gap: 60px">
+    <div class="card">
+      <p style="font-size:24px;color:var(--ink3)">Unit economics · $300 milestone</p>
+      <table style="font-size:28px;margin-top:20px">
+        <tr><td>Kept fee (2.9%, paid by client)</td><td style="text-align:right">$8.70</td></tr>
+        <tr><td>PayPal processing</td><td style="text-align:right" class="muted">passed through</td></tr>
+        <tr><td>Payout fee</td><td style="text-align:right">−$0.25</td></tr>
+        <tr><td>AI review (Claude)</td><td style="text-align:right">≈ −$0.10</td></tr>
+        <tr class="us"><td>Contribution</td><td style="text-align:right">≈ $8.35 (96%)</td></tr>
+      </table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:30px">
+      <div class="card"><p style="font-size:30px;font-weight:600">Built-in growth loop</p><p style="font-size:23px;color:var(--ink2);margin-top:10px">Every pact is an invite to the other side. Freelancers share a public track record and a "Paid safely with Kept" badge.</p></div>
+      <div class="card"><p style="font-size:30px;font-weight:600">Compounding moat</p><p style="font-size:23px;color:var(--ink2);margin-top:10px">A corpus of agreements, deliverables and rulings calibrates the referee; reputation lives on Kept.</p></div>
+    </div>
+  </div>
+  <p class="src" style="font-size:20px;margin-top:30px">Market: 64M US freelancers earned $1.27T in 2023 (Upwork). Upwork + Fiverr together handled ~$5B GSV/GMV in 2025 — well under 1% of that.</p>
+</section>
+
+<!-- 11. Production path -->
+<section class="slide">
+  <div class="kicker">From sandbox to production</div>
+  <h2 class="serif">PayPal holds the money.<br/>Kept holds the judgment.</h2>
+  <p class="lead">In production Kept runs on PayPal's multiparty platform with <b>delayed disbursement</b>: freelancers onboard via Partner Referrals, orders name the freelancer as payee with <code>disbursement_mode: DELAYED</code>, and Kept releases with referenced payouts. PayPal holds funds; Kept never touches them — no money-transmitter licensing, escrow pre-approval as PayPal's AUP requires.</p>
+  <div class="grid" style="grid-template-columns: repeat(4,1fr); gap: 24px">
+    <div class="card" style="padding:30px"><p style="font-size:22px;color:var(--ink3)">Next</p><p style="font-size:26px;font-weight:600;margin-top:6px">Discord & Slack bot: /pact in any chat</p></div>
+    <div class="card" style="padding:30px"><p style="font-size:22px;color:var(--ink3)">Next</p><p style="font-size:26px;font-weight:600;margin-top:6px">Multi-currency for cross-border freelancers</p></div>
+    <div class="card" style="padding:30px"><p style="font-size:22px;color:var(--ink3)">Next</p><p style="font-size:26px;font-weight:600;margin-top:6px">Arbitrator marketplace for escalations</p></div>
+    <div class="card" style="padding:30px"><p style="font-size:22px;color:var(--ink3)">Next</p><p style="font-size:26px;font-weight:600;margin-top:6px">Agent-to-agent work with outcome escrow</p></div>
+  </div>
+</section>
+
+<!-- 12. Close -->
+<section class="slide dark">
+  <div class="glow1"></div><div class="glow2"></div>
+  <div style="margin:auto 0;position:relative">
+    <h1 class="serif" style="font-size:170px">Promises, <i style="color:#7fbea8">kept.</i></h1>
+    <p class="lead" style="font-size:38px">Try it: click <b>Try as Maya</b>, switch to Ade, and pay with the PayPal sandbox.</p>
+    <p class="mono" style="font-size:28px;margin-top:40px;color:rgba(250,248,243,.7)">github.com/shi1720/paypal-ai</p>
+  </div>
+  <div class="foot"><span>Built by Shivam Gupta</span><span>MIT licensed</span></div>
+</section>
+
+</body>
+</html>
