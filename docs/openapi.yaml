@@ -27,6 +27,7 @@ tags:
   - name: Milestones
   - name: Disputes
   - name: AI
+  - name: Account
   - name: System
 paths:
   /api/ai/draft:
@@ -301,6 +302,136 @@ paths:
       responses:
         "200": { description: Updated dispute }
         default: { $ref: "#/components/responses/Error" }
+  /api/pacts/{id}/cancel:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Pacts]
+      summary: Cancel a pact before any milestone is funded
+      operationId: cancelPact
+      responses:
+        "200": { description: Cancelled pact }
+        default: { $ref: "#/components/responses/Error" }
+  /api/invites/{token}/decline:
+    parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Pacts]
+      summary: Decline an invitation to a pact
+      operationId: declineInvite
+      responses:
+        "200": { description: Declined }
+        default: { $ref: "#/components/responses/Error" }
+  /api/disputes/{id}/arbitrate:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Disputes]
+      summary: Human arbitrator's binding decision (arbitrators only); settles via PayPal
+      operationId: arbitrate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [releasePct]
+              properties:
+                releasePct: { type: integer, minimum: 0, maximum: 100, description: Share of the milestone released to the freelancer }
+                note: { type: string, maxLength: 2000 }
+      responses:
+        "200": { description: Settled dispute }
+        default: { $ref: "#/components/responses/Error" }
+  /api/artifacts/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [Milestones]
+      summary: Download a submitted file (pact parties only)
+      operationId: getArtifact
+      responses:
+        "200": { description: The file, with its original content type }
+        default: { $ref: "#/components/responses/Error" }
+  /api/me:
+    get:
+      tags: [Account]
+      summary: The signed-in user
+      operationId: getMe
+      responses:
+        "200": { description: User profile, PayPal link status and payout destination }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Account]
+      summary: Update your profile or payout email
+      operationId: updateMe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2, maxLength: 80 }
+                headline: { type: [string, "null"], maxLength: 120 }
+                paypalEmail: { type: [string, "null"], format: email, description: Where PayPal Payouts are sent if no PayPal account is linked }
+      responses:
+        "200": { description: Updated user }
+        default: { $ref: "#/components/responses/Error" }
+  /api/keys:
+    get:
+      tags: [Account]
+      summary: List your API keys (prefixes only)
+      operationId: listKeys
+      responses:
+        "200": { description: Keys }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Account]
+      summary: Create an API key for an agent; the secret is shown once
+      operationId: createKey
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { name: { type: string, maxLength: 60, default: My agent } } }
+      responses:
+        "200": { description: The new key, including its one-time secret }
+        default: { $ref: "#/components/responses/Error" }
+  /api/keys/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    delete:
+      tags: [Account]
+      summary: Revoke an API key
+      operationId: revokeKey
+      responses:
+        "200": { description: Revoked }
+        default: { $ref: "#/components/responses/Error" }
+  /api/notifications:
+    get:
+      tags: [Account]
+      summary: Your latest 30 notifications and the unread count
+      operationId: listNotifications
+      responses:
+        "200": { description: Notifications }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Account]
+      summary: Mark all notifications as read
+      operationId: markNotificationsRead
+      responses:
+        "200": { description: OK }
+        default: { $ref: "#/components/responses/Error" }
+  /api/mcp:
+    post:
+      tags: [AI]
+      summary: Model Context Protocol endpoint (Streamable HTTP, stateless) exposing Kept as 13 agent tools
+      operationId: mcp
+      responses:
+        "200": { description: JSON-RPC response }
+  /api/cron/sweep:
+    post:
+      tags: [System]
+      security: [{ cronSecret: [] }]
+      summary: "Run the sweeper: auto-release or mediate expired reviews, retry payouts/refunds, reconcile with PayPal"
+      operationId: sweep
+      responses:
+        "200": { description: Sweep report }
+        "401": { description: Missing or wrong CRON_SECRET }
   /api/webhooks/paypal:
     post:
       tags: [System]
@@ -308,8 +439,8 @@ paths:
       summary: PayPal webhook receiver (signature-verified, de-duplicated)
       operationId: paypalWebhook
       responses:
-        "200": { description: Processed }
-        "202": { description: Stored but not trusted (signature could not be verified) }
+        "200": { description: Processed (or a duplicate delivery, acknowledged without re-processing) }
+        "401": { description: Signature could not be verified with PayPal; the event is ignored and not recorded }
   /api/health:
     get:
       tags: [System]
@@ -332,6 +463,10 @@ components:
       type: http
       scheme: bearer
       description: "Kept API key, e.g. kept_sk_…"
+    cronSecret:
+      type: http
+      scheme: bearer
+      description: The deployment's CRON_SECRET
   parameters:
     Id:
       name: id

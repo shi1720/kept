@@ -153,7 +153,10 @@ export default async function DevelopersPage() {
         <SectionHeading eyebrow="Reference" title="REST API">
           JSON in, JSON out, at <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">{appUrl}</code>. Authenticate with{" "}
           <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">Authorization: Bearer kept_sk_…</code> — keys resolve to your account on every endpoint. Errors come back as{" "}
-          <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">{"{ error: { code, message } }"}</code> with a matching HTTP status.
+          <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">{"{ error: { code, message } }"}</code> with a matching HTTP status.{" "}
+          The full spec is at{" "}
+          <a href="/openapi.yaml" className="font-medium text-jade-700 underline underline-offset-2">/openapi.yaml</a> (OpenAPI 3.1): import it into
+          Postman, or generate a typed SDK from it with APIMatic.
         </SectionHeading>
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
