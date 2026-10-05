@@ -164,7 +164,7 @@ With no keys, Kept runs on its built-in **PayPal simulator** and **offline refer
 | `npm run doctor` | Live check of database, PayPal OAuth/Orders/Payouts/webhooks and the AI provider |
 | `npm run typecheck` / `npm run lint` | |
 
-**Deploy:** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shi1720/paypal-ai) — the [`render.yaml`](render.yaml) blueprint prompts for the keys. Use a free [Turso](https://turso.tech) database (`DATABASE_URL=libsql://…`) for persistence; a Dockerfile is included for anywhere else.
+**Deploy:** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shi1720/paypal-ai) — the [`render.yaml`](render.yaml) blueprint prompts for the keys — step-by-step guide in [`docs/DEPLOY.md`](docs/DEPLOY.md). Use a free [Turso](https://turso.tech) database (`DATABASE_URL=libsql://…`) for persistence; a Dockerfile is included for anywhere else.
 
 ## Business model
 
