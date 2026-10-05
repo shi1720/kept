@@ -3,6 +3,7 @@ import { draftPact } from "@/lib/ai/drafter";
 import { requireUser } from "@/lib/auth/session";
 import { draftToInput } from "@/lib/domain/pacts";
 import { handler, readJson } from "@/lib/http";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 120;
 
@@ -14,7 +15,8 @@ const body = z.object({
 
 /** Compile a DM thread / description into a structured, machine-checkable pact draft (not saved). */
 export const POST = handler(async (req) => {
-  await requireUser();
+  const user = await requireUser();
+  rateLimit(`draft:${user.id}`, 30, 3_600_000);
   const input = body.parse(await readJson(req));
   const started = Date.now();
   const { output, provider, model, degraded } = await draftPact({
