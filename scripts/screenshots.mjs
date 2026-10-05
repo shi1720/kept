@@ -8,9 +8,12 @@ const OUT = process.env.OUT || "docs/screenshots";
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {});
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5 });
 const page = await ctx.newPage();
 page.on("pageerror", (e) => console.log("PAGEERROR", e.message));
+
+// Element screenshots: keep the sticky app header from covering the captured element.
+const unstick = () => page.addStyleTag({ content: "header.sticky{position:static!important}" });
 
 const shot = async (name, opts = {}) => {
   await page.waitForTimeout(700);
@@ -32,6 +35,7 @@ await shot("dashboard");
 const brand = await find("Brand identity");
 await page.goto(`${BASE}/app/pacts/${brand.id}`, { waitUntil: "networkidle" });
 await shot("pact-room");
+await unstick();
 const second = page.locator("section[id^='mst_']").nth(1);
 await second.scrollIntoViewIfNeeded();
 await second.screenshot({ path: `${OUT}/verdict.png` });
@@ -39,6 +43,7 @@ console.log("✓ verdict");
 
 const captions = await find("Instagram");
 await page.goto(`${BASE}/app/pacts/${captions.id}`, { waitUntil: "networkidle" });
+await unstick();
 const mediation = page.getByText(/In mediation ·/).locator("xpath=ancestor::div[contains(@class,'rounded-2xl')][1]");
 await mediation.scrollIntoViewIfNeeded();
 await mediation.screenshot({ path: `${OUT}/mediation.png` });
@@ -65,6 +70,7 @@ await page.request.post(`${BASE}/api/milestones/${mid}/submit`, {
 });
 await page.request.post(`${BASE}/api/milestones/${mid}/review`, { data: {} });
 await page.goto(`${BASE}/app/pacts/${landing.id}`, { waitUntil: "networkidle" });
+await unstick();
 const card = page.locator(`section[id='${mid}']`);
 await card.screenshot({ path: `${OUT}/injection-caught.png` });
 console.log("✓ injection-caught");

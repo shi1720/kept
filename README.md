@@ -55,6 +55,15 @@ The options today are bad on both sides: the freelancer works first and hopes to
 
 `/api/doctor` on any deployment shows which live integrations are connected (PayPal OAuth, Orders, Payouts, webhooks, AI) without exposing secrets.
 
+## Screenshots
+
+| | |
+|---|---|
+| <img src="docs/screenshots/landing.png" alt="Landing page" /> **Landing** — the story in one screen | <img src="docs/screenshots/composer-review.png" alt="Contract compiler review" /> **Contract compiler** — a suspicious DM compiled into a pact, with risk flags |
+| <img src="docs/screenshots/verdict.png" alt="AI referee verdict" /> **AI referee** — per-criterion results, machine checks, cited evidence | <img src="docs/screenshots/injection-caught.png" alt="Prompt injection caught" /> **Injection caught** — hidden “note to the AI referee” detected; no auto-release |
+| <img src="docs/screenshots/mediation.png" alt="AI mediation" /> **Mediation** — a 65/35 split executed as PayPal Payout + partial refund | <img src="docs/screenshots/ops-console.png" alt="Ops console" /> **Ops console** — AG Grid escrow book, ledger, PayPal activity, AI audit |
+| <img src="docs/screenshots/dashboard.png" alt="Dashboard" /> **Dashboard** — guided demo tour, attention queue, AG Grid pacts | <img src="docs/screenshots/developers.png" alt="Agents and API" /> **Agents & API** — keys, MCP setup, tools reference |
+
 ## Built on PayPal
 
 | PayPal capability | How Kept uses it | Code |
