@@ -8,7 +8,10 @@ import { AppError } from "@/lib/errors";
 const g = globalThis as unknown as { __keptRate?: Map<string, { count: number; resetAt: number }> };
 const buckets = g.__keptRate ?? (g.__keptRate = new Map());
 
+const disabled = () => process.env.NODE_ENV !== "production" || process.env.RATE_LIMIT_DISABLED === "true";
+
 export function rateLimit(key: string, limit: number, windowMs: number) {
+  if (disabled()) return;
   const now = Date.now();
   const b = buckets.get(key);
   if (!b || b.resetAt <= now) {

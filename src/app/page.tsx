@@ -23,7 +23,7 @@ export default function Home() {
         Skip to content
       </a>
       <MarketingNav />
-      <main id="main" className="flex-1">
+      <main id="main" className="kp-landing flex-1">
         <Hero />
         <Problem />
         <HowItWorks />

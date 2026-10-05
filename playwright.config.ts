@@ -39,6 +39,7 @@ export default defineConfig({
           PAYPAL_CLIENT_ID: "",
           PAYPAL_CLIENT_SECRET: "",
           DEMO_MODE: "true",
+          RATE_LIMIT_DISABLED: "true",
         },
       },
 });

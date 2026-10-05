@@ -252,8 +252,11 @@ export function evaluateCheck(c: Pick<Criterion, "id" | "check">, pack: Evidence
       return out(contentWords >= (chk.value ?? 0), `${contentWords.toLocaleString("en-US")} words delivered (minimum ${chk.value})`);
     case "max_words":
       return out(contentWords <= (chk.value ?? Infinity), `${contentWords.toLocaleString("en-US")} words delivered (maximum ${chk.value})`);
-    case "min_files":
-      return out(pack.fileCount >= (chk.value ?? 1), `${pack.fileCount} file${pack.fileCount === 1 ? "" : "s"} delivered (minimum ${chk.value ?? 1})`);
+    case "min_files": {
+      // Inline written deliverables count as delivered documents.
+      const n = pack.fileCount + pack.documents.filter((d) => d.kind === "text").length;
+      return out(n >= (chk.value ?? 1), `${n} deliverable file${n === 1 ? "" : "s"}/document${n === 1 ? "" : "s"} (minimum ${chk.value ?? 1})`);
+    }
     case "file_types": {
       const want = (chk.values ?? []).map((v) => v.toLowerCase().replace(/^\./, ""));
       const missing = want.filter((w) => !pack.extensions.includes(w) && !(w === "jpg" && pack.extensions.includes("jpeg")));

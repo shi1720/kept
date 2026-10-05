@@ -1,0 +1,122 @@
+/*
+ * Landing-page-only motion and texture. Everything here is decorative and is
+ * switched off for people who prefer reduced motion.
+ */
+
+.kp-in {
+  animation: kp-in 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+.kp-pop {
+  animation: kp-pop 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+.kp-stamp {
+  animation: kp-stamp 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+.kp-float {
+  animation: kp-float 8s ease-in-out infinite;
+  animation-delay: var(--fd, 0s);
+}
+
+.kp-draw path {
+  stroke-dasharray: 4 6;
+  animation: kp-march 1.2s linear infinite;
+}
+
+.kp-ring svg circle:nth-child(2) {
+  animation: kp-ring 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+.kp-caret::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: kp-blink 1.1s steps(1) infinite;
+}
+
+.kp-grow {
+  transform-origin: left center;
+  animation: kp-grow 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+.kp-ruled {
+  background-image: linear-gradient(to bottom, rgba(22, 20, 15, 0.045) 1px, transparent 1px);
+  background-size: 100% 32px;
+}
+
+.kp-marquee {
+  animation: kp-marquee 38s linear infinite;
+}
+
+@keyframes kp-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes kp-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes kp-stamp {
+  0% { opacity: 0; transform: scale(1.9) rotate(-40deg); }
+  55% { opacity: 1; transform: scale(0.9) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-12deg); }
+}
+
+@keyframes kp-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -6px; }
+}
+
+@keyframes kp-march {
+  to { stroke-dashoffset: -20; }
+}
+
+@keyframes kp-ring {
+  from { stroke-dashoffset: 238.8; }
+}
+
+@keyframes kp-blink {
+  50% { opacity: 0; }
+}
+
+@keyframes kp-grow {
+  from { transform: scaleX(0); }
+}
+
+@keyframes kp-marquee {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kp-in,
+  .kp-pop,
+  .kp-stamp,
+  .kp-float,
+  .kp-draw path,
+  .kp-ring svg circle,
+  .kp-caret::after,
+  .kp-grow,
+  .kp-marquee {
+    animation: none !important;
+  }
+  .kp-stamp { transform: rotate(-12deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.kp-landing) {
+    scroll-behavior: smooth;
+  }
+}

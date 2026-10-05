@@ -129,7 +129,7 @@ export function offlineDraft(source: string, hintedTotal?: number): DraftOutput 
 
   const criteria: DraftOutput["milestones"][number]["criteria"] = [
     {
-      text: `Delivers ${firstSentence.replace(/^(i need|we need|looking for|hi[,!]?)\s*/i, "")}`,
+      text: `The delivery matches the brief: “${firstSentence.replace(/^(hi|hey|hello)[,!]?\s*/i, "").slice(0, 140)}”`,
       kind: "subjective",
       check: { type: "none", value: null, values: null, width: null, height: null },
     },
