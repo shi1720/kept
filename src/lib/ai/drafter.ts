@@ -62,6 +62,8 @@ export function normalizeDraft(d: DraftOutput, hintedTotal?: number): DraftOutpu
   };
 }
 
+const capitalize = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number.isFinite(n) ? n : lo));
 
 /* ------------------------------------------------------------------ */
@@ -163,7 +165,8 @@ export function offlineDraft(source: string, hintedTotal?: number): DraftOutput 
   const title = kind ?? (firstSentence.length > 60 ? `${firstSentence.slice(0, 57)}…` : firstSentence || "New pact");
   return {
     title,
-    summary: `Escrowed agreement for ${firstSentence.toLowerCase()}. Funds are held by Kept and released when the acceptance criteria are met.`,
+    // Keep the client's own casing (brand names) and avoid a double full stop.
+    summary: `${capitalize(firstSentence.replace(/[\s.!?…]+$/, ""))}. Funds are held in escrow by Kept and released when the acceptance criteria are met.`,
     currency: "USD",
     clientName: null,
     freelancerName: null,

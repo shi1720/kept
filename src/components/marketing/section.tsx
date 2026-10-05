@@ -59,7 +59,7 @@ export function SectionHeading({
 
 /** Small-print citation used under every statistic. */
 export function Cite({ children, href, light }: { children: React.ReactNode; href?: string; light?: boolean }) {
-  const cls = cn("block text-[11px] leading-snug", light ? "text-paper/55" : "text-ink-2/75");
+  const cls = cn("block text-[11px] leading-snug", light ? "text-paper/70" : "text-ink-3");
   return href ? (
     <a href={href} target="_blank" rel="noreferrer" className={cn(cls, "underline decoration-dotted underline-offset-2 hover:text-ink-2")}>
       {children}

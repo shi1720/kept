@@ -195,6 +195,12 @@ export function MilestoneCard({
             <Badge tone="neutral" className="py-0 text-[10px]">PayPal</Badge>
             Order <span className="font-mono">{m.payment.paypalOrderId}</span>
             {m.payment.paypalCaptureId && <>· capture <span className="font-mono">{m.payment.paypalCaptureId}</span></>}
+            {m.payment.capturedAt && role === "client" && (
+              <>
+                · charged <b className="font-medium text-ink-2">{formatMoney(m.payment.totalCents)}</b> ({formatMoney(m.payment.milestoneCents)} milestone +{" "}
+                {formatMoney(m.payment.totalCents - m.payment.milestoneCents)} protection fee)
+              </>
+            )}
             {m.payment.payerEmail && <>· paid by {m.payment.payerEmail}</>}
             {m.payment.simulated && <>· simulated</>}
           </p>

@@ -31,7 +31,7 @@
   --color-amber-50: #fbf4e6;
   --color-amber-100: #f5e3bd;
   --color-amber-500: #c98a1c;
-  --color-amber-600: #a86d10;
+  --color-amber-600: #98620e; /* ≥4.5:1 on white, paper and amber-50 */
   --color-amber-700: #84540b;
 
   --color-rose-50: #fdf0f2;

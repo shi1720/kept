@@ -1,5 +1,6 @@
 import { Logo } from "@/components/brand/logo";
 import { Seal } from "@/components/brand/seal";
+import { paypalConfigured } from "@/lib/env";
 import { DemoButtons } from "./auth-form";
 
 export function AuthLayout({ title, subtitle, children, showDemo = true }: { title: string; subtitle: string; children: React.ReactNode; showDemo?: boolean }) {
@@ -14,7 +15,9 @@ export function AuthLayout({ title, subtitle, children, showDemo = true }: { tit
           {showDemo && (
             <div className="mt-10 rounded-2xl border border-dashed border-line-2 bg-paper-2/60 p-5">
               <p className="text-[13px] font-medium">Judging or just curious? Skip sign-up.</p>
-              <p className="mb-4 mt-1 text-xs text-ink-3">Get a private demo world with real PayPal sandbox payments. Switch sides any time.</p>
+              <p className="mb-4 mt-1 text-xs text-ink-3">
+                Get a private demo world{paypalConfigured() ? " with real PayPal sandbox payments" : ""}. Switch sides any time.
+              </p>
               <DemoButtons />
             </div>
           )}

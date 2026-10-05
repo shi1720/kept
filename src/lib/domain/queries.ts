@@ -1,4 +1,4 @@
-import { and, ne, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { env } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
@@ -60,7 +60,7 @@ export async function getPactDetail(viewer: User | null, pactId: string, opts: {
     none ? [] : db.select().from(payments).where(inArray(payments.milestoneId, ids)).orderBy(desc(payments.createdAt)),
     none ? [] : db.select().from(payouts).where(inArray(payouts.milestoneId, ids)),
     none ? [] : db.select().from(refunds).where(inArray(refunds.milestoneId, ids)),
-    db.select().from(events).where(eq(events.pactId, pactId)).orderBy(desc(events.createdAt)).limit(200),
+    db.select().from(events).where(eq(events.pactId, pactId)).orderBy(desc(events.createdAt), desc(sql`${events}.rowid`)).limit(200),
     loadUser(pact.clientId),
     loadUser(pact.freelancerId),
   ]);
@@ -206,7 +206,7 @@ export async function getDashboard(user: User) {
   );
 
   const recentEvents = list.length
-    ? await db.select().from(events).where(inArray(events.pactId, list.map((p) => p.id))).orderBy(desc(events.createdAt)).limit(14)
+    ? await db.select().from(events).where(inArray(events.pactId, list.map((p) => p.id))).orderBy(desc(events.createdAt), desc(sql`${events}.rowid`)).limit(14)
     : [];
 
   return {
@@ -215,8 +215,9 @@ export async function getDashboard(user: User) {
       title: p.title,
       status: p.status,
       role: p.role,
+      invited: p.invited,
       counterparty: p.invited
-        ? `invited by ${names.get(p.creatorId) ?? "the other party"}`
+        ? (names.get(p.creatorId) ?? "the other party")
         : (names.get((p.role === "client" ? p.freelancerId : p.clientId) ?? "") ??
           (p.creatorId === user.id ? (p.counterpartyName ?? p.counterpartyEmail) : names.get(p.creatorId)) ??
           "—"),

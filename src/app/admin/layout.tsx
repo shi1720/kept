@@ -1,4 +1,4 @@
-import { Code2, LayoutDashboard, Settings, ShieldHalf } from "lucide-react";
+import { Code2, LayoutDashboard, PlusCircle, Settings, ShieldHalf } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -20,13 +20,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
+      <a href="#main" className="sr-only z-50 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+        Skip to content
+      </a>
       <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-line bg-paper px-4 py-5 lg:flex">
         <Logo href="/app" className="px-2" />
         <nav className="mt-8 flex flex-col gap-1">
           <NavLink href="/app" exact icon={<LayoutDashboard />}>Overview</NavLink>
-          <NavLink href="/admin" icon={<ShieldHalf />}>Ops console</NavLink>
+          <NavLink href="/app/pacts/new" icon={<PlusCircle />}>New pact</NavLink>
           <NavLink href="/app/developers" icon={<Code2 />}>Agents & API</NavLink>
           <NavLink href="/app/settings" icon={<Settings />}>Settings</NavLink>
+          <NavLink href="/admin" icon={<ShieldHalf />}>Ops console</NavLink>
         </nav>
         <div className="mt-auto space-y-4">
           <div className="rounded-2xl border border-line bg-card p-4">
@@ -54,7 +58,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <UserMenu name={user.name} email={user.email} hue={user.avatarHue} handle={user.handle} />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 pb-28 pt-8 sm:px-8 lg:pb-8">{children}</main>
+        <main id="main" tabIndex={-1} className="outline-none mx-auto w-full max-w-[1440px] flex-1 px-4 pb-28 pt-8 sm:px-8 lg:pb-8">{children}</main>
         <nav
           aria-label="Primary"
           className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-line bg-paper/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 backdrop-blur-md lg:hidden"

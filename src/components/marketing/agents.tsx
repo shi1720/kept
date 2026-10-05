@@ -1,11 +1,12 @@
-import { Bot, Check, CornerDownRight, Terminal, UserRound } from "lucide-react";
+import { Bot, Check, CornerDownRight, UserRound } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { CopyButton } from "./copy-button";
+import { McpConnect } from "./mcp-connect";
 import { Container, SectionHeading } from "./section";
 
 const TOOLS = [
   "create_pact",
   "send_pact",
+  "accept_invite",
   "create_funding_order",
   "confirm_funding",
   "submit_deliverable",
@@ -86,7 +87,6 @@ function TranscriptLine({ line }: { line: Line }) {
 }
 
 export function Agents({ appUrl }: { appUrl: string }) {
-  const cmd = `claude mcp add --transport http kept ${appUrl}/api/mcp --header "Authorization: Bearer kept_sk_…"`;
   return (
     <section id="agents" aria-labelledby="agents-title" className="relative scroll-mt-16 overflow-hidden bg-ink py-16 text-paper sm:py-20">
       <div aria-hidden className="grain absolute inset-0 opacity-[0.15]" />
@@ -108,24 +108,7 @@ export function Agents({ appUrl }: { appUrl: string }) {
               lede="Kept is an MCP server and a REST API. Any agent can turn a request into a pact, hand its human a PayPal approval link, and release payment only when the work passes review. The person on the other side can be a freelancer, or another agent."
             />
 
-            <div className="mt-10 overflow-hidden rounded-2xl border border-paper/10 bg-black/30">
-              <div className="flex items-center justify-between gap-3 border-b border-paper/10 px-4 py-2.5">
-                <span className="flex items-center gap-2 font-mono text-[11px] text-paper/55">
-                  <Terminal className="size-3.5" aria-hidden /> Connect from Claude Code
-                </span>
-                <CopyButton text={cmd} />
-              </div>
-              <pre className="overflow-x-auto px-4 py-4 font-mono text-[12.5px] leading-relaxed text-paper/90">
-                <code>
-                  <span className="text-paper/40">$ </span>claude mcp add --transport http kept {"\\"}
-                  {"\n"}
-                  {"    "}
-                  <span className="text-jade-300">{appUrl}/api/mcp</span> {"\\"}
-                  {"\n"}
-                  {"    "}--header <span className="text-amber-100">&quot;Authorization: Bearer kept_sk_…&quot;</span>
-                </code>
-              </pre>
-            </div>
+            <McpConnect fallbackUrl={appUrl} />
 
             <div className="mt-8">
               <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-paper/55">{TOOLS.length} tools</div>

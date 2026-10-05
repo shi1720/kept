@@ -2,6 +2,7 @@ import { ArrowRight, Banknote, Hourglass, Lock, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DemoGuide, type GuideStep } from "@/components/app/demo-guide";
+import { Greeting } from "@/components/app/greeting";
 import { VerifyEmailBanner } from "@/components/settings/security";
 import { Timeline } from "@/components/app/timeline";
 import { PactsGrid } from "@/components/grid/pacts-grid";
@@ -16,11 +17,6 @@ import { formatMoney } from "@/lib/money";
 import { getPayPal } from "@/lib/paypal";
 
 export const metadata: Metadata = { title: "Overview" };
-
-function greeting() {
-  const h = new Date().getHours();
-  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
-}
 
 const TONE: Record<string, string> = {
   jade: "border-l-jade-500",
@@ -76,7 +72,7 @@ export default async function DashboardPage() {
         <div>
           <p className="text-sm text-ink-3">{user.headline ?? "Your pacts"}</p>
           <h1 className="display mt-1 text-[44px]">
-            {greeting()}, {firstName}.
+            <Greeting name={firstName} />
           </h1>
         </div>
         <Button asChild variant="jade" size="lg">
@@ -138,7 +134,7 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>Recent activity</CardTitle>
           </CardHeader>
-          <CardContent className="max-h-[360px] overflow-y-auto">
+          <CardContent tabIndex={0} role="region" aria-label="Recent activity" className="max-h-[360px] overflow-y-auto pb-10 outline-none focus-visible:ring-2 focus-visible:ring-jade-300 [mask-image:linear-gradient(to_bottom,black_calc(100%-36px),transparent)]">
             <Timeline events={d.events.slice(0, 10)} titles={d.pactTitles} compact />
           </CardContent>
         </Card>

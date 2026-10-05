@@ -41,7 +41,15 @@ function TitleCell({ data, context }: ICellRendererParams<Row, unknown, Ctx>) {
       </span>
       <span className="min-w-0 truncate text-xs text-ink-3">
         {context?.compact ? `${PACT_STATUS_LABEL[data.status]} · ` : ""}
-        <span className="capitalize">{data.role}</span> with {data.counterparty}
+        {data.invited ? (
+          <>
+            Invited by {data.counterparty} · as <span className="lowercase">{data.role}</span>
+          </>
+        ) : (
+          <>
+            <span className="capitalize">{data.role}</span> with {data.counterparty}
+          </>
+        )}
       </span>
     </div>
   );
@@ -90,7 +98,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
         minWidth: 200,
         cellRenderer: TitleCell,
         filter: "agTextColumnFilter",
-        tooltipValueGetter: (p) => (p.data ? `${p.data.title} — with ${p.data.counterparty}` : undefined),
+        tooltipValueGetter: (p) => (p.data ? `${p.data.title} — ${p.data.invited ? "invited by" : "with"} ${p.data.counterparty}` : undefined),
         getQuickFilterText: (p) => `${p.data.title} ${p.data.counterparty} ${p.data.role} ${PACT_STATUS_LABEL[p.data.status]}`,
       },
       {
@@ -138,8 +146,9 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
         headerName: "Updated",
         type: "timestamp",
         filter: false,
-        width: 104,
-        minWidth: 92,
+        // Room for the label plus the sort arrow (it read "Updat…").
+        width: 124,
+        minWidth: 118,
         sort: "desc",
         valueGetter: (p) => (p.data ? Date.parse(p.data.updatedAt) : null),
         valueFormatter: (p) => (typeof p.value === "number" ? SHORT_DATE.format(p.value) : "—"),

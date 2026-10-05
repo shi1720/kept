@@ -58,7 +58,7 @@ export function CriterionRow({ criterion, result, index }: { criterion: Criterio
               <p className="border-l-2 border-line-2 pl-2.5 text-xs italic leading-relaxed text-ink-2">{result.evidence}</p>
             )}
             <p className="text-xs leading-relaxed text-ink-3">
-              {result.reasoning} <span className="num whitespace-nowrap text-ink-3/80">· confidence {Math.round(result.confidence * 100)}%</span>
+              {result.reasoning} <span className="num whitespace-nowrap text-ink-3">· confidence {Math.round(result.confidence * 100)}%</span>
             </p>
           </div>
         )}
@@ -97,7 +97,8 @@ export function VerdictReport({
     <div className="overflow-hidden rounded-2xl border border-line bg-card">
       <div className="flex flex-wrap items-center gap-5 border-b border-line bg-gradient-to-r from-sky-50/60 via-card to-card p-5">
         <ScoreRing score={verdict.score} overall={verdict.overall} />
-        <div className="min-w-0 flex-1">
+        {/* Wraps under the score ring on narrow screens instead of squeezing into a sliver beside it. */}
+        <div className="min-w-0 flex-1 basis-[260px]">
           <div className="flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1.5 text-[13px] font-semibold"><Bot className="size-4 text-sky-600" /> AI Referee verdict</span>
             <Badge tone={overallTone}>{verdict.overall.toUpperCase()}</Badge>

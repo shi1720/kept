@@ -300,6 +300,10 @@ function DetailRow(p: ICellRendererParams) {
     const el = ref.current;
     if (!el || !info || !ops) return;
     const sync = () => {
+      // A full-width row can be wider than what's visible (pinned columns, the scrollbar); keep the
+      // detail inside the visible body so nothing is clipped on narrow screens.
+      const body = el.closest(".ag-body-viewport") as HTMLElement | null;
+      if (body) el.style.maxWidth = `${body.clientWidth}px`;
       const h = Math.ceil(el.offsetHeight);
       if (h <= 0) return;
       ops.rememberHeight(info.parentId, h);
@@ -311,6 +315,8 @@ function DetailRow(p: ICellRendererParams) {
     sync();
     const ro = new ResizeObserver(sync);
     ro.observe(el);
+    const body = el.closest(".ag-body-viewport");
+    if (body) ro.observe(body);
     return () => ro.disconnect();
   }, [info, ops, node, api]);
   if (!info || !ops) return null;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DemoButtons } from "@/components/auth/auth-form";
 import { Logo } from "@/components/brand/logo";
 import { Seal } from "@/components/brand/seal";
+import { paypalConfigured } from "@/lib/env";
 import { Container } from "./section";
 
 export function FinalCta() {
@@ -25,7 +26,7 @@ export function FinalCta() {
             <div className="rounded-2xl bg-paper p-5 text-ink shadow-lift sm:p-6">
               <p className="text-[15px] font-semibold">See it work in two minutes</p>
               <p className="mb-4 mt-1 text-[13px] text-ink-2">
-                A private demo world with pacts in every state and real PayPal sandbox checkout. Switch sides any time.
+                A private demo world with pacts in every state{paypalConfigured() ? " and real PayPal sandbox checkout" : ""}. Switch sides any time.
               </p>
               <div className="[&>div]:!grid-cols-1">
                 <DemoButtons />

@@ -143,7 +143,7 @@ function OutcomeVisual() {
         <div key={o.title} className={cn("flex items-center gap-3 rounded-xl border px-3.5 py-2.5", o.cls)}>
           <o.icon className="size-4 shrink-0" aria-hidden />
           <span className="text-[13px] font-medium">{o.title}</span>
-          <span className="ml-auto text-right text-[11.5px] opacity-80">{o.detail}</span>
+          <span className="ml-auto text-right text-[11.5px]">{o.detail}</span>
         </div>
       ))}
     </Panel>

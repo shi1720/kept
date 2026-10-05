@@ -68,10 +68,10 @@ export function DisputePanel({
 
       {ruling && (
         <div className="border-t border-line p-5">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <Bot className="size-4 text-sky-600" />
             <span className="text-[13.5px] font-semibold">AI mediator’s proposal</span>
-            <span className="text-[11px] text-ink-3">{ruling.provider === "kept-demo-seed" ? "seeded example — add a statement to run the live mediator" : ruling.model}</span>
+            <span className="basis-full pl-6 text-[11px] text-ink-3 sm:basis-auto sm:pl-0">{ruling.provider === "kept-demo-seed" ? "seeded example — add a statement to run the live mediator" : ruling.model}</span>
           </div>
           <div className="mt-4">
             <div className="flex h-11 overflow-hidden rounded-xl text-[13px] font-medium">

@@ -193,7 +193,23 @@ async function stampPact(pactId: string, at: Date) {
     const at = (type: string) => evts.find((e) => e.milestoneId === m.id && e.type === type)?.createdAt;
     const funded = at("milestone.funded");
     const resolved = at("milestone.released") ?? at("milestone.settled") ?? at("milestone.refunded");
-    const reviewed = at("review.completed") ?? (resolved ? new Date(resolved.getTime() - 3_600_000) : undefined);
+    const disputeOpened = at("dispute.opened");
+    let reviewed =
+      at("review.completed") ??
+      (disputeOpened ? new Date(disputeOpened.getTime() - 3 * 3_600_000) : undefined) ??
+      (resolved ? new Date(resolved.getTime() - 3_600_000) : undefined);
+    // Work still in review: the delivery time must agree with the review deadline shown on the page.
+    if (m.status === "in_review" && m.reviewDeadlineAt) {
+      const submittedAt = new Date(m.reviewDeadlineAt.getTime() - pactRow.terms.reviewWindowHours * 3_600_000);
+      reviewed = new Date(submittedAt.getTime() + 9 * 60_000);
+      for (const e of evts.filter((e) => e.milestoneId === m.id && (e.type === "work.submitted" || e.type === "review.completed"))) {
+        await db.update(events).set({ createdAt: e.type === "work.submitted" ? submittedAt : reviewed }).where(eq(events.id, e.id));
+      }
+    }
+    // A finished milestone wasn't "due" weeks after it was paid.
+    if (resolved && m.dueAt && m.dueAt.getTime() > resolved.getTime() + 2 * 86_400_000) {
+      await db.update(milestones).set({ dueAt: new Date(resolved.getTime() + 2 * 86_400_000) }).where(eq(milestones.id, m.id));
+    }
     if (funded) {
       await db.update(milestones).set({ fundedAt: funded }).where(eq(milestones.id, m.id));
       await db.update(payments).set({ createdAt: funded, capturedAt: funded }).where(eq(payments.milestoneId, m.id));

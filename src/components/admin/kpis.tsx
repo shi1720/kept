@@ -35,7 +35,7 @@ export function BooksBadge({ books }: { books: BooksCheck }) {
           {books.balanced ? <ShieldCheck className="size-3.5" /> : <ShieldAlert className="size-3.5" />}
         </span>
         {books.balanced ? "Books balanced ✓" : "Books out of balance ✗"}
-        <span className="num font-normal opacity-70">· {plural(books.txnCount, "journal")}</span>
+        <span className="num font-normal">· {plural(books.txnCount, "journal")}</span>
       </button>
     </Tooltip>
   );

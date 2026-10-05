@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/client-api";
+import { ago } from "@/lib/time";
 import { cn } from "@/lib/cn";
 
 export function NavLink({ href, icon, children, exact }: { href: string; icon: React.ReactNode; children: React.ReactNode; exact?: boolean }) {
@@ -101,6 +102,9 @@ export function NotificationBell() {
                   {n.title}
                 </span>
                 <span className="line-clamp-2 text-xs text-ink-3">{n.body}</span>
+                <time dateTime={n.createdAt} className="text-[11px] text-ink-3">
+                  {ago(n.createdAt)}
+                </time>
               </DropdownMenu.Item>
             ))}
           </div>

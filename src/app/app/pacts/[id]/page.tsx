@@ -240,7 +240,7 @@ export default async function PactPage({
 
           <Card>
             <CardHeader><CardTitle>Activity</CardTitle></CardHeader>
-            <CardContent className="max-h-[560px] overflow-y-auto">
+            <CardContent tabIndex={0} role="region" aria-label="Pact activity" className="max-h-[560px] overflow-y-auto pb-10 outline-none focus-visible:ring-2 focus-visible:ring-jade-300 [mask-image:linear-gradient(to_bottom,black_calc(100%-36px),transparent)]">
               <Timeline events={detail.events} />
             </CardContent>
           </Card>

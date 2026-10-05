@@ -44,6 +44,6 @@ export async function notify(
   const ids = [...new Set(userIds.filter((x): x is string => Boolean(x)))];
   if (ids.length === 0) return;
   await dbx.insert(notifications).values(
-    ids.map((userId) => ({ id: newId("ntf"), userId, pactId: n.pactId, title: n.title, body: n.body })),
+    ids.map((userId) => ({ id: newId("ntf"), userId, pactId: n.pactId, title: n.title, body: n.body, ...(clock ? { createdAt: clock() } : {}) })),
   );
 }
