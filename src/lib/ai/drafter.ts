@@ -85,8 +85,25 @@ const RISKS: [RegExp, "low" | "medium" | "high", string, string][] = [
   [/(free|unpaid) (test|sample|trial)/i, "medium", "Unpaid test work", "Unpaid 'tests' are often used to extract free work."],
 ];
 
+const DELIVERABLES: [RegExp, string][] = [
+  [/landing page|website|web ?site|homepage/i, "Website / landing page"],
+  [/logo|brand identity|branding/i, "Logo & brand identity"],
+  [/blog posts?|articles?/i, "Blog articles"],
+  [/captions?|social posts?|instagram/i, "Social media content"],
+  [/illustrations?|packaging|artwork/i, "Illustration & artwork"],
+  [/video|edit(ing)? footage|reel/i, "Video editing"],
+  [/\bapp\b|mobile app|api|backend|frontend/i, "Software development"],
+  [/translat/i, "Translation"],
+  [/copy(writing)?|newsletter|email sequence/i, "Copywriting"],
+];
+
 export function offlineDraft(source: string, hintedTotal?: number): DraftOutput {
-  const text = source.trim();
+  // Drop chat speaker prefixes ("Maya: …", "[10:42] dev_omar: …") so the text reads as a brief.
+  const text = source
+    .trim()
+    .split("\n")
+    .map((l) => l.replace(/^\s*(\[[^\]]{1,20}\]\s*)?[\w .@-]{1,24}:\s+/, ""))
+    .join("\n");
   const amounts = [...text.matchAll(/(?:\$|usd\s?)\s?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\s?(k)?/gi)].map(
     (m) => Number.parseFloat(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1),
   );
@@ -134,8 +151,10 @@ export function offlineDraft(source: string, hintedTotal?: number): DraftOutput 
       check: { type: "min_words", value: Number(wordReq[1]), values: null, width: null, height: null },
     });
 
+  const kind = DELIVERABLES.find(([re]) => re.test(text))?.[1];
+  const title = kind ?? (firstSentence.length > 60 ? `${firstSentence.slice(0, 57)}…` : firstSentence || "New pact");
   return {
-    title: firstSentence.length > 60 ? `${firstSentence.slice(0, 57)}…` : firstSentence || "New pact",
+    title,
     summary: `Escrowed agreement for ${firstSentence.toLowerCase()}. Funds are held by Kept and released when the acceptance criteria are met.`,
     currency: "USD",
     clientName: null,

@@ -1,0 +1,44 @@
+# One-click deploy: https://render.com/deploy?repo=https://github.com/shi1720/paypal-ai
+services:
+  - type: web
+    name: kept
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: APP_URL
+        sync: false # e.g. https://kept.onrender.com
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: DEMO_MODE
+        value: "true"
+      - key: DATABASE_URL
+        sync: false # libsql://<db>.turso.io for persistence, or file:./data/kept.db (resets on redeploy)
+      - key: DATABASE_AUTH_TOKEN
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_ENV
+        value: sandbox
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: PAYPAL_DEMO_PAYOUT_EMAIL
+        sync: false
+      - key: PAYPAL_LOGIN_ENABLED
+        value: "false"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
