@@ -147,4 +147,8 @@ export class SimulatedPayPalGateway implements PayPalGateway {
   async verifyWebhook(): Promise<boolean> {
     return false;
   }
+
+  async provideDisputeEvidence(): Promise<void> {
+    // Accepted; nothing to persist in the simulator.
+  }
 }

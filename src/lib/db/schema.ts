@@ -318,6 +318,19 @@ export const disputes = sqliteTable(
 /* Money movement (PayPal)                                             */
 /* ------------------------------------------------------------------ */
 
+export interface PayPalDisputeInfo {
+  id: string;
+  reason: string;
+  status: string;
+  stage: string | null;
+  amountCents: number | null;
+  openedAt: string;
+  evidenceSubmittedAt?: string | null;
+  evidenceError?: string | null;
+  outcome?: string | null;
+  simulated?: boolean;
+}
+
 export const payments = sqliteTable(
   "payments",
   {
@@ -340,6 +353,8 @@ export const payments = sqliteTable(
     payerId: text("payer_id"),
     refundedCents: integer("refunded_cents").notNull().default(0),
     simulated: integer("simulated", { mode: "boolean" }).notNull().default(false),
+    /** A dispute/chargeback the payer filed with PayPal directly, if any. */
+    paypalDispute: json<PayPalDisputeInfo>("paypal_dispute"),
     raw: json<unknown>("raw"),
     capturedAt: ts("captured_at"),
     createdAt: createdAt(),

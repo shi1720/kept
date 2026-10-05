@@ -13,7 +13,7 @@ import {
 } from "@paypal/paypal-server-sdk";
 import { env } from "@/lib/env";
 import { toCents, toPayPalValue } from "@/lib/money";
-import { paypalRequest, PayPalApiError } from "./http";
+import { getAccessToken, PAYPAL_API_BASE, paypalRequest, PayPalApiError } from "./http";
 import type {
   CaptureResult,
   CreatedOrder,
@@ -216,6 +216,10 @@ export class LivePayPalGateway implements PayPalGateway {
     };
   }
 
+  async provideDisputeEvidence(disputeId: string, notes: string): Promise<void> {
+    await provideDisputeEvidenceLive(disputeId, notes);
+  }
+
   async verifyWebhook({ headers, rawBody }: WebhookVerificationInput): Promise<boolean> {
     if (!env.paypal.webhookId) return false;
     const res = await paypalRequest<{ verification_status: string }>(
@@ -234,6 +238,29 @@ export class LivePayPalGateway implements PayPalGateway {
       },
     );
     return res.verification_status === "SUCCESS";
+  }
+}
+
+export async function provideDisputeEvidenceLive(disputeId: string, notes: string): Promise<void> {
+  // provide-evidence is multipart: an `input` JSON part (+ optional evidence files).
+  const form = new FormData();
+  const input = { evidences: [{ evidence_type: "PROOF_OF_FULFILLMENT", notes: notes.slice(0, 2000) }] };
+  form.append("input", new Blob([JSON.stringify(input)], { type: "application/json" }));
+  const res = await fetch(`${PAYPAL_API_BASE}/v1/customer/disputes/${encodeURIComponent(disputeId)}/provide-evidence`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${await getAccessToken()}` },
+    body: form,
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    let parsed: unknown = body;
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      /* keep text */
+    }
+    throw new PayPalApiError(res.status, parsed, res.headers.get("paypal-debug-id") ?? undefined);
   }
 }
 

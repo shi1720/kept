@@ -4,6 +4,7 @@ import { payments, payouts, refunds, webhookEvents } from "@/lib/db/schema";
 import { newId } from "@/lib/ids";
 import { loadMilestone } from "./context";
 import { recordEvent } from "./events";
+import { onPayPalDispute, type PayPalDisputeResource } from "./chargebacks";
 import { captureFunding } from "./funding";
 
 export interface PayPalWebhookEvent {
@@ -87,6 +88,12 @@ async function dispatch(event: PayPalWebhookEvent) {
     case "PAYMENT.CAPTURE.REFUNDED": {
       // The resource is the refund itself.
       if (r.id) await db.update(refunds).set({ status: r.status ?? "COMPLETED" }).where(eq(refunds.paypalRefundId, r.id));
+      return;
+    }
+    case "CUSTOMER.DISPUTE.CREATED":
+    case "CUSTOMER.DISPUTE.UPDATED":
+    case "CUSTOMER.DISPUTE.RESOLVED": {
+      await onPayPalDispute(r as unknown as PayPalDisputeResource, event.event_type);
       return;
     }
     default: {

@@ -164,3 +164,25 @@ describe("escrow lifecycle", () => {
     expect(d.status).toBe("ruling_proposed");
   });
 });
+
+describe("chargeback shield", () => {
+  it("freezes auto-release and submits evidence when the payer disputes with PayPal", async () => {
+    const { onPayPalDispute } = await import("@/lib/domain/chargebacks");
+    const { payments } = await import("@/lib/db/schema");
+    const { milestoneId } = await activePact();
+    await fund(milestoneId);
+    await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
+    await runReview(milestoneId);
+    const [pay] = await db.select().from(payments).where(eq(payments.milestoneId, milestoneId));
+    const res = await onPayPalDispute(
+      { dispute_id: "PP-D-1", reason: "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED", status: "WAITING_FOR_SELLER_RESPONSE", disputed_transactions: [{ seller_transaction_id: pay.paypalCaptureId! }] },
+      "CUSTOMER.DISPUTE.CREATED",
+    );
+    expect(res.matched).toBe(true);
+    const [after] = await db.select().from(payments).where(eq(payments.milestoneId, milestoneId));
+    expect(after.paypalDispute?.evidenceSubmittedAt).toBeTruthy();
+    const report = await fastForwardReview(client, milestoneId);
+    expect(report.autoReleased).not.toContain(milestoneId);
+    expect((await loadMilestone(milestoneId)).milestone.status).toBe("in_review");
+  });
+});

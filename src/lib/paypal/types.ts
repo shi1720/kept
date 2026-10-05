@@ -82,4 +82,6 @@ export interface PayPalGateway {
   createPayout(input: PayoutInput): Promise<PayoutResult>;
   getPayoutBatch(batchId: string): Promise<PayoutResult>;
   verifyWebhook(input: WebhookVerificationInput): Promise<boolean>;
+  /** Disputes API: submit seller evidence (notes) for a payer-filed PayPal dispute. */
+  provideDisputeEvidence(disputeId: string, notes: string): Promise<void>;
 }

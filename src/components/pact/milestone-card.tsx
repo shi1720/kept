@@ -5,6 +5,7 @@ import type { PactDetail } from "@/lib/domain/queries";
 import { formatMoney } from "@/lib/money";
 import { ago } from "@/lib/time";
 import { DisputePanel } from "./dispute-panel";
+import { PayPalDisputeBanner, SimulatePayPalDisputeButton } from "./paypal-dispute";
 import { FundPanel, type PayPalClientConfig } from "./fund-panel";
 import { Countdown, RefereeWorking } from "./live";
 import { FastForwardButton, RefundButton, ReviewActions } from "./review-actions";
@@ -169,6 +170,11 @@ export function MilestoneCard({
               {latest.artifacts.map((a) => <ArtifactChip key={a.id} a={a} />)}
             </div>
           </div>
+        )}
+
+        {m.payment?.paypalDispute && <PayPalDisputeBanner info={m.payment.paypalDispute} />}
+        {demo && m.payment?.paypalCaptureId && !m.payment.paypalDispute && ["in_review", "released", "settled", "funded"].includes(m.status) && (
+          <div><SimulatePayPalDisputeButton milestoneId={m.id} /></div>
         )}
 
         {m.payment && (

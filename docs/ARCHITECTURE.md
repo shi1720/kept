@@ -38,6 +38,7 @@ stateDiagram-v2
 | Refund / split | `POST /v2/payments/captures/{id}/refund` (Server SDK `PaymentsController.refundCapturedPayment`) | `PayPal-Request-Id = kept-refund-<refund row>` |
 | Reconcile | `GET /v1/payments/payouts/{batch}` | sweeper refreshes in-flight items |
 | Webhooks | `POST /v1/notifications/verify-webhook-signature` | event id stored with a unique index; unverified events are stored but never acted on |
+| Payer disputes | `CUSTOMER.DISPUTE.*` webhooks → `POST /v1/customer/disputes/{id}/provide-evidence` | auto-release frozen while open; evidence submitted once |
 | Identity | `/signin/authorize` → `/v1/oauth2/token` → `/v1/identity/oauth2/userinfo` | OAuth `state` cookie; verified payer id stored for payouts |
 
 **Self-healing checkout.** If the buyer approves in the PayPal popup and then closes the tab before the browser calls *capture*, PayPal's `CHECKOUT.ORDER.APPROVED` webhook makes the server capture it anyway. If the browser *did* capture, the webhook is a no-op.

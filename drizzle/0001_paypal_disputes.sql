@@ -1,0 +1,1 @@
+ALTER TABLE `payments` ADD `paypal_dispute` text;

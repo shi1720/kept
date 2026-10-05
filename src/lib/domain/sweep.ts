@@ -1,6 +1,7 @@
 import { and, eq, lt } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { milestones, type User } from "@/lib/db/schema";
+import { OPEN_PAYPAL_DISPUTE } from "./chargebacks";
+import { milestones, payments, type User } from "@/lib/db/schema";
 import { forbidden, invalidState } from "@/lib/errors";
 import { latestVerdict, loadMilestone } from "./context";
 import { openDispute } from "./disputes";
@@ -35,6 +36,8 @@ export async function sweep(now = new Date()): Promise<SweepReport> {
     .where(and(eq(milestones.status, "in_review"), lt(milestones.reviewDeadlineAt, now)));
   for (const m of expired) {
     try {
+      const [pay] = await db.select({ d: payments.paypalDispute }).from(payments).where(eq(payments.milestoneId, m.id)).limit(1);
+      if (OPEN_PAYPAL_DISPUTE(pay?.d)) continue; // frozen while PayPal reviews a payer dispute
       const verdict = await latestVerdict(m.id);
       if (verdict && verdict.overall === "pass" && !verdict.injectionDetected) {
         await settleMilestone(m.id, 100, {
