@@ -5,7 +5,7 @@ import type { User } from "@/lib/db/schema";
 import { latestVerdict, loadMilestone, assertParty } from "@/lib/domain/context";
 import { activeDispute, openDispute, respondToRuling } from "@/lib/domain/disputes";
 import { captureFunding, createFundingOrder } from "@/lib/domain/funding";
-import { createPact, draftToInput, listPactsForUser, sendPact } from "@/lib/domain/pacts";
+import { acceptPact, createPact, draftToInput, listPactsForUser, sendPact } from "@/lib/domain/pacts";
 import { getPactDetail } from "@/lib/domain/queries";
 import { MILESTONE_STATUS_LABEL } from "@/lib/domain/state";
 import { approveMilestone, requestRevision, runReview, submitWork } from "@/lib/domain/work";
@@ -40,7 +40,7 @@ export function buildMcpServer(user: User): McpServer {
     { name: "kept-escrow", version: "1.0.0" },
     {
       instructions:
-        "Kept is escrow with an AI referee, built on PayPal. Use create_pact to turn a job description into a contract with machine-checkable acceptance criteria, send_pact to get a signing link for the other party, create_funding_order to get a PayPal approval link for the paying human, submit_deliverable to deliver work (the AI referee reviews it), and get_pact / get_verdict to follow progress. Never claim money has moved unless a tool result says so.",
+        "Kept is escrow with an AI referee, built on PayPal. Use create_pact to turn a job description into a contract with machine-checkable acceptance criteria, send_pact to get a signing link for the other party (an agent on the other side uses accept_invite), create_funding_order to get a PayPal approval link for the paying human, submit_deliverable to deliver work (the AI referee reviews it), and get_pact / get_verdict to follow progress. Never claim money has moved unless a tool result says so.",
     },
   );
 
@@ -86,6 +86,22 @@ export function buildMcpServer(user: User): McpServer {
         const pact = await sendPact(user, pact_id);
         const link = `${env.appUrl}/invite/${pact.inviteToken}`;
         return ok(`Signed and sent. Share this link with the other party to countersign: ${link}`, { invite_url: link });
+      }),
+  );
+
+  server.registerTool(
+    "accept_invite",
+    {
+      title: "Countersign a pact",
+      description:
+        "Countersign a pact you were invited to (pass the invite URL or its token). Use this when you are the counterparty — e.g. an agent taking on work. The pact becomes active and the client can fund it.",
+      inputSchema: { invite: z.string().describe("Invite URL (…/invite/<token>) or the bare token") },
+    },
+    async ({ invite }) =>
+      safely(async () => {
+        const token = invite.trim().split("/invite/").pop()!.split(/[?#]/)[0];
+        const pact = await acceptPact(user, token);
+        return ok(`Countersigned “${pact.title}”. The pact is sealed; milestones await funding by the client. ${pactUrl(pact.id)}`, { pact_id: pact.id, status: pact.status });
       }),
   );
 

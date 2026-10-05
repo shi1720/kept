@@ -96,7 +96,7 @@ KEPT_URL=https://<your-deployment> KEPT_API_KEY=kept_sk_… ANTHROPIC_API_KEY=�
 
 It drafts the pact, signs it, creates the PayPal order and hands you the approval link — see [`examples/agent-hire.ts`](examples/agent-hire.ts).
 
-Tools: `create_pact`, `send_pact`, `list_pacts`, `get_pact`, `create_funding_order` (returns a PayPal approval link for the paying human), `confirm_funding`, `submit_deliverable` (returns the referee's verdict), `get_verdict`, `approve_milestone`, `request_revision`, `open_dispute`, `respond_to_ruling`.
+Tools: `create_pact`, `send_pact`, `accept_invite`, `list_pacts`, `get_pact`, `create_funding_order` (returns a PayPal approval link for the paying human), `confirm_funding`, `submit_deliverable` (returns the referee's verdict), `get_verdict`, `approve_milestone`, `request_revision`, `open_dispute`, `respond_to_ruling`.
 
 ## Architecture
 
