@@ -27,7 +27,7 @@ export async function activeDispute(milestoneId: string) {
 }
 
 /** Client (or the system, when a failing submission times out) opens mediation. */
-export async function openDispute(user: User | null, milestoneId: string, reason: string) {
+export async function openDispute(user: User | null, milestoneId: string, reason: string, deferAI = false) {
   const { milestone, pact } = await loadMilestone(milestoneId);
   if (user) assertParty(user, pact);
   assertTransition(milestone.status, "dispute");
@@ -60,7 +60,7 @@ export async function openDispute(user: User | null, milestoneId: string, reason
       body: `An issue was raised on “${milestone.title}”. Add your side of the story; the AI mediator will propose a fair split.`,
     });
   });
-  await mediate(id, user?.id);
+  if (!deferAI) await mediate(id, user?.id);
   return loadDispute(id);
 }
 
@@ -71,7 +71,7 @@ export async function mediate(disputeId: string, actorId?: string) {
   const { milestone, pact, criteria } = await loadMilestone(dispute.milestoneId);
   const verdict = await latestVerdict(milestone.id);
   const ruling = await proposeRuling({ pact, milestone, criteria, verdict, dispute, actorId });
-  await db
+  const changed = await db
     .update(disputes)
     .set({
       ruling,
@@ -80,7 +80,8 @@ export async function mediate(disputeId: string, actorId?: string) {
       clientAcceptedAt: null,
       freelancerAcceptedAt: null,
     })
-    .where(and(eq(disputes.id, disputeId), eq(disputes.revision, dispute.revision), inArray(disputes.status, ["open", "ruling_proposed"])));
+    .where(and(eq(disputes.id, disputeId), eq(disputes.revision, dispute.revision), inArray(disputes.status, ["open", "ruling_proposed"]))).returning({id:disputes.id});
+  if (!changed.length) return loadDispute(disputeId);
   await recordEvent(db, {
     pactId: pact.id,
     milestoneId: milestone.id,
@@ -92,7 +93,7 @@ export async function mediate(disputeId: string, actorId?: string) {
   return loadDispute(disputeId);
 }
 
-export async function addStatement(user: User, disputeId: string, statement: string) {
+export async function addStatement(user: User, disputeId: string, statement: string, deferAI = false) {
   const dispute = await loadDispute(disputeId);
   const { pact, milestone } = await loadMilestone(dispute.milestoneId);
   const role = assertParty(user, pact);
@@ -113,7 +114,7 @@ export async function addStatement(user: User, disputeId: string, statement: str
     type: "dispute.statement",
     message: `${user.name} (${role}) added their side of the story`,
   });
-  return mediate(disputeId, user.id);
+  return deferAI ? loadDispute(disputeId) : mediate(disputeId, user.id);
 }
 
 export async function respondToRuling(user: User, disputeId: string, accept: boolean, expectedRevision?: number) {

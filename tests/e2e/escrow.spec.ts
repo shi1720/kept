@@ -111,3 +111,36 @@ test("health, doctor and MCP endpoints respond", async ({ request }) => {
   const unauth = await request.post("/api/mcp", { data: { jsonrpc: "2.0", id: 1, method: "tools/list" } });
   expect(unauth.status()).toBe(401);
 });
+
+test("compiler keeps credit errors visible with a recovery link and preserves the brief", async ({page}) => {
+  await startDemo(page, "client");
+  await page.goto("/app/pacts/new");
+  const brief = "We need a complete brand identity for $5000 with three concepts and two revisions.";
+  await page.getByRole("textbox",{name:"The conversation or job description"}).fill(brief);
+  await page.route("**/api/ai/draft",route=>route.fulfill({status:503,contentType:"application/json",body:JSON.stringify({error:{code:"ai_unavailable",message:"Your included AI credits are used. Add your provider API key in Settings to continue."}})}));
+  await page.getByRole("button",{name:"Compile into a pact"}).click();
+  const recovery = page.getByRole("alert").filter({hasText:"Your included AI credits"});
+  await expect(recovery).toBeVisible();
+  await expect(recovery.getByRole("link",{name:"Open AI settings"})).toHaveAttribute("href","/app/settings");
+  await expect(page.getByRole("textbox",{name:"The conversation or job description"})).toHaveValue(brief);
+});
+
+test("a queued draft survives refresh and resumes without submitting twice", async ({page}) => {
+  await startDemo(page,"client");
+  const brief="Create a $3500 bakery logo package with three concepts and two rounds of revisions.";
+  const body={sourceText:brief,creatorRole:"client"};
+  const actual=await (await page.request.post("/api/ai/draft",{data:body})).json();
+  let requests=0,complete=false;
+  await page.route("**/api/ai/draft",route=>{requests++;return route.fulfill({status:202,contentType:"application/json",body:JSON.stringify({jobId:"job_testresume"})});});
+  await page.route("**/api/ai/jobs/job_testresume",route=>route.fulfill({contentType:"application/json",body:JSON.stringify({status:complete?"succeeded":"running",result:complete?actual:null})}));
+  await page.goto("/app/pacts/new");
+  await page.getByRole("textbox",{name:"The conversation or job description"}).fill(brief);
+  await page.getByRole("button",{name:"Compile into a pact"}).click();
+  await expect(page.getByText("Your request is saved.",{exact:false})).toBeVisible();
+  await page.reload();
+  await page.getByRole("button",{name:"Restore it",exact:true}).click();
+  complete=true;
+  await page.getByRole("button",{name:"Compile into a pact"}).click();
+  await expect(page.getByRole("heading",{name:"Review your pact"})).toBeVisible();
+  expect(requests).toBe(1);
+});

@@ -25,7 +25,7 @@ export function Compiling() {
       </span>
       <div>
         <p className="display text-[30px]">Compiling your pact…</p>
-        <p className="mt-1 text-sm text-ink-3">Turning a conversation into terms both sides can hold each other to.</p>
+        <p className="mt-1 text-sm text-ink-3">Your request is saved. Longer briefs can take a minute or two.</p>
       </div>
       <ol className="flex w-full max-w-sm flex-col gap-2.5 text-left">
         {STEPS.map((s, j) => (

@@ -30,7 +30,7 @@ export async function saveAccountAI(userId: string, provider: ProviderName, mode
 export async function reserveFreeRequest(userId: string) {
   await getClient().execute({sql: "INSERT OR IGNORE INTO ai_accounts (user_id) VALUES (?)", args: [userId]});
   const result = await getClient().execute({sql: "UPDATE ai_accounts SET requests_used=requests_used+1 WHERE user_id=? AND requests_used<5 RETURNING requests_used", args: [userId]});
-  if (!result.rows.length) throw new AppError("ai_unavailable", "Your 5 free AI requests are used. Add your provider API key in Settings to continue.");
+  if (!result.rows.length) throw new AppError("ai_unavailable", "Your included AI credits are used. Add your provider API key in Settings to continue.");
 }
 export async function refundFreeRequest(userId: string) {
   await getClient().execute({sql: "UPDATE ai_accounts SET requests_used=MAX(0, requests_used-1) WHERE user_id=?", args: [userId]});

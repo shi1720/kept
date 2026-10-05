@@ -41,3 +41,10 @@ Configure Cloud Scheduler to POST `/api/cron/sweep` every five minutes with `Aut
 Keep sandbox and real-money environments separate. A demo receipt marked simulator is not a PayPal API receipt. Payouts may be pending or denied by PayPal; show and reconcile their actual status.
 
 The hosted test environment has a `kept-review-sweep` job scheduled every five minutes and a `kept-daily-backup` disk snapshot schedule with seven-day retention. Disk snapshots are crash-consistent; periodically exercise database restoration before relying on them for production recovery.
+
+
+## Durable AI requests
+
+Firebase Hosting limits each request to 60 seconds. AI draft, review, and mediation jobs are persisted in `ai_jobs` and dispatched through a Cloud Tasks queue directly to Cloud Run. Configure `AI_TASK_QUEUE` as the full queue resource and `AI_WORKER_URL` as the direct Cloud Run `/api/internal/ai-worker` URL. Grant the runtime service account `roles/cloudtasks.enqueuer`. The worker uses a dedicated HMAC credential derived from `CRON_SECRET`; never expose it to clients.
+
+The browser receives a job ID and polls an owner-protected endpoint. Reloading and retrying the same brief resumes the saved job through session storage. Active requests are deduplicated; task redelivery does not repeat an operation. The scheduled sweep re-dispatches queued jobs and marks interrupted workers for explicit recovery. A claimed job is not blindly retried after a crash, because provider consumption may already have occurred. Completed job data expires after seven days. Payments, payout approvals, and arbitration are excluded from this queue.

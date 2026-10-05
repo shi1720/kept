@@ -84,6 +84,7 @@ export interface PayPalGateway {
   captureOrder(orderId: string, requestId: string): Promise<CaptureResult>;
   getOrder(orderId: string): Promise<CaptureResult>;
   refundCapture(input: RefundInput): Promise<RefundResult>;
+  getRefund(refundId: string): Promise<RefundResult>;
   createPayout(input: PayoutInput): Promise<PayoutResult>;
   getPayoutBatch(batchId: string): Promise<PayoutResult>;
   verifyWebhook(input: WebhookVerificationInput): Promise<boolean>;

@@ -38,6 +38,11 @@ describe("creative review safety",()=>{
    expect(reconcile([criterion],pack,{...output,criteria:[result]}).overall).not.toBe("pass");
   }
  });
+ it("does not penalize creative work based on unsupported negative judgments",()=>{
+  for(const candidate of [{...output.criteria[0],result:"not_met" as const,confidence:0.2,evidence:""},{...output.criteria[0],result:"partially_met" as const,confidence:0.6,evidence:"I dislike the style"}]) {
+   expect(reconcile([criterion],pack,{...output,criteria:[candidate]}).criteriaResults[0].result).toBe("cannot_verify");
+  }
+ });
  it("blocks empty, uncertain, offline, or manipulated automatic releases",()=>{
   const v={overall:"pass",provider:"gemini",injectionDetected:false,criteriaResults:[{result:"met",confidence:0.95,evidence:"Cited evidence"}]} as Verdict;
   expect(canAutoRelease(v)).toBe(true);

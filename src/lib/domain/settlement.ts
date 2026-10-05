@@ -1,10 +1,11 @@
-import { and, eq, inArray, lt } from "drizzle-orm";
+import { and, eq, inArray, lt, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { ledgerEntries, payouts, payments, refunds, type MilestoneStatus, type Payout, type Refund } from "@/lib/db/schema";
 import { env } from "@/lib/env";
 import { invalidState } from "@/lib/errors";
 import { newId } from "@/lib/ids";
 import { formatMoney, splitByPct } from "@/lib/money";
+import type { RefundResult } from "@/lib/paypal/types";
 import { gatewayFor } from "@/lib/paypal";
 import { hasOpenPayPalDispute } from "./chargebacks";
 import { casMilestone, loadMilestone, loadUser } from "./context";
@@ -195,60 +196,48 @@ export async function executePayout(payoutId: string) {
   }
 }
 
+/** Apply an observed refund status once. Only completed refunds move money in the ledger. */
+export async function applyRefundResult(refundId: string, result: RefundResult, simulated: boolean) {
+  await db.transaction(async tx => {
+    const [r] = await tx.select().from(refunds).where(eq(refunds.id, refundId)).limit(1);
+    if (!r) return;
+    if (r.paypalRefundId && r.paypalRefundId !== result.refundId) throw invalidState("Refund identity changed; reconciliation required");
+    const [booked] = await tx.select({id:ledgerEntries.id}).from(ledgerEntries).where(or(eq(ledgerEntries.reference, `refund:${r.id}`),eq(ledgerEntries.reference,result.refundId))).limit(1);
+    // Late PENDING/FAILED responses must never undo a completed refund.
+    const observed = result.status.toUpperCase();
+    const status = booked || r.status === "COMPLETED" ? "COMPLETED" : observed === "COMPLETED" ? "COMPLETED" : r.status === "NEEDS_RECONCILIATION" || ["FAILED", "CANCELLED"].includes(observed) ? "NEEDS_RECONCILIATION" : observed;
+    await tx.update(refunds).set({paypalRefundId:result.refundId,status,simulated,raw:result.raw}).where(eq(refunds.id,r.id));
+    if (status === "NEEDS_RECONCILIATION" && r.status !== status) {
+      const { pact, milestone } = await loadMilestone(r.milestoneId, tx);
+      const message = `PayPal could not complete the refund for “${milestone.title}”. The refund remains owed and requires manual reconciliation. No replacement refund will be sent automatically.`;
+      await recordEvent(tx, {pactId:pact.id,milestoneId:r.milestoneId,actorKind:"paypal",type:"refund.needs_reconciliation",message,data:{refundId:result.refundId,status:observed}});
+      await notify(tx, [pact.clientId,pact.freelancerId], {pactId:pact.id,title:"Refund needs attention",body:message});
+    }
+    if (status !== "COMPLETED" || booked) return;
+    const [payment] = await tx.select().from(payments).where(eq(payments.id,r.paymentId)).limit(1);
+    const { pact } = await loadMilestone(r.milestoneId, tx);
+    const refunded = payment.refundedCents + r.amountCents;
+    if (refunded > payment.totalCents) throw invalidState("Refund accounting exceeds the captured amount");
+    await tx.update(payments).set({refundedCents:refunded,status:refunded >= payment.totalCents ? "refunded" : "partially_refunded"}).where(eq(payments.id,payment.id));
+    await postJournal(tx,{pactId:pact.id,milestoneId:r.milestoneId,memo:`PayPal refund ${result.refundId} to client`,reference:`refund:${r.id}`,demoWorkspace:pact.demoWorkspace,lines:[{account:"escrow_liability",amountCents:r.amountCents},{account:"paypal_cash",amountCents:-r.amountCents}]});
+    await recordEvent(tx,{pactId:pact.id,milestoneId:r.milestoneId,actorKind:"paypal",type:"refund.sent",message:`PayPal refund completed: ${formatMoney(r.amountCents,pact.currency)} back to the client`,data:{refundId:result.refundId,captureId:payment.paypalCaptureId}});
+  });
+}
+
 export async function executeRefund(refundId: string) {
-  const [r] = await db.select().from(refunds).where(eq(refunds.id, refundId)).limit(1);
-  if (!r || !["QUEUED", "FAILED"].includes(r.status)) return;
-  const [payment] = await db.select().from(payments).where(eq(payments.id, r.paymentId)).limit(1);
-  const { milestone, pact } = await loadMilestone(r.milestoneId);
+  const [r] = await db.select().from(refunds).where(eq(refunds.id,refundId)).limit(1);
+  if (!r || !["QUEUED","FAILED","PENDING"].includes(r.status)) return;
+  const [payment] = await db.select().from(payments).where(eq(payments.id,r.paymentId)).limit(1);
+  const {milestone,pact} = await loadMilestone(r.milestoneId);
   const gateway = gatewayFor(payment);
   try {
-    const res = await gateway.refundCapture({
-      captureId: payment.paypalCaptureId!,
-      amountCents: r.amountCents,
-      currency: pact.currency,
-      note: `Refund from Kept escrow for “${milestone.title}”: ${r.reason}`,
-      requestId: `kept-refund-${r.id}`,
-    });
-    await db.transaction(async (tx) => {
-      await tx
-        .update(refunds)
-        .set({ paypalRefundId: res.refundId, status: res.status, simulated: gateway.mode === "simulator", raw: res.raw })
-        .where(eq(refunds.id, r.id));
-      const refunded = payment.refundedCents + r.amountCents;
-      await tx
-        .update(payments)
-        .set({ refundedCents: refunded, status: refunded >= payment.totalCents ? "refunded" : "partially_refunded" })
-        .where(eq(payments.id, payment.id));
-      await postJournal(tx, {
-        pactId: pact.id,
-        milestoneId: milestone.id,
-        memo: `PayPal refund ${res.refundId} to client`,
-        reference: res.refundId,
-        demoWorkspace: pact.demoWorkspace,
-        lines: [
-          { account: "escrow_liability", amountCents: r.amountCents },
-          { account: "paypal_cash", amountCents: -r.amountCents },
-        ],
-      });
-      await recordEvent(tx, {
-        pactId: pact.id,
-        milestoneId: milestone.id,
-        actorKind: "paypal",
-        type: "refund.sent",
-        message: `PayPal refund ${res.status.toLowerCase()}: ${formatMoney(r.amountCents, pact.currency)} back to the client`,
-        data: { refundId: res.refundId, captureId: payment.paypalCaptureId },
-      });
-    });
+    // Once PayPal created a refund, poll that resource rather than sending another refund.
+    const result = r.paypalRefundId ? await gateway.getRefund(r.paypalRefundId) : await gateway.refundCapture({captureId:payment.paypalCaptureId!,amountCents:r.amountCents,currency:pact.currency,note:`Refund from Kept for “${milestone.title}”: ${r.reason}`,requestId:`kept-refund-${r.id}`});
+    await applyRefundResult(r.id,result,gateway.mode === "simulator");
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    await db.update(refunds).set({ status: "FAILED", raw: { error: msg } }).where(eq(refunds.id, r.id));
-    await recordEvent(db, {
-      pactId: pact.id,
-      milestoneId: milestone.id,
-      actorKind: "paypal",
-      type: "refund.failed",
-      message: `Refund attempt failed and will be retried automatically: ${msg}`,
-    });
+    const message = err instanceof Error ? err.message : String(err);
+    await db.update(refunds).set({status:r.paypalRefundId ? r.status : "FAILED",raw:{error:message}}).where(and(eq(refunds.id,r.id),eq(refunds.status,r.status)));
+    await recordEvent(db,{pactId:pact.id,milestoneId:r.milestoneId,actorKind:"paypal",type:"refund.failed",message:`Refund reconciliation will retry: ${message}`});
   }
 }
 
@@ -318,7 +307,7 @@ export async function reconcileMoneyMovement() {
   const stale = new Date(Date.now() - 60_000);
   const failedPayouts = await db.select().from(payouts).where(and(inArray(payouts.status, ["QUEUED", "FAILED"]), lt(payouts.updatedAt, stale)));
   for (const p of failedPayouts) await executePayout(p.id);
-  const failedRefunds = await db.select().from(refunds).where(inArray(refunds.status, ["QUEUED", "FAILED"]));
+  const failedRefunds = await db.select().from(refunds).where(inArray(refunds.status, ["QUEUED", "FAILED", "PENDING"]));
   for (const r of failedRefunds) await executeRefund(r.id);
 
   const inflight = await db.select().from(payouts).where(inArray(payouts.status, ["PENDING", "PROCESSING", "ONHOLD"]));

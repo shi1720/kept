@@ -5,6 +5,7 @@ const short = customAlphabet(alphabet, 12);
 const long = customAlphabet(alphabet + "ABCDEFGHJKLMNPQRSTUVWXYZ", 32);
 
 export type IdPrefix =
+  | "job"
   | "usr"
   | "atk"
   | "key"

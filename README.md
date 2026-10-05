@@ -20,6 +20,7 @@ This is a **sandbox test release**. No real money moves. Seeded demo payments an
 
 ## What works
 
+- Durable background AI jobs with saved results and refresh recovery on Firebase.
 - AI chat-to-contract drafting, ambiguity checks, scam-pattern warnings, and editable milestones.
 - Signed scope, review guidance, creative references, revision limits, and acceptance criteria.
 - PayPal Orders creation and capture, Payouts, partial refunds, verified webhooks, and a balanced ledger.

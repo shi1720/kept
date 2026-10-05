@@ -1,4 +1,4 @@
-# One-click deploy: https://render.com/deploy?repo=https://github.com/shi1720/paypal-ai
+# One-click deploy: https://render.com/deploy?repo=https://github.com/shi1720/kept
 services:
   - type: web
     name: kept

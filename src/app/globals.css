@@ -139,7 +139,7 @@
 }
 
 /* Workspace: quiet surfaces, a distinct navigation rail, and focused motion. */
-.kept-workspace { background:#f4f7f9; }
+.kept-workspace { background:#f7f3eb; }
 .kept-workspace > aside { background:#fff; border-color:#e2ddcf; }
 .kept-workspace header { background:#fffdf8ed; border-color:#e2ddcf; }
 .kept-workspace .display { font-family:var(--font-sans); font-weight:500; font-size:32px; letter-spacing:-.045em; line-height:1.2; }
@@ -152,12 +152,12 @@
 .kept-workspace main a.group:hover { transform:translateX(3px); }
 @media(prefers-reduced-motion:reduce){.kept-workspace *{animation:none!important;transition:none!important}}
 
-.kept-workspace > aside { background:#172e32; border:0; }
+.kept-workspace > aside { background:#173b30; border:0; }
 .kept-workspace > aside .display { color:#f3faf7; font-size:26px; }
 .kept-workspace > aside nav > p { color:#8fa8ab; }
 .kept-workspace > aside nav a { color:#bdcdcf; padding:11px 13px; }
-.kept-workspace > aside nav a:hover { background:#243e41; color:white; }
-.kept-workspace > aside nav a.bg-card { background:#2a4849; color:#e2fff2; box-shadow:none; }
+.kept-workspace > aside nav a:hover { background:#244b3d; color:white; }
+.kept-workspace > aside nav a.bg-card { background:#315b47; color:#e2fff2; box-shadow:none; }
 .kept-workspace > aside .mt-auto span { color:#99b3b6; }
 .dashboard-stats { background:#fff; border:1px solid var(--color-line); border-radius:16px; overflow:hidden; gap:0; }
 .dashboard-stats > div { border:0; border-radius:0; box-shadow:none; padding:22px 24px; border-right:1px solid var(--color-line); }

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { runReferee } from "@/lib/ai/referee";
-import { db } from "@/lib/db/client";
+import { db, getClient } from "@/lib/db/client";
 import { artifacts, submissions, verdicts, type User } from "@/lib/db/schema";
 import { badRequest, invalidState } from "@/lib/errors";
 import { gatherEvidence } from "@/lib/evidence";
@@ -107,7 +107,7 @@ export async function submitWork(user: User, milestoneId: string, raw: unknown) 
  * Gather evidence, run the referee and open the client's review window.
  * Safe to call repeatedly: it only acts on milestones still in `submitted`.
  */
-export async function runReview(milestoneId: string) {
+export async function runReview(milestoneId: string, expectedSubmissionId?: string) {
   const { milestone, pact, criteria } = await loadMilestone(milestoneId);
   if (milestone.status !== "submitted") return null;
   const [submission] = await db
@@ -117,6 +117,13 @@ export async function runReview(milestoneId: string) {
     .orderBy(desc(submissions.version))
     .limit(1);
   if (!submission) throw invalidState("Nothing has been submitted yet");
+  if (expectedSubmissionId && submission.id !== expectedSubmissionId) throw invalidState("A newer submission superseded this review");
+  // All entry points share this per-submission lease before consuming an AI credit.
+  const claim = newId("job");
+  const claimed = await getClient().execute({sql:"INSERT INTO review_claims(submission_id,token,started_at) VALUES(?,?,?) ON CONFLICT(submission_id) DO UPDATE SET token=excluded.token,started_at=excluded.started_at WHERE review_claims.started_at<? RETURNING token",args:[submission.id,claim,Date.now(),Date.now()-600000]});
+  if (!claimed.rows.length) return null;
+  try {
+  if ((await loadMilestone(milestoneId)).milestone.status !== "submitted") return null;
   const arts = await db.select().from(artifacts).where(eq(artifacts.submissionId, submission.id)).orderBy(asc(artifacts.createdAt));
 
   const started = Date.now();
@@ -166,6 +173,9 @@ export async function runReview(milestoneId: string) {
     });
   });
   return verdictId;
+  } finally {
+    await getClient().execute({sql:"DELETE FROM review_claims WHERE submission_id=? AND token=?",args:[submission.id,claim]});
+  }
 }
 
 /** Client accepts the work: 100% is released via PayPal Payouts. */

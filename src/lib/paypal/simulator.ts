@@ -120,6 +120,15 @@ export class SimulatedPayPalGateway implements PayPalGateway {
     return result;
   }
 
+  async getRefund(refundId: string): Promise<RefundResult> {
+    for (const value of state.requestIds.values()) {
+      const refund = value as RefundResult;
+      if (refund.refundId === refundId) return refund;
+    }
+    if (refundId.startsWith("SIM-RFD-")) return {refundId,status:"COMPLETED",raw:{simulated:true}};
+    throw new AppError("payment_failed", "Refund not found");
+  }
+
   async createPayout(input: PayoutInput): Promise<PayoutResult> {
     if (state.payoutsBySender.has(input.senderBatchId)) {
       throw new AppError("payment_failed", "PayPal USER_BUSINESS_ERROR: Batch with given sender_batch_id already exists");

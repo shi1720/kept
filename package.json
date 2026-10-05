@@ -42,6 +42,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.3",
+    "google-auth-library": "^10.9.1",
     "image-size": "^2.0.4",
     "jose": "^6.2.12",
     "lucide-react": "^1.52.0",

@@ -38,9 +38,9 @@ export function AuthLayout({ title, subtitle, children, showDemo = true }: { tit
           </p>
         </div>
         <div className="auth-stats">
-          <div><div className="num text-xl font-semibold text-paper">71%</div>of freelancers struggle to get paid</div>
-          <div><div className="num text-xl font-semibold text-paper">&lt;1%</div>ever take it to court</div>
-          <div><div className="num text-xl font-semibold text-paper">~60s</div>for an evidence-backed verdict</div>
+          <div><div className="num text-xl font-semibold text-paper">Clear scope</div>before the work begins</div>
+          <div><div className="num text-xl font-semibold text-paper">Both sides</div>sign the same agreement</div>
+          <div><div className="num text-xl font-semibold text-paper">Evidence</div>behind every review</div>
         </div>
       </aside>
     </div>

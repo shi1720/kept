@@ -157,7 +157,7 @@ export function MilestoneCard({
                   ]} />
               )}
               {m.refund && (
-                <Receipt icon={<Undo2 />} title="PayPal refund to client" amount={m.refund.amountCents} lines={[m.refund.status === "COMPLETED" ? "Delivered by PayPal" : `Refund ${m.refund.status.toLowerCase()}`, m.refund.paypalRefundId ? `Refund ${m.refund.paypalRefundId}` : "", m.refund.simulated ? "Simulated" : ""]} />
+                <Receipt icon={<Undo2 />} title="PayPal refund to client" amount={m.refund.amountCents} lines={[m.refund.status === "COMPLETED" ? "Delivered by PayPal" : m.refund.status === "NEEDS_RECONCILIATION" ? "Needs manual reconciliation. Refund remains owed." : `Refund ${m.refund.status.toLowerCase()}`, m.refund.paypalRefundId ? `Refund ${m.refund.paypalRefundId}` : "", m.refund.simulated ? "Simulated" : ""]} />
               )}
             </div>
           </div>

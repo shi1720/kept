@@ -19,7 +19,7 @@ const DRAFTS: DraftOutput[] = [
       {
         title: "Three logo concepts",
         description: "Three distinct logo directions featuring a wheat or concha motif in the bakery's pink palette.",
-        amount: 180,
+        amount: 1500,
         dueInDays: 6,
         criteria: [
           { text: "Presents exactly 3 distinct logo concepts", kind: "objective", check: { ...n, type: "min_files", value: 1 } },
@@ -31,7 +31,7 @@ const DRAFTS: DraftOutput[] = [
       {
         title: "Final logo package",
         description: "The chosen concept refined and exported for print and social media.",
-        amount: 270,
+        amount: 2000,
         dueInDays: 5,
         criteria: [
           { text: "Logo delivered as SVG (vector) and PNG", kind: "objective", check: { ...n, type: "file_types", values: ["svg", "png"] } },
@@ -52,14 +52,14 @@ const DRAFTS: DraftOutput[] = [
       { quote: "a few revisions included", issue: "Revision count is open-ended", suggestion: "2 rounds of revisions on the chosen concept" },
       { quote: "final files for print + social", issue: "Formats and sizes undefined", suggestion: "SVG + PNG ≥ 2000px, plus a 1080×1080 social version" },
       { quote: "before our reopening on the 20th", issue: "Deadline relative to an unstated month, with no buffer for feedback", suggestion: "Concepts in 6 days, final files 5 days after the concept is chosen" },
-      { quote: "budget is like $450?", issue: "Price phrased as a question", suggestion: "$450 total: $180 for concepts, $270 for the final package" },
+      { quote: "budget is like $3,500?", issue: "Price phrased as a question", suggestion: "$3,500 total: $1,500 for concepts, $2,000 for the final package" },
     ],
     riskFlags: [],
     clarityScore: 38,
   },
   {
     title: "Three SEO blog posts for Northwind Bikes",
-    summary: "Sam writes three blog posts for Northwind Bikes on e-bike buying, maintenance and winter commuting, in the brand's friendly voice. $300 per post, delivered over two weeks.",
+    summary: "Sam writes three blog posts for Northwind Bikes on e-bike buying, maintenance and winter commuting, in the brand's friendly voice. $800 per post, delivered over two weeks.",
     currency: "USD",
     clientName: "Priya (Northwind Bikes)",
     freelancerName: "Sam",
@@ -67,7 +67,7 @@ const DRAFTS: DraftOutput[] = [
       {
         title: "Post 1; Choosing your first e-bike",
         description: "A 1,200–1,500 word buyer's guide.",
-        amount: 300,
+        amount: 800,
         dueInDays: 7,
         criteria: [
           { text: "Between 1,200 and 1,500 words", kind: "objective", check: { ...n, type: "min_words", value: 1200 } },
@@ -80,7 +80,7 @@ const DRAFTS: DraftOutput[] = [
       {
         title: "Posts 2 & 3; Maintenance basics and winter commuting",
         description: "Two posts, 1,200–1,500 words each.",
-        amount: 600,
+        amount: 1600,
         dueInDays: 7,
         criteria: [
           { text: "Two posts, each between 1,200 and 1,500 words", kind: "objective", check: { ...n, type: "min_words", value: 2400 } },
@@ -115,7 +115,7 @@ const DRAFTS: DraftOutput[] = [
       {
         title: "Hero and features live",
         description: "Repository set up; hero and features sections deployed to a public preview URL.",
-        amount: 600,
+        amount: 3000,
         dueInDays: 7,
         criteria: [
           { text: "Preview URL is live and publicly reachable", kind: "objective", check: { ...n, type: "url_reachable" } },
@@ -126,7 +126,7 @@ const DRAFTS: DraftOutput[] = [
       {
         title: "Complete page with waitlist",
         description: "Pricing, FAQ and a working waitlist form; performance and tests in place.",
-        amount: 600,
+        amount: 3000,
         dueInDays: 7,
         criteria: [
           { text: "Page contains Pricing (3 tiers) and FAQ sections", kind: "objective", check: { ...n, type: "page_contains", values: ["Pricing", "FAQ"] } },

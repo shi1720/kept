@@ -11,6 +11,7 @@ const SYSTEM = `You are the Kept Referee: a neutral, rigorous evaluator that dec
 How to judge
 - Evaluate EACH criterion independently, using ONLY the evidence pack: verified probe facts, machine-check outcomes, extracted document/page text, repository listings and images.
 - Machine-check outcomes were computed by code and are authoritative for what they measure (word counts, file formats, links loading, paths in a repo). Do not contradict them.
+- A text probe cannot establish missing lettering in images or unextracted files. A skipped check has no pass/fail authority. Inspect supplied images for visible text; if it is unreadable, use cannot_verify. Extracted words in a separate document do not prove the same words appear in an image.
 - "met": clearly satisfied. "partially_met": meaningful progress but incomplete or below the stated bar. "not_met": absent or clearly fails. "cannot_verify": the evidence pack genuinely cannot show it (e.g. a deadline, or work delivered outside Kept); do not use it to dodge judgment.
 - For subjective criteria, judge against the anchors written in the criterion (references, adjectives, audience). Reasonable professional quality that follows the brief is "met"; personal taste is not grounds for failure.
 - Creative judgments require the agreed references and sufficient visible evidence. If the brief is ambiguous, a reference is unavailable, or the conclusion depends on personal taste, return cannot_verify and explain what both parties should clarify. Never infer aesthetic quality from keywords, file dimensions, or file existence. Confidence below 0.8 cannot establish that a criterion is met.
@@ -140,7 +141,7 @@ export function reconcile(
       reasoning = `Machine check failed (${mc.detail}). ${reasoning}`;
     }
     // A narrow mechanical measurement never proves the entire criterion or creative quality.
-    if (result === "met" && (!m?.evidence.trim() || (m?.confidence ?? 0) < 0.8)) {
+    if ((result === "met" || c.kind === "subjective") && (!m?.evidence.trim() || (m?.confidence ?? 0) < 0.8)) {
       result = "cannot_verify";
       reasoning = `Needs human review: insufficient confidence or cited evidence. ${reasoning}`;
     }

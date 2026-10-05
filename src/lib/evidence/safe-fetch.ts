@@ -72,7 +72,7 @@ export async function safeFetch(
       const res = await fetch(url, {
         redirect: "manual",
         signal: AbortSignal.timeout(opts.timeoutMs ?? 10_000),
-        headers: { "User-Agent": "KeptEvidenceBot/1.0 (+https://github.com/shi1720/paypal-ai)", ...opts.headers },
+        headers: { "User-Agent": "KeptEvidenceBot/1.0 (+https://github.com/shi1720/kept)", ...opts.headers },
         cache: "no-store",
       });
       if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {

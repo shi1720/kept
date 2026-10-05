@@ -6,7 +6,7 @@ import { loadMilestone } from "./context";
 import { recordEvent } from "./events";
 import { onPayPalDispute, type PayPalDisputeResource } from "./chargebacks";
 import { captureFunding } from "./funding";
-import { markPayoutReturned, PAYOUT_RETURNED_STATUSES } from "./settlement";
+import { applyRefundResult, markPayoutReturned, PAYOUT_RETURNED_STATUSES } from "./settlement";
 
 export interface PayPalWebhookEvent {
   id: string;
@@ -99,7 +99,10 @@ async function dispatch(event: PayPalWebhookEvent) {
     }
     case "PAYMENT.CAPTURE.REFUNDED": {
       // The resource is the refund itself.
-      if (r.id) await db.update(refunds).set({ status: r.status ?? "COMPLETED" }).where(eq(refunds.paypalRefundId, r.id));
+      if (r.id) {
+        const [refund] = await db.select().from(refunds).where(eq(refunds.paypalRefundId,r.id)).limit(1);
+        if (refund) await applyRefundResult(refund.id,{refundId:r.id,status:r.status ?? "COMPLETED",raw:r},refund.simulated);
+      }
       return;
     }
     case "CUSTOMER.DISPUTE.CREATED":

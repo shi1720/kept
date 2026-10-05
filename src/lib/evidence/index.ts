@@ -246,11 +246,16 @@ export function evaluateCheck(c: Pick<Criterion, "id" | "check">, pack: Evidence
   const allText = pack.documents.map((d) => d.text).join("\n").toLowerCase();
   const out = (passed: boolean, detail: string): MachineCheckOutcome => ({ criterionId: c.id, type: chk.type, passed, detail });
   const contentWords = pack.documents.filter((d) => d.kind !== "repository").reduce((s, d) => s + d.words, 0);
+  // Images and unextracted files may contain visible words that a text probe cannot read.
+  // Absence from the extracted corpus is not evidence of absence from the deliverable.
+  const unmeasuredFiles = pack.images.length > 0 || pack.fileCount > pack.documents.filter(d => d.kind === "document").length;
 
   switch (chk.type) {
     case "min_words":
+      if (unmeasuredFiles && contentWords < (chk.value ?? 0)) return null;
       return out(contentWords >= (chk.value ?? 0), `${contentWords.toLocaleString("en-US")} words delivered (minimum ${chk.value})`);
     case "max_words":
+      if (unmeasuredFiles && contentWords <= (chk.value ?? Infinity)) return null;
       return out(contentWords <= (chk.value ?? Infinity), `${contentWords.toLocaleString("en-US")} words delivered (maximum ${chk.value})`);
     case "min_files": {
       // Inline written deliverables count as delivered documents.
@@ -267,6 +272,7 @@ export function evaluateCheck(c: Pick<Criterion, "id" | "check">, pack: Evidence
       return out(live > 0, live > 0 ? `${live} live link${live === 1 ? "" : "s"} verified` : "No delivered link responded with HTTP 2xx");
     }
     case "page_contains": {
+      if (!pack.pages.length && unmeasuredFiles) return null;
       const pageText = (pack.pages.length ? pack.pages.map((p) => p.text).join("\n") : allText).toLowerCase();
       const missing = (chk.values ?? []).filter((v) => !pageText.includes(v.toLowerCase()));
       return out(missing.length === 0, missing.length ? `Not found on page: ${missing.map((m) => `“${m}”`).join(", ")}` : "All required content found on the page");
@@ -278,6 +284,7 @@ export function evaluateCheck(c: Pick<Criterion, "id" | "check">, pack: Evidence
       return out(missing.length === 0, missing.length ? `Missing in repo: ${missing.join(", ")}` : `Repository contains ${(chk.values ?? []).join(", ")}`);
     }
     case "keywords_present": {
+      if (unmeasuredFiles) return null;
       const missing = (chk.values ?? []).filter((v) => !allText.includes(v.toLowerCase()));
       return out(missing.length === 0, missing.length ? `Missing keywords: ${missing.join(", ")}` : "All keywords present");
     }
@@ -332,7 +339,12 @@ export async function gatherEvidence(artifacts: Artifact[], criteria: Criterion[
     return true;
   });
   pack.totalWords = pack.documents.filter((d) => d.kind !== "repository").reduce((s, d) => s + d.words, 0);
-  pack.checks = criteria.map((c) => evaluateCheck(c, pack)).filter((x): x is MachineCheckOutcome => x !== null);
+  pack.checks = criteria.flatMap(c => {
+    const result = evaluateCheck(c, pack);
+    if (result) return [result];
+    if (c.check.type !== "none") pack.facts.push({probe:"check",label:c.text,detail:`${c.check.type} not measured: the delivered formats are not fully covered by text extraction. This is neither a pass nor a failure. Use visible evidence for image lettering; exact word counts require readable text or human verification.`});
+    return [];
+  });
   if (pack.injection.length) {
     pack.facts.push({
       probe: "security",

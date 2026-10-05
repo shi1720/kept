@@ -35,7 +35,7 @@ turso db tokens create kept       # DATABASE_AUTH_TOKEN
 
 ## 4. Render (5 min)
 
-1. Sign in at <https://render.com> with GitHub and allow access to `shi1720/paypal-ai`.
+1. Sign in at <https://render.com> with GitHub and allow access to `shi1720/kept`.
 2. **New → Blueprint** → select the repo → branch `claude/compassionate-wright-0no9vb` (or `main` once merged). Render reads [`render.yaml`](../render.yaml).
 3. Fill in the prompted environment variables:
 

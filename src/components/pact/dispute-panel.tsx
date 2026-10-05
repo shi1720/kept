@@ -1,5 +1,6 @@
 "use client";
 
+import {AutoRefresh} from "./live";
 import { Bot, Check, Gavel, Scale, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -66,6 +67,8 @@ export function DisputePanel({
         ))}
       </div>
 
+      <AutoRefresh active={dispute.status === "open" && !ruling} intervalMs={4000}/>
+      {dispute.status === "open" && !ruling && <p role="status" className="border-t border-line bg-paper p-5 text-sm text-ink-2">Your statements are saved. The mediator’s proposal will appear here when it is ready.</p>}
       {ruling && (
         <div className="border-t border-line p-5">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">

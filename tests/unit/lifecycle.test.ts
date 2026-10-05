@@ -244,6 +244,59 @@ describe("escrow lifecycle", () => {
     expect(r.status).toBe("COMPLETED");
   });
 
+  it("books a pending refund only on completion and ignores duplicate or late observations", async () => {
+    const { payments, ledgerEntries } = await import("@/lib/db/schema");
+    const { simulator } = await import("@/lib/paypal");
+    const { settleMilestone, executeRefund, applyRefundResult } = await import("@/lib/domain/settlement");
+    const { milestoneId } = await activePact(1500);
+    await fund(milestoneId);
+    const sim = simulator();
+    const create = vi.spyOn(sim, "refundCapture").mockResolvedValue({ refundId: "PENDING-TEST-REFUND", status: "PENDING", raw: {} });
+    const get = vi.spyOn(sim, "getRefund").mockResolvedValue({ refundId: "PENDING-TEST-REFUND", status: "COMPLETED", raw: {} });
+    try {
+      await settleMilestone(milestoneId, 75, { from: ["funded"], actorKind: "system", reason: "Agreed test split" });
+      const [r] = await db.select().from(refunds).where(eq(refunds.milestoneId, milestoneId));
+      expect(r.status).toBe("PENDING");
+      let [payment] = await db.select().from(payments).where(eq(payments.id, r.paymentId));
+      expect(payment.refundedCents).toBe(0);
+      expect(await db.select().from(ledgerEntries).where(eq(ledgerEntries.reference, `refund:${r.id}`))).toHaveLength(0);
+      await executeRefund(r.id);
+      expect(create).toHaveBeenCalledTimes(1);
+      expect(get).toHaveBeenCalledWith("PENDING-TEST-REFUND");
+      await applyRefundResult(r.id, {refundId:"PENDING-TEST-REFUND",status:"COMPLETED",raw:{}}, true);
+      await applyRefundResult(r.id, {refundId:"PENDING-TEST-REFUND",status:"PENDING",raw:{}}, true);
+      [payment] = await db.select().from(payments).where(eq(payments.id, r.paymentId));
+      expect(payment.refundedCents).toBe(37500);
+      const [final] = await db.select().from(refunds).where(eq(refunds.id,r.id));
+      expect(final.status).toBe("COMPLETED");
+      const entries = await db.select().from(ledgerEntries).where(eq(ledgerEntries.reference, `refund:${r.id}`));
+      expect(entries).toHaveLength(2);
+      expect(entries.reduce((sum,e)=>sum+e.amountCents,0)).toBe(0);
+    } finally { create.mockRestore(); get.mockRestore(); }
+  });
+
+  it.each(["FAILED", "CANCELLED"])("keeps a terminal %s refund owed and stops automatic retries", async (status) => {
+    const { payments, ledgerEntries } = await import("@/lib/db/schema");
+    const { simulator } = await import("@/lib/paypal");
+    const { settleMilestone, executeRefund, applyRefundResult } = await import("@/lib/domain/settlement");
+    const { milestoneId } = await activePact(1500);
+    await fund(milestoneId);
+    const create = vi.spyOn(simulator(), "refundCapture").mockResolvedValue({refundId:`TERMINAL-${status}`,status,raw:{}});
+    try {
+      await settleMilestone(milestoneId, 0, {from:["funded"],actorKind:"system",reason:"Test cancellation"});
+      const [r] = await db.select().from(refunds).where(eq(refunds.milestoneId,milestoneId));
+      expect(r.status).toBe("NEEDS_RECONCILIATION");
+      await executeRefund(r.id);
+      expect(create).toHaveBeenCalledTimes(1);
+      await applyRefundResult(r.id,{refundId:`TERMINAL-${status}`,status:"PENDING",raw:{}},true);
+      const [late] = await db.select().from(refunds).where(eq(refunds.id,r.id));
+      expect(late.status).toBe("NEEDS_RECONCILIATION");
+      const [payment] = await db.select().from(payments).where(eq(payments.id,r.paymentId));
+      expect(payment.refundedCents).toBe(0);
+      expect(await db.select().from(ledgerEntries).where(eq(ledgerEntries.reference,`refund:${r.id}`))).toHaveLength(0);
+    } finally {create.mockRestore();}
+  });
+
   it("flags prompt injection and never auto-releases it", async () => {
     const { milestoneId } = await activePact();
     await fund(milestoneId);
@@ -374,4 +427,17 @@ describe("editing a pact", () => {
     const after = await dueDates();
     after.forEach((t, i) => expect(Math.abs(t - before[i])).toBeLessThan(86_400_000 / 2));
   });
+});
+
+it("claims a submission once when background review, manual retry, and recovery race", async () => {
+  const referee=await import("@/lib/ai/referee");
+  const original=referee.runReferee;
+  const spy=vi.spyOn(referee,"runReferee").mockImplementation(async input=>{await new Promise(resolve=>setTimeout(resolve,75));return original(input);});
+  try {
+    const {milestoneId}=await activePact();await fund(milestoneId);
+    const {submissionId}=await submitWork(freelancer,milestoneId,{items:[{kind:"text",name:"post.md",content:longText}]});
+    await Promise.all([runReview(milestoneId,submissionId),runReview(milestoneId),runReview(milestoneId)]);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(await db.select().from(verdicts).where(eq(verdicts.milestoneId,milestoneId))).toHaveLength(1);
+  } finally {spy.mockRestore();}
 });

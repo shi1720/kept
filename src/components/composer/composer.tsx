@@ -78,7 +78,7 @@ function emptyMilestone(n: number): MilestoneDraft {
   return {
     title: `Milestone ${n}`,
     description: "",
-    amount: 100,
+    amount: 1000,
     dueInDays: 7,
     criteria: [{ text: "", kind: "objective", check: { type: "none" } }],
   };
@@ -173,6 +173,7 @@ function clearDraft(key: string) {
 
 export function Composer({ initial, editId, editingSent, defaultRole }: { initial?: PactInput; editId?: string; editingSent?: boolean; defaultRole: Role }) {
   const router = useRouter();
+  const [compileError, setCompileError] = useState<string | null>(null);
   const [stage, setStage] = useState<"source" | "compiling" | "edit">(initial ? "edit" : "source");
   const [role, setRole] = useState<Role>(initial?.creatorRole ?? defaultRole);
   const [source, setSource] = useState("");
@@ -221,6 +222,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
   const counterpartyRole = pact.creatorRole === "client" ? "freelancer" : "client";
 
   const compile = async () => {
+    setCompileError(null);
     setStage("compiling");
     try {
       const res = await api<{ draft: PactInput; ai: AiMeta }>("/api/ai/draft", {
@@ -230,7 +232,8 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
       setAi(res.ai);
       setStage("edit");
       if (res.ai.degraded) toast.warning("The AI provider was unavailable, so a basic offline draft was produced.");
-    } catch {
+    } catch (error) {
+      setCompileError(error instanceof Error ? error.message : "Could not compile the agreement. Please try again.");
       setStage("source");
     }
   };
@@ -320,7 +323,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
             rows={11}
             aria-label="The conversation or job description"
             className="rounded-none border-0 px-6 py-5 text-[14.5px] focus:shadow-none max-sm:h-44"
-            placeholder={"Rosa: hi!! saw your work on insta…\nKai: thank you! what are you looking for?\nRosa: a logo for my bakery, budget is like $450…"}
+            placeholder={"Rosa: hi!! saw your work on insta…\nKai: thank you! what are you looking for?\nRosa: a logo for my bakery, budget is like $3,500…"}
           />
           <div className="flex flex-wrap items-center gap-3 border-t border-line bg-paper/60 px-5 py-3">
             <div className="flex items-center gap-2">
@@ -333,6 +336,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
             </Button>
           </div>
         </Card>
+        {compileError && <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-ink"><p>{compileError}</p><a href="/app/settings" className="mt-2 inline-block font-medium text-jade-700 underline">Open AI settings</a></div>}
         <div>
           <p className="mb-2 text-xs font-medium text-ink-3">Or try an example</p>
           <div className="flex flex-wrap gap-2">

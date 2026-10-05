@@ -1,6 +1,6 @@
 # Kept demo narration
 
-The final demo is shared with the owner for approval before YouTube upload.
+The demo records the actual client and freelancer workflow in PayPal sandbox, with voiceover and captions.
 
 ## Intro
 

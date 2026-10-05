@@ -65,15 +65,15 @@ export function MarketingFooter() {
         </div>
         <div className="flex flex-col gap-3 border-t border-line pt-6 text-[13px] text-ink-2/85 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            Built for the PayPal AI Hackathon by <span className="font-medium text-ink">Shivam Gupta</span>. MIT licensed.
+            Built by <span className="font-medium text-ink">Shivam Gupta</span>. MIT licensed.
           </p>
           <a
-            href="https://github.com/shi1720/paypal-ai"
+            href="https://github.com/shi1720/kept"
             target="_blank"
             rel="noreferrer"
             className="inline-flex w-fit items-center gap-2 rounded-full border border-line-2 bg-card px-3 py-1.5 font-medium text-ink transition-colors hover:bg-paper-2"
           >
-            <FolderGit2 className="size-4" aria-hidden /> shi1720/paypal-ai
+            <FolderGit2 className="size-4" aria-hidden /> shi1720/kept
           </a>
         </div>
         <p className="text-[11.5px] leading-relaxed text-ink-2/75">

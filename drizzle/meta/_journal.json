@@ -36,6 +36,20 @@
       "when": 1791191000000,
       "tag": "0004_ruling_revision",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791202000000,
+      "tag": "0005_ai_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791202100000,
+      "tag": "0006_review_claims",
+      "breakpoints": true
     }
   ]
 }

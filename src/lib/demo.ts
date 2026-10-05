@@ -39,7 +39,7 @@ const none = { type: "none" as const };
 
 const DM_SOURCE = `Maya: Hey Ana! Loved your work for Bluebird Café. We're launching a holiday blend and need packaging art.
 Ana: Thanks! Happy to help. What do you have in mind?
-Maya: Something warm, a bit vintage, fits our Lantern brand. Bag front + a matching sticker. Budget is around $350.
+Maya: Something warm, a bit vintage, fits our Lantern brand. Bag front + a matching sticker. Budget is around $3,500.
 Ana: Works for me. I'll do 2 concepts, you pick one, then I finalize. Print-ready files?
 Maya: Yes please, print-ready. We need it before Nov 20 for the printer.
 Ana: 👍 I'll include a few revisions.`;
@@ -63,7 +63,7 @@ function brandPact(): PactInput {
       {
         title: "Three logo concepts",
         description: "Three distinct logo directions presented on a single board with rationale.",
-        amount: 400,
+        amount: 2000,
         dueInDays: 7,
         criteria: [
           { text: "Presents exactly 3 distinct logo concepts", kind: "objective", check: { type: "min_files", value: 1 } },
@@ -74,7 +74,7 @@ function brandPact(): PactInput {
       {
         title: "Final logo suite & brand guide",
         description: "Final logo in all lockups plus a 6+ page brand guide (colours, type, usage).",
-        amount: 600,
+        amount: 3000,
         dueInDays: 10,
         criteria: [
           { text: "Logo delivered as SVG and PNG", kind: "objective", check: { type: "file_types", values: ["svg", "png"] } },
@@ -102,7 +102,7 @@ function landingPact(): PactInput {
       {
         title: "Live landing page",
         description: "Public landing page with product story, pricing and a pre-order call to action.",
-        amount: 900,
+        amount: 4500,
         dueInDays: 5,
         criteria: [
           { text: "Page is live and publicly reachable", kind: "objective", check: { type: "url_reachable" } },
@@ -132,7 +132,7 @@ function captionsPact(): PactInput {
       {
         title: "Six captions",
         description: "Six captions, 60–120 words each, with 5 relevant hashtags per post.",
-        amount: 240,
+        amount: 1200,
         dueInDays: 4,
         criteria: [
           { text: "Delivers six distinct captions", kind: "objective", check: none },
@@ -323,7 +323,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       terms: { revisionsIncluded: 2, reviewWindowHours: 72, ipTransfer: "Bluebird owns the final files." },
       ambiguities: [],
       riskFlags: [],
-      milestones: [{ title: "Menu boards + takeaway menu", description: "", amount: 520, dueInDays: 10, criteria: [{ text: "Print-ready PDF menus", kind: "objective", check: none }] }],
+      milestones: [{ title: "Menu boards + takeaway menu", description: "", amount: 2600, dueInDays: 10, criteria: [{ text: "Print-ready PDF menus", kind: "objective", check: none }] }],
     });
     await fundSim(pastClient, ms[0].id);
     await db.update(milestones).set({ status: "in_review" }).where(eq(milestones.id, ms[0].id));
@@ -432,7 +432,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
           { point: "Sending a partial set for direction approval was never agreed in the pact", favors: "client" },
         ],
         messageToParties:
-          "Maya, Ana; the work delivered is good but incomplete. We propose releasing 65% ($156) to Ana and refunding 35% ($84) to Maya. If you both accept, PayPal settles it in seconds.",
+          "Maya, Ana; the work delivered is good but incomplete. We propose releasing 65% ($780) to Ana and refunding 35% ($420) to Maya. If you both accept, Kept initiates the PayPal payout and refund, and shows their status.",
         provider: "kept-demo-seed",
         model: "seeded example ruling",
       },
@@ -459,7 +459,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
         {
           title: "12 retouched photos",
           description: "Twelve edited photos delivered as a shared album with before/after notes.",
-          amount: 180,
+          amount: 1800,
           dueInDays: 3,
           criteria: [
             { text: "All 12 photos are delivered", kind: "objective", check: none },
@@ -512,14 +512,14 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
         { quote: "Something warm, a bit vintage", issue: "Style is subjective with no reference", suggestion: "Warm palette (Ember, Cream, Roast) and vintage engraving style, matching the Lantern brand guide" },
         { quote: "a few revisions", issue: "Revision count is open-ended", suggestion: "2 rounds of revisions included" },
         { quote: "Print-ready files?", issue: "Print specs undefined", suggestion: "CMYK PDF with 3mm bleed and 300 DPI PNG" },
-        { quote: "around $350", issue: "Price not final", suggestion: "$350 total: $150 concepts, $200 final artwork" },
+        { quote: "around $3,500", issue: "Price not final", suggestion: "$3,500 total: $1,500 concepts, $2,000 final artwork" },
       ],
       riskFlags: [],
       milestones: [
         {
           title: "Two illustration concepts",
           description: "Two distinct sketches for the bag front and sticker.",
-          amount: 150,
+          amount: 1500,
           dueInDays: 5,
           criteria: [
             { text: "Two distinct concepts, each showing the bag front and the sticker", kind: "objective", check: { type: "min_files", value: 2 } },
@@ -530,7 +530,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
         {
           title: "Print-ready final artwork",
           description: "Final artwork for the chosen concept.",
-          amount: 200,
+          amount: 2000,
           dueInDays: 9,
           criteria: [
             { text: "Bag front delivered as a CMYK PDF with 3mm bleed", kind: "objective", check: { type: "file_types", values: ["pdf"] } },

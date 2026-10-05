@@ -167,6 +167,13 @@ export class LivePayPalGateway implements PayPalGateway {
     }
   }
 
+  async getRefund(refundId: string): Promise<RefundResult> {
+    try {
+      const {result} = await this.payments.getRefund({refundId});
+      return {refundId:result.id!,status:result.status ?? "PENDING",raw:result};
+    } catch (err) { throw toPayPalError(err); }
+  }
+
   async createPayout(input: PayoutInput): Promise<PayoutResult> {
     const body = {
       sender_batch_header: {
