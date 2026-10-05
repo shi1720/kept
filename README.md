@@ -4,7 +4,7 @@ Clear agreements. Shared evidence. PayPal payments.
 
 Kept turns freelance conversations into milestone agreements, helps both sides review delivered work, and carries out agreed settlements through PayPal.
 
-**[Open the app](https://kept-pacts.web.app)**
+**[Open the app](https://kept-pacts.web.app)** · **[Watch the 2:28 demo](https://youtu.be/VjomrcUw4qQ)**
 
 ## Try it
 
