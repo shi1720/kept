@@ -55,6 +55,9 @@ export default async function PactPage({ params }: { params: Promise<{ id: strin
   const gateway = getPayPal();
   const paypal = { mode: gateway.mode, clientId: env.paypal.clientId, sdk: (process.env.PAYPAL_JS_SDK === "v5" ? "v5" : "v6") as "v5" | "v6" };
   const sealed = Boolean(pact.clientSignedAt && pact.freelancerSignedAt);
+  const lastSignature = Math.max(pact.clientSignedAt?.getTime() ?? 0, pact.freelancerSignedAt?.getTime() ?? 0);
+  // eslint-disable-next-line react-hooks/purity -- server component: evaluated once per request
+  const justSealed = sealed && Date.now() - lastSignature < 90_000;
   const demo = Boolean(pact.demoWorkspace && pact.demoWorkspace === user.demoWorkspace);
   const done = milestones.filter((m) => ["released", "settled", "refunded", "cancelled"].includes(m.status)).length;
   const inviteUrl = `${env.appUrl}/invite/${pact.inviteToken}`;
@@ -83,7 +86,12 @@ export default async function PactPage({ params }: { params: Promise<{ id: strin
           </div>
           {sealed && (
             <div className="hidden flex-col items-center justify-center gap-2 lg:flex">
-              <Seal size={104} label={pact.status === "completed" ? "KEPT" : "SEALED"} tone={pact.status === "completed" ? "jade" : "ember"} />
+              <Seal
+                size={104}
+                label={pact.status === "completed" ? "KEPT" : "SEALED"}
+                tone={pact.status === "completed" ? "jade" : "ember"}
+                className={justSealed ? "animate-stamp" : undefined}
+              />
               <span className="text-[11px] uppercase tracking-[0.2em] text-ink-3">{pact.status === "completed" ? "Promise kept" : "Signed by both"}</span>
             </div>
           )}
