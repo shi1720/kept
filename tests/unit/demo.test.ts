@@ -15,7 +15,7 @@ describe("demo workspace", () => {
   it("seeds an isolated world with pacts in every state", async () => {
     const { client, freelancer, workspace } = await createDemoWorkspace();
     const list = await listPactsForUser(client);
-    expect(list.map((p) => p.status).sort()).toEqual(["active", "active", "active", "pending_acceptance"]);
+    expect(list.map((p) => p.status).sort()).toEqual(["active", "active", "active", "active", "pending_acceptance"]);
     expect((await demoCounterpart(client))?.id).toBe(freelancer.id);
 
     const statuses = list.flatMap((p) => p.milestones.map((m) => m.status));
@@ -44,5 +44,16 @@ describe("demo workspace", () => {
     const b = await createDemoWorkspace();
     expect(a.workspace).not.toBe(b.workspace);
     expect(a.client.handle).not.toBe(b.client.handle);
+  });
+});
+
+describe("demo anti-ghosting", () => {
+  it("auto-releases the seeded PASS milestone when the client stays silent", async () => {
+    const { fastForwardReview } = await import("@/lib/domain/sweep");
+    const { client } = await createDemoWorkspace();
+    const list = await listPactsForUser(client);
+    const photos = list.find((p) => p.title.startsWith("Menu photo"))!;
+    const report = await fastForwardReview(client, photos.milestones[0].id);
+    expect(report.autoReleased).toContain(photos.milestones[0].id);
   });
 });

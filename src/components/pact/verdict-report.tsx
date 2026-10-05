@@ -85,7 +85,7 @@ export function VerdictReport({ verdict, criteria, viewerRole }: { verdict: Verd
           </div>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2">{verdict.summary}</p>
           <p className="mt-1.5 text-[11px] text-ink-3">
-            {verdict.provider === "kept-demo-seed" ? "Pre-computed demo verdict" : `${verdict.model} via ${verdict.provider}`} · {(verdict.latencyMs / 1000).toFixed(1)}s · recommends releasing {verdict.recommendedReleasePct}%
+            {verdict.provider === "kept-demo-seed" ? "Seeded example — submit work to run the live referee" : `${verdict.model} via ${verdict.provider}`} · {(verdict.latencyMs / 1000).toFixed(1)}s · recommends releasing {verdict.recommendedReleasePct}%
           </p>
         </div>
       </div>

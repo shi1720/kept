@@ -4,8 +4,11 @@ import { db } from "@/lib/db/client";
 import {
   disputes,
   events,
+  ledgerEntries,
   milestones,
   payments,
+  payouts,
+  refunds,
   pacts,
   submissions,
   artifacts,
@@ -91,7 +94,7 @@ function landingPact(): PactInput {
     creatorRole: "freelancer",
     counterpartyName: "Maya Chen",
     terms: { revisionsIncluded: 1, reviewWindowHours: 48, ipTransfer: "Lantern owns the page and its code once paid." },
-    clarityScore: 71,
+    clarityScore: 41,
     ambiguities: [{ quote: "mobile friendly", issue: "Not testable as written", suggestion: "Page has a viewport meta tag and a single-column layout under 600px" }],
     riskFlags: [],
     milestones: [
@@ -106,6 +109,7 @@ function landingPact(): PactInput {
           { text: "Page has a clear “Pre-order” call to action", kind: "objective", check: { type: "page_contains", values: ["Pre-order"] } },
           { text: "Copy has at least 150 words telling the origin story of the beans", kind: "objective", check: { type: "min_words", value: 150 } },
           { text: "Visual style matches Lantern's warm, craft brand", kind: "subjective", check: none },
+          { text: "Works on phones: a single-column layout that is readable on small screens", kind: "subjective", check: none },
         ],
       },
     ],
@@ -165,7 +169,22 @@ function timeline(startDaysAgo: number, endHoursAgo: number, steps: number) {
 }
 
 async function stampPact(pactId: string, at: Date) {
-  await db.update(pacts).set({ createdAt: new Date(at.getTime() - 86_400_000), updatedAt: at }).where(eq(pacts.id, pactId));
+  const pactEvents = await db.select().from(events).where(eq(events.pactId, pactId));
+  const firstOf = (type: string) => pactEvents.filter((e) => e.type === type).sort((a, b) => +a.createdAt - +b.createdAt)[0]?.createdAt;
+  const created = firstOf("pact.created") ?? new Date(at.getTime() - 86_400_000);
+  const [pactRow] = await db.select().from(pacts).where(eq(pacts.id, pactId)).limit(1);
+  const authorSigned = firstOf("pact.signed");
+  const counterSigned = firstOf("pact.activated");
+  const clientFirst = pactRow.creatorRole === "client";
+  await db
+    .update(pacts)
+    .set({
+      createdAt: created,
+      updatedAt: at,
+      ...(pactRow.clientSignedAt ? { clientSignedAt: (clientFirst ? authorSigned : counterSigned) ?? pactRow.clientSignedAt } : {}),
+      ...(pactRow.freelancerSignedAt ? { freelancerSignedAt: (clientFirst ? counterSigned : authorSigned) ?? pactRow.freelancerSignedAt } : {}),
+    })
+    .where(eq(pacts.id, pactId));
   // Align milestone, payment, submission and verdict timestamps with the seeded event timeline.
   const evts = await db.select().from(events).where(eq(events.pactId, pactId));
   const ms = await db.select().from(milestones).where(eq(milestones.pactId, pactId));
@@ -178,7 +197,19 @@ async function stampPact(pactId: string, at: Date) {
       await db.update(milestones).set({ fundedAt: funded }).where(eq(milestones.id, m.id));
       await db.update(payments).set({ createdAt: funded, capturedAt: funded }).where(eq(payments.milestoneId, m.id));
     }
-    if (resolved) await db.update(milestones).set({ resolvedAt: resolved }).where(eq(milestones.id, m.id));
+    if (resolved) {
+      await db.update(milestones).set({ resolvedAt: resolved }).where(eq(milestones.id, m.id));
+      await db.update(payouts).set({ createdAt: resolved, updatedAt: resolved }).where(eq(payouts.milestoneId, m.id));
+      await db.update(refunds).set({ createdAt: resolved }).where(eq(refunds.milestoneId, m.id));
+    }
+    // Ledger journals carry the time the money actually moved.
+    const lines = await db.select().from(ledgerEntries).where(eq(ledgerEntries.milestoneId, m.id));
+    for (const line of lines) {
+      const when = /funded|processing fee/i.test(line.memo) ? funded : resolved;
+      if (when) await db.update(ledgerEntries).set({ createdAt: when }).where(eq(ledgerEntries.id, line.id));
+    }
+    const opened = pactEvents.find((e) => e.milestoneId === m.id && e.type === "dispute.opened")?.createdAt;
+    if (opened) await db.update(disputes).set({ createdAt: opened }).where(eq(disputes.milestoneId, m.id));
     if (reviewed) {
       const submitted = new Date(reviewed.getTime() - 9 * 60_000);
       await db.update(milestones).set({ submittedAt: submitted }).where(eq(milestones.id, m.id));
@@ -227,6 +258,11 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     avatarHue: 210,
     handle: `jonas-${suffix}`,
   });
+
+  await db
+    .update(users)
+    .set({ createdAt: new Date(Date.now() - 75 * 86_400_000) })
+    .where(eq(users.demoWorkspace, ws));
 
   const fundSim = async (user: User, milestoneId: string) => {
     const order = await createFundingOrder(user, milestoneId, { gateway: sim });
@@ -280,7 +316,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       { kind: "text", name: "concepts-board.md", content: "Concept A — Lantern Glow: a hand-drawn lantern whose flame is a coffee bean. Rationale: warmth, craft, a nod to slow mornings.\n\nConcept B — The Roaster's Mark: monogram L inside a stamped circle, inspired by roaster tins. Rationale: heritage and trust.\n\nConcept C — Night Shift: geometric lantern with long shadows. Rationale: modern, distinctive on shelves." },
     ]);
     await db.insert(verdicts).values({
-      id: newId("vrd"), milestoneId: m1.id, submissionId: s1, provider: "kept-demo-seed", model: "pre-computed demo verdict",
+      id: newId("vrd"), milestoneId: m1.id, submissionId: s1, provider: "kept-demo-seed", model: "seeded example verdict",
       overall: "pass", score: 100, recommendedReleasePct: 100,
       summary: "All three concepts are present and distinct, each with a clear rationale, and the hand-drawn, stamp-inspired styling is consistent with the warm craft references.",
       notesForClient: "Check that concept B scales down to sticker size before choosing it.", notesForFreelancer: "",
@@ -301,7 +337,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     ]);
     await db.update(milestones).set({ status: "in_review", submittedAt: new Date(Date.now() - 20 * 3600000), reviewDeadlineAt: new Date(Date.now() + 52 * 3600000) }).where(eq(milestones.id, m2.id));
     await db.insert(verdicts).values({
-      id: newId("vrd"), milestoneId: m2.id, submissionId: s2, provider: "kept-demo-seed", model: "pre-computed demo verdict",
+      id: newId("vrd"), milestoneId: m2.id, submissionId: s2, provider: "kept-demo-seed", model: "seeded example verdict",
       overall: "partial", score: 81, recommendedReleasePct: 85,
       summary: "The brand guide is thorough — HEX palette, typography and clear-space rules are all specified and single-colour use is shown. However, the SVG and PNG logo files themselves were not attached to this submission.",
       notesForClient: "Everything in the guide checks out. Ask Ana to attach the SVG/PNG files before approving, or approve if you received them by email.",
@@ -336,8 +372,8 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     const { criteria: cc } = await loadMilestone(m.id);
     const sub = await addSubmission(m.id, "Here are the captions!", [{ kind: "text", name: "captions.txt", content: CAPTIONS }]);
     await db.insert(verdicts).values({
-      id: newId("vrd"), milestoneId: m.id, submissionId: sub, provider: "kept-demo-seed", model: "pre-computed demo verdict",
-      overall: "partial", score: 56, recommendedReleasePct: 60,
+      id: newId("vrd"), milestoneId: m.id, submissionId: sub, provider: "kept-demo-seed", model: "seeded example verdict",
+      overall: "partial", score: 56, recommendedReleasePct: 65,
       summary: "Four of the six agreed captions were delivered. Those four are on-voice and mostly within length; caption 3 is too short (19 words) and has 5 hashtags.",
       notesForClient: "Four usable captions were delivered; two are missing.",
       notesForFreelancer: "Deliver captions 5 and 6, and extend caption 3 to at least 60 words.",
@@ -371,12 +407,65 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
         messageToParties:
           "Maya, Ana — the work delivered is good but incomplete. We propose releasing 65% ($156) to Ana and refunding 35% ($84) to Maya. If you both accept, PayPal settles it in seconds.",
         provider: "kept-demo-seed",
-        model: "pre-computed demo ruling",
+        model: "seeded example ruling",
       },
     });
     await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorId: client.id, actorKind: "user", type: "dispute.opened", message: "Maya Chen raised an issue: “We agreed on six captions and only got four.” Funds stay frozen in escrow." });
     await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorKind: "ai", type: "dispute.ruling_proposed", message: "AI mediator proposed releasing 65% to the freelancer and refunding 35% to the client" });
     await stampPact(pact.id, new Date(Date.now() - 2 * 3_600_000));
+  }
+
+  /* -- E: photo retouching — PASS verdict, waiting on Maya (anti-ghosting demo) */
+  {
+    setEventClock(timeline(4, 30, 6));
+    const { pact, ms } = await seal(client, freelancer, {
+      title: "Menu photo retouching (12 photos)",
+      summary: "Colour-correct and retouch 12 café menu photos for the new holiday menu, exported for web.",
+      currency: "USD",
+      creatorRole: "client",
+      counterpartyName: "Ana Reyes",
+      terms: { revisionsIncluded: 1, reviewWindowHours: 48, ipTransfer: "Lantern owns the edited photos once paid." },
+      clarityScore: 77,
+      ambiguities: [{ quote: "make them pop", issue: "Subjective with no reference", suggestion: "Warm white balance and consistent exposure across all 12 photos" }],
+      riskFlags: [],
+      milestones: [
+        {
+          title: "12 retouched photos",
+          description: "Twelve edited photos delivered as a shared album with before/after notes.",
+          amount: 180,
+          dueInDays: 3,
+          criteria: [
+            { text: "All 12 photos are delivered", kind: "objective", check: none },
+            { text: "Each photo has a short before/after note", kind: "objective", check: none },
+            { text: "Warm, consistent white balance across the set", kind: "subjective", check: none },
+          ],
+        },
+      ],
+    });
+    const m = ms[0];
+    await fundSim(client, m.id);
+    const { criteria: ec } = await loadMilestone(m.id);
+    const notes = Array.from({ length: 12 }, (_, i) => `${i + 1}. ${["Flat white", "Holiday Blend pour-over", "Cardamom bun", "Iced oat latte", "Espresso tonic", "Ginger loaf", "Cortado", "Chai", "Mocha", "Almond croissant", "Cold brew", "Gift box"][i]} — warmed white balance (+300K), lifted shadows, removed counter glare.`).join("\n");
+    const sub = await addSubmission(m.id, "All 12 are in the album — notes below.", [
+      { kind: "text", name: "retouching-notes.md", content: `Album: lantern-menu-photos (12 images, 2400×1600 JPG)\n\n${notes}` },
+    ]);
+    await db.insert(verdicts).values({
+      id: newId("vrd"), milestoneId: m.id, submissionId: sub, provider: "kept-demo-seed", model: "seeded example verdict",
+      overall: "pass", score: 100, recommendedReleasePct: 100,
+      summary: "All twelve photos are accounted for, each with a before/after note, and the notes describe a consistent warm white-balance treatment across the set.",
+      notesForClient: "Everything agreed was delivered. If you don't respond within the review window, the payment is released automatically.",
+      notesForFreelancer: "",
+      criteriaResults: v(ec.map((c) => c.id), [
+        ["met", 0.95, "Notes numbered 1–12, one per photo", "Twelve photos are listed."],
+        ["met", 0.93, "“warmed white balance (+300K), lifted shadows, removed counter glare”", "Every entry has a before/after note."],
+        ["met", 0.82, "Same +300K warm treatment applied to all 12", "The treatment is consistent across the set."],
+      ]),
+      evidence: [{ probe: "text", label: "retouching-notes.md", detail: "Inline text · 214 words", ok: true }],
+      latencyMs: 7600,
+    });
+    await db.update(milestones).set({ status: "in_review", reviewDeadlineAt: new Date(Date.now() + 30 * 3_600_000) }).where(eq(milestones.id, m.id));
+    await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorKind: "ai", type: "review.completed", message: "AI referee: PASS — 3/3 criteria met, score 100/100" });
+    await stampPact(pact.id, new Date(Date.now() - 18 * 3_600_000));
   }
 
   /* -- D: packaging — sent by Maya, waiting for Ana's signature --------- */

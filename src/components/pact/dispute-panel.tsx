@@ -71,7 +71,7 @@ export function DisputePanel({
           <div className="flex items-center gap-2">
             <Bot className="size-4 text-sky-600" />
             <span className="text-[13.5px] font-semibold">AI mediator’s proposal</span>
-            <span className="text-[11px] text-ink-3">{ruling.provider === "kept-demo-seed" ? "pre-computed demo ruling" : ruling.model}</span>
+            <span className="text-[11px] text-ink-3">{ruling.provider === "kept-demo-seed" ? "seeded example — add a statement to run the live mediator" : ruling.model}</span>
           </div>
           <div className="mt-4">
             <div className="flex h-11 overflow-hidden rounded-xl text-[13px] font-medium">
