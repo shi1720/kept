@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <NavLink href="/app/pacts/new" icon={<PlusCircle />}>New pact</NavLink>
           <NavLink href="/app/developers" icon={<Code2 />}>Agents & API</NavLink>
           <NavLink href="/app/settings" icon={<Settings />}>Settings</NavLink>
-          {user.role === "admin" && <NavLink href="/admin" icon={<ShieldHalf />}>Ops console</NavLink>}
+          {(user.role === "admin" || user.demoWorkspace) && <NavLink href="/admin" icon={<ShieldHalf />}>Ops console</NavLink>}
         </nav>
         <div className="mt-auto space-y-4">
           <div className="rounded-2xl border border-line bg-card p-4">
@@ -45,7 +45,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <UserMenu name={user.name} email={user.email} hue={user.avatarHue} handle={user.handle} />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8 sm:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-28 pt-8 sm:px-8 lg:pb-8">{children}</main>
+        <nav className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-line bg-paper/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 backdrop-blur-md lg:hidden">
+          {[
+            { href: "/app", icon: <LayoutDashboard />, label: "Overview" },
+            { href: "/app/pacts/new", icon: <PlusCircle />, label: "New pact" },
+            { href: "/app/developers", icon: <Code2 />, label: "Agents" },
+            ...(user.role === "admin" || user.demoWorkspace ? [{ href: "/admin", icon: <ShieldHalf />, label: "Ops" }] : []),
+            { href: "/app/settings", icon: <Settings />, label: "Settings" },
+          ].map((i) => (
+            <Link key={i.href} href={i.href} className="flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-[10.5px] font-medium text-ink-2 [&_svg]:size-5">
+              {i.icon}
+              {i.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   );

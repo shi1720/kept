@@ -33,7 +33,7 @@ export function PersonaSwitch({ current, other, otherRole }: { current: string; 
   const [pending, start] = useTransition();
   return (
     <div className="flex items-center gap-3 rounded-full border border-ember-100 bg-ember-50 py-1 pl-3 pr-1 text-[13px] text-ember-700">
-      <span className="hidden sm:inline">
+      <span className="hidden md:inline">
         Demo · you are <b>{current}</b>
       </span>
       <Button
