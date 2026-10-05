@@ -1,12 +1,14 @@
 import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { ensureMigrated } from "@/lib/db/migrate";
+import { projectCategory } from "./categories";
 import { disputes, milestones, pacts, payouts, users, verdicts, type Milestone, type MilestoneStatus } from "@/lib/db/schema";
 
 /**
- * Public track record ("/u/<handle>"). Everything here is safe to show
- * logged-out: pact titles, amounts, outcomes, dates and counterpart *first
- * names* only. No emails, deliverables, statements or chat sources.
+ * Public track record ("/u/<handle>"). Everything here is safe to show logged-out: project
+ * categories, amounts, outcomes, scores and dates. The other party never agreed to be listed,
+ * so pact titles and counterpart names are not included; neither are emails, deliverables,
+ * statements or chat sources.
  */
 
 export type ProfileRole = "client" | "freelancer";
@@ -15,9 +17,9 @@ export type RecordOutcome = "paid_in_full" | "settled" | "refunded" | "in_progre
 
 export interface TrackRecordItem {
   id: string;
+  /** A coarse category ("Logo & brand identity"), never the pact's own title. */
   title: string;
   role: ProfileRole;
-  counterpart: string | null;
   currency: string;
   amountCents: number;
   releasedCents: number;
@@ -70,7 +72,7 @@ const DELIVERED: MilestoneStatus[] = ["released", "settled"];
 const RESOLVED: MilestoneStatus[] = ["released", "settled", "refunded"];
 const FUNDED_EVER: MilestoneStatus[] = ["funded", "submitted", "in_review", "disputed", "released", "settled", "refunded"];
 
-const firstName = (name: string | null | undefined) => (name ? name.trim().split(/\s+/)[0] || null : null);
+const publicTitle = (title: string | null | undefined) => (title && projectCategory(title)) || "Freelance project";
 
 function releasedShare(m: Milestone): number {
   if (m.status === "released") return 100;
@@ -92,9 +94,8 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
   const pactIds = pactRows.map((p) => p.id);
   const ms = pactIds.length ? await db.select().from(milestones).where(inArray(milestones.pactId, pactIds)) : [];
   const msIds = ms.map((m) => m.id);
-  const counterpartIds = [...new Set(pactRows.map((p) => (p.clientId === user.id ? p.freelancerId : p.clientId)).filter((x): x is string => Boolean(x)))];
 
-  const [pyos, verds, disps, others] = await Promise.all([
+  const [pyos, verds, disps] = await Promise.all([
     msIds.length ? db.select({ milestoneId: payouts.milestoneId, amountCents: payouts.amountCents }).from(payouts).where(inArray(payouts.milestoneId, msIds)) : [],
     msIds.length
       ? db
@@ -118,10 +119,8 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
           .where(inArray(disputes.milestoneId, msIds))
           .orderBy(desc(disputes.createdAt))
       : [],
-    counterpartIds.length ? db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, counterpartIds)) : [],
   ]);
 
-  const nameOf = new Map(others.map((o) => [o.id, o.name]));
   const pactOf = new Map(ms.map((m) => [m.id, pactRows.find((p) => p.id === m.pactId)!]));
   const roleIn = (pactId: string): ProfileRole => (pactRows.find((p) => p.id === pactId)?.freelancerId === user.id ? "freelancer" : "client");
 
@@ -151,7 +150,7 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
     } else if (d.status === "escalated") resolution = "With Kept arbitration";
     else if (d.status === "ruling_proposed") resolution = "AI mediator has proposed a split";
     else resolution = "In mediation";
-    return { pactTitle: pact?.title ?? "Pact", status: d.status, resolution, date: d.resolvedAt ?? d.createdAt };
+    return { pactTitle: publicTitle(pact?.title), status: d.status, resolution, date: d.resolvedAt ?? d.createdAt };
   });
 
   const record: TrackRecordItem[] = pactRows
@@ -160,7 +159,6 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
       const resolved = pms.filter((m) => RESOLVED.includes(m.status));
       if (p.status !== "completed" && resolved.length === 0) return null;
       const role = roleIn(p.id);
-      const counterpartId = role === "freelancer" ? p.clientId : p.freelancerId;
       const amountCents = pms.filter((m) => m.status !== "cancelled").reduce((s, m) => s + m.amountCents, 0);
       const releasedCents = pyos.filter((y) => pms.some((m) => m.id === y.milestoneId)).reduce((s, y) => s + y.amountCents, 0);
       const weight = resolved.reduce((s, m) => s + m.amountCents, 0);
@@ -171,9 +169,8 @@ export async function getPublicProfile(handle: string): Promise<PublicProfile | 
       const dates = resolved.map((m) => m.resolvedAt?.getTime() ?? 0).filter(Boolean);
       return {
         id: p.id,
-        title: p.title,
+        title: publicTitle(p.title),
         role,
-        counterpart: firstName((counterpartId && nameOf.get(counterpartId)) || p.counterpartyName),
         currency: p.currency,
         amountCents,
         releasedCents,

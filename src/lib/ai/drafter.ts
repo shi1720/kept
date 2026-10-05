@@ -1,4 +1,5 @@
 import { draftSchema, type DraftOutput } from "./schemas";
+import { PROJECT_CATEGORIES } from "@/lib/domain/categories";
 import { generateWithFallback, type Generated } from "./provider";
 
 const SYSTEM = `You are Kept's contract compiler. Kept is an escrow service where a neutral AI referee later checks delivered work against the acceptance criteria you write today. Disputes almost always come from vague scope, so your job is to turn an informal deal (a description or a pasted DM/email thread between a client and a freelancer) into a precise, fair, machine-checkable pact.
@@ -85,17 +86,7 @@ const RISKS: [RegExp, "low" | "medium" | "high", string, string][] = [
   [/(free|unpaid) (test|sample|trial)/i, "medium", "Unpaid test work", "Unpaid 'tests' are often used to extract free work."],
 ];
 
-const DELIVERABLES: [RegExp, string][] = [
-  [/landing page|website|web ?site|homepage/i, "Website / landing page"],
-  [/logo|brand identity|branding/i, "Logo & brand identity"],
-  [/blog posts?|articles?/i, "Blog articles"],
-  [/captions?|social posts?|instagram/i, "Social media content"],
-  [/illustrations?|packaging|artwork/i, "Illustration & artwork"],
-  [/video|edit(ing)? footage|reel/i, "Video editing"],
-  [/\bapp\b|mobile app|api|backend|frontend/i, "Software development"],
-  [/translat/i, "Translation"],
-  [/copy(writing)?|newsletter|email sequence/i, "Copywriting"],
-];
+const DELIVERABLES = PROJECT_CATEGORIES;
 
 export function offlineDraft(source: string, hintedTotal?: number): DraftOutput {
   // Drop chat speaker prefixes ("Maya: …", "[10:42] dev_omar: …") so the text reads as a brief.

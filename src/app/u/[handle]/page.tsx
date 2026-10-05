@@ -89,7 +89,7 @@ export default async function PublicProfilePage({ params }: Props) {
         {isOwner && (
           <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl border border-dashed border-jade-300 bg-jade-50/70 px-4 py-3 text-[13px] text-jade-700">
             <BadgeCheck className="size-4 shrink-0" />
-            <span className="min-w-0 flex-1 basis-[240px]">This is your public page. Anyone with the link sees exactly this — no emails, deliverables or private messages.</span>
+            <span className="min-w-0 flex-1 basis-[240px]">This is your public page. Anyone with the link sees exactly this: categories, amounts and outcomes. Pact titles, the other party’s name, emails, deliverables and messages stay private.</span>
             <a href="#badge" className="shrink-0 pl-7 font-medium underline-offset-4 hover:underline sm:pl-0">Add the badge to your bio →</a>
           </div>
         )}
@@ -244,7 +244,7 @@ function RecordRow({ item }: { item: TrackRecordItem }) {
         <p className="truncate text-[15px] font-medium text-ink">{item.title}</p>
         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-ink-3">
           <span>
-            {item.role === "freelancer" ? "Delivered for" : "Hired"} {item.counterpart ?? "a Kept member"}
+            {item.role === "freelancer" ? "Delivered for a client" : "Hired a freelancer"}
           </span>
           <span aria-hidden>·</span>
           <span>{fmtDate(item.date)}</span>
