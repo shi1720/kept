@@ -93,8 +93,25 @@
 <section class="slide dark">
   <div class="glow1"></div>
   <div class="kicker" style="position:relative">The insight</div>
-  <h2 class="serif" style="position:relative;font-size:104px">Escrow was never the hard part.<br/><i style="color:#7fbea8">The judge was.</i></h2>
-  <p class="lead" style="position:relative;font-size:36px">A neutral judge that reads the agreement, looks at the work and decides — cheaply, quickly, with receipts. In 2026 an LLM can be that judge, if you give it a contract written to be checked, evidence computed by code, and a payment rail that can pay, refund or split.</p>
+  <h2 class="serif" style="position:relative;font-size:96px">An AI judge is only as fair<br/>as the <i style="color:#7fbea8">contract it reads.</i></h2>
+  <p class="lead" style="position:relative;font-size:32px">Bolting an LLM onto escrow doesn't work: a DM that says "make it pop" can't be judged by anyone. Kept fixes the contract first, then lets the model decide.</p>
+  <div class="grid" style="position:relative;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:56px">
+    <div style="border:1px solid rgba(250,248,243,.14);border-radius:24px;padding:34px;background:rgba(250,248,243,.04)">
+      <p style="font-size:22px;letter-spacing:.14em;color:#f0a37a">1 · BEFORE ANYONE PAYS</p>
+      <p style="font-size:30px;font-weight:600;color:#fff;margin-top:12px">Contracts written to be checked</p>
+      <p style="font-size:22px;line-height:1.45;color:rgba(250,248,243,.7);margin-top:10px">"A few revisions" becomes "2 rounds". "SEO optimised" becomes named keywords. Each brief gets a clarity score.</p>
+    </div>
+    <div style="border:1px solid rgba(250,248,243,.14);border-radius:24px;padding:34px;background:rgba(250,248,243,.04)">
+      <p style="font-size:22px;letter-spacing:.14em;color:#f0a37a">2 · WHEN WORK ARRIVES</p>
+      <p style="font-size:30px;font-weight:600;color:#fff;margin-top:12px">Code measures, the model judges</p>
+      <p style="font-size:22px;line-height:1.45;color:rgba(250,248,243,.7);margin-top:10px">Probes count words, load links and read repos. When the facts disagree with the model, the facts win.</p>
+    </div>
+    <div style="border:1px solid rgba(250,248,243,.14);border-radius:24px;padding:34px;background:rgba(250,248,243,.04)">
+      <p style="font-size:22px;letter-spacing:.14em;color:#f0a37a">3 · WHEN SOMEONE GOES QUIET</p>
+      <p style="font-size:30px;font-weight:600;color:#fff;margin-top:12px">Silence defaults to the evidence</p>
+      <p style="font-size:22px;line-height:1.45;color:rgba(250,248,243,.7);margin-top:10px">Passing work is released when the window closes. Failing work goes to mediation. PayPal moves the money either way.</p>
+    </div>
+  </div>
 </section>
 
 <!-- 5. Product -->
@@ -114,8 +131,10 @@
 <!-- 6. Demo screenshot -->
 <section class="slide" style="padding:80px 120px">
   <div class="kicker">The product</div>
-  <div style="display:grid;grid-template-columns: 1.55fr 1fr; gap: 60px; margin-top: 30px; align-items:center; flex:1">
-    <img class="shot" src="../screenshots/verdict.png" alt="AI referee verdict" />
+  <div style="display:grid;grid-template-columns: 1.55fr 1fr; gap: 60px; margin-top: 30px; align-items:center; flex:1; min-height:0">
+    <div style="max-height:840px;overflow:hidden;border-radius:24px;-webkit-mask-image:linear-gradient(to bottom,#000 85%,transparent);mask-image:linear-gradient(to bottom,#000 85%,transparent)">
+      <img class="shot" src="../screenshots/verdict.png" alt="AI referee verdict" style="display:block;width:100%" />
+    </div>
     <div>
       <h2 class="serif" style="font-size:76px">Every ruling shows its work.</h2>
       <p class="lead" style="font-size:28px">A score computed in code, a result per criterion, the exact evidence quoted, machine checks that override the model — and a red flag when a deliverable tries to talk to the referee.</p>
@@ -167,15 +186,15 @@
 <section class="slide">
   <div class="kicker">Business model</div>
   <h2 class="serif">Freelancers keep 100%.</h2>
-  <div class="grid" style="grid-template-columns: 1.1fr 1fr; gap: 60px">
+  <div class="grid" style="grid-template-columns: 1.45fr 1fr; gap: 50px">
     <div class="card">
       <p style="font-size:24px;color:var(--ink3)">Unit economics · $300 milestone · client pays $320.37 all-in</p>
       <table style="font-size:24px;margin-top:20px">
-        <tr><td></td><td style="text-align:right" class="muted">Domestic</td><td style="text-align:right" class="muted">Cross-border</td></tr>
-        <tr><td>Kept fee (2.9%, paid by client)</td><td style="text-align:right">$8.70</td><td style="text-align:right">$8.70</td></tr>
-        <tr><td>PayPal Payouts fee</td><td style="text-align:right">−$0.25</td><td style="text-align:right">−$6.00</td></tr>
-        <tr><td>AI compile + referee</td><td style="text-align:right">≈ −$0.30</td><td style="text-align:right">≈ −$0.30</td></tr>
-        <tr class="us"><td>Contribution</td><td style="text-align:right">$8.15 · 94%</td><td style="text-align:right">$2.40 · 28%</td></tr>
+        <tr><td></td><td style="text-align:right;white-space:nowrap" class="muted">Domestic</td><td style="text-align:right;white-space:nowrap" class="muted">Cross-border</td></tr>
+        <tr><td>Kept fee (2.9%, client pays)</td><td style="text-align:right;white-space:nowrap">$8.70</td><td style="text-align:right;white-space:nowrap">$8.70</td></tr>
+        <tr><td>PayPal Payouts fee</td><td style="text-align:right;white-space:nowrap">−$0.25</td><td style="text-align:right;white-space:nowrap">−$6.00</td></tr>
+        <tr><td>AI compile + referee</td><td style="text-align:right;white-space:nowrap">≈ −$0.30</td><td style="text-align:right;white-space:nowrap">≈ −$0.30</td></tr>
+        <tr class="us"><td>Contribution</td><td style="text-align:right;white-space:nowrap">$8.15 · 94%</td><td style="text-align:right;white-space:nowrap">$2.40 · 28%</td></tr>
       </table>
       <p style="font-size:19px;color:var(--ink3);margin-top:16px">Cross-border Payouts cost 2% (cap $20). Production on delayed disbursement makes the freelancer the payee — no Payouts leg.</p>
     </div>
