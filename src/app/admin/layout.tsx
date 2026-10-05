@@ -6,6 +6,7 @@ import { ModePills } from "@/components/app/mode-pills";
 import { NavLink, NotificationBell, UserMenu } from "@/components/app/shell-client";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
+import { loginRedirect } from "@/lib/auth/next-path";
 import { getCurrentUser } from "@/lib/auth/session";
 import { resolveOpsScope } from "@/lib/domain/ops";
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: { default: "Ops console", template: "
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/admin");
+  if (!user) redirect(await loginRedirect("/admin"));
   const scope = resolveOpsScope(user);
   if (!scope) redirect("/app");
 

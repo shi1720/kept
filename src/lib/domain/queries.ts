@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, ne, asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
   artifacts,
@@ -128,10 +128,13 @@ export interface ActionItem {
 
 export async function getDashboard(user: User) {
   const list = await listPactsForUser(user);
-  const invites = await db
-    .select()
-    .from(pacts)
-    .where(and(eq(pacts.status, "pending_acceptance"), eq(pacts.counterpartyEmail, user.email)));
+  // Email-addressed invites carry their invite token, so they're only shown to a verified owner of the address.
+  const invites = user.emailVerifiedAt
+    ? await db
+        .select()
+        .from(pacts)
+        .where(and(eq(pacts.status, "pending_acceptance"), eq(pacts.counterpartyEmail, user.email), ne(pacts.creatorId, user.id)))
+    : [];
 
   const allMs = list.flatMap((p) => p.milestones.map((m) => ({ ...m, pact: p })));
   const msIds = allMs.map((m) => m.id);

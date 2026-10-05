@@ -60,6 +60,14 @@ export const env = {
     platformFeeMinCents: int("PLATFORM_FEE_MIN_CENTS", 100),
   },
 
+  email: {
+    /** Resend (https://resend.com, free tier) API key. Without it, emails are logged instead of sent. */
+    resendKey: str("RESEND_API_KEY"),
+    from: str("EMAIL_FROM", "Kept <onboarding@resend.dev>"),
+    /** Tests/local dev only: also write every email as a JSON file into this folder. */
+    outboxDir: str("EMAIL_OUTBOX_DIR"),
+  },
+
   demo: {
     enabled: str("DEMO_MODE", "true") === "true",
   },
@@ -72,6 +80,8 @@ if (
 ) {
   throw new Error("SESSION_SECRET must be set in production");
 }
+
+export const emailConfigured = () => Boolean(env.email.resendKey);
 
 export const paypalConfigured = () => Boolean(env.paypal.clientId && env.paypal.clientSecret);
 

@@ -15,6 +15,6 @@ export const POST = handler(async (req) => {
   const { as } = body.parse(await req.json().catch(() => ({})));
   const { client, freelancer } = await createDemoWorkspace();
   const user = as === "client" ? client : freelancer;
-  await setSessionCookie(user.id);
+  await setSessionCookie(user);
   return { user: { id: user.id, name: user.name } };
 });

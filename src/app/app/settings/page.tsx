@@ -1,9 +1,10 @@
 import { and, eq, sql } from "drizzle-orm";
-import { ArrowUpRight, FlaskConical, Hourglass, UserRound, Wallet } from "lucide-react";
+import { ArrowUpRight, FlaskConical, Hourglass, ShieldCheck, UserRound, Wallet } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CopyButton } from "@/components/developers/code-block";
 import { LinkedBanner, PayoutForm, PayoutStatus, ProfileForm, VerifyWithPayPal } from "@/components/settings/forms";
+import { EmailVerification, PasswordForm, SignOutEverywhere } from "@/components/settings/security";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,6 +109,28 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               )}
             </CardContent>
           </Card>
+
+          {!isDemo && (
+            <Card id="security">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-lg bg-paper-2 p-1.5 text-ink-2">
+                    <ShieldCheck className="size-4" />
+                  </span>
+                  <CardTitle>Sign-in &amp; security</CardTitle>
+                </div>
+                <CardDescription>
+                  {user.passwordHash ? "Changing your password signs you out on every other device." : "You sign in with PayPal. Add a password to also sign in with your email."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-5">
+                <PasswordForm hasPassword={Boolean(user.passwordHash)} />
+                <div className="border-t border-line pt-4">
+                  <SignOutEverywhere />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="flex flex-col gap-6">
@@ -134,12 +157,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="account">
             <CardHeader>
               <CardTitle>Account</CardTitle>
             </CardHeader>
             <CardContent className="divide-y divide-line pt-2">
               <Row label="Email">{user.email}</Row>
+              {!isDemo && (
+                <Row label="Email status">
+                  <EmailVerification email={user.email} verified={Boolean(user.emailVerifiedAt)} />
+                </Row>
+              )}
               <Row label="Handle">@{user.handle}</Row>
               <Row label="Role">{user.role === "admin" ? <Badge tone="ink">Admin</Badge> : "Member"}</Row>
               <Row label="Sign-in">{[user.passwordHash ? "Password" : null, user.paypalPayerId ? "PayPal" : null, isDemo ? "Demo link" : null].filter(Boolean).join(" · ") || "—"}</Row>

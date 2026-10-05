@@ -1,6 +1,9 @@
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.E2E_PORT || 3100);
+/** The test server writes every email here instead of sending it (see src/lib/email.ts). */
+export const E2E_OUTBOX = path.resolve("data", "e2e-outbox");
 const baseURL = process.env.E2E_BASE_URL || `http://localhost:${PORT}`;
 
 /**
@@ -40,6 +43,8 @@ export default defineConfig({
           PAYPAL_CLIENT_SECRET: "",
           DEMO_MODE: "true",
           RATE_LIMIT_DISABLED: "true",
+          EMAIL_OUTBOX_DIR: E2E_OUTBOX,
+          RESEND_API_KEY: "",
         },
       },
 });

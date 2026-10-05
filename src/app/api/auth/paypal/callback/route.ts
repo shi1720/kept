@@ -53,9 +53,11 @@ export async function GET(req: Request) {
         paypalEmail: identity.email,
         paypalPayerId: identity.payerId,
         paypalVerified: identity.verified,
+        // PayPal only gives us emails the account holder has confirmed with PayPal.
+        emailVerified: Boolean(identity.email),
       });
     }
-    await setSessionCookie(user.id);
+    await setSessionCookie(user);
     return NextResponse.redirect(`${env.appUrl}/app`);
   } catch (err) {
     console.error("[paypal-login]", err);

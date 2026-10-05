@@ -2,9 +2,9 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db/client";
 import { users, type User } from "@/lib/db/schema";
-import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { newId } from "@/lib/ids";
+import { isAdminEmail } from "./account";
 import { hashPassword, verifyPassword } from "./password";
 
 export const signupInput = z.object({
@@ -47,6 +47,8 @@ export async function createUser(input: {
   demoWorkspace?: string | null;
   avatarHue?: number;
   handle?: string;
+  /** The address is already proven (PayPal-confirmed email, or a demo persona Kept owns). */
+  emailVerified?: boolean;
 }): Promise<User> {
   const email = input.email.toLowerCase();
   const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -61,7 +63,10 @@ export async function createUser(input: {
       handle: input.handle ?? (await uniqueHandle(input.name)),
       headline: input.headline ?? null,
       passwordHash: input.password ? await hashPassword(input.password) : null,
-      role: env.adminEmails.includes(email) ? "admin" : "user",
+      // ADMIN_EMAILS only grants admin to an address the user has proved they own; a password
+      // signup gets it when the verification link is opened (see lib/auth/account.ts).
+      role: input.emailVerified && isAdminEmail(email) ? "admin" : "user",
+      emailVerifiedAt: input.emailVerified ? new Date() : null,
       paypalEmail: input.paypalEmail ?? null,
       paypalPayerId: input.paypalPayerId ?? null,
       paypalVerified: input.paypalVerified ?? false,

@@ -2,6 +2,7 @@ import { ArrowRight, Banknote, Hourglass, Lock, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DemoGuide, type GuideStep } from "@/components/app/demo-guide";
+import { VerifyEmailBanner } from "@/components/settings/security";
 import { Timeline } from "@/components/app/timeline";
 import { PactsGrid } from "@/components/grid/pacts-grid";
 import { Badge } from "@/components/ui/badge";
@@ -78,6 +79,8 @@ export default async function DashboardPage() {
           </Link>
         </Button>
       </div>
+
+      {!user.demoWorkspace && !user.emailVerifiedAt && <VerifyEmailBanner email={user.email} />}
 
       {guide && <DemoGuide steps={guide} sandbox={sandbox} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}
 

@@ -5,12 +5,13 @@ import { ModePills } from "@/components/app/mode-pills";
 import { NavLink, NotificationBell, PersonaSwitch, UserMenu } from "@/components/app/shell-client";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { loginRedirect } from "@/lib/auth/next-path";
 import { getCurrentUser } from "@/lib/auth/session";
 import { demoCounterpart } from "@/lib/demo";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/app");
+  if (!user) redirect(await loginRedirect("/app"));
   const other = await demoCounterpart(user);
   const role = user.name.startsWith("Maya") ? "client" : "freelancer";
 

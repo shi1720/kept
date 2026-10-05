@@ -34,9 +34,36 @@ export const users = sqliteTable(
     avatarHue: integer("avatar_hue").notNull().default(160),
     /** Demo workspaces are isolated so every visitor gets their own sandbox story. */
     demoWorkspace: text("demo_workspace"),
+    /**
+     * When the user proved they control `email` (a verification link, a password-reset link, or a
+     * PayPal-confirmed email). Invites addressed to an email and admin rights from ADMIN_EMAILS
+     * only apply to verified addresses.
+     */
+    emailVerifiedAt: ts("email_verified_at"),
+    /** Bumped on password change/reset and "sign out everywhere"; sessions carry it and expire when it moves. */
+    sessionVersion: integer("session_version").notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("users_email_uq").on(t.email), uniqueIndex("users_handle_uq").on(t.handle)],
+);
+
+/** Single-use, expiring tokens for email links. Only a SHA-256 hash of the token is stored. */
+export const authTokens = sqliteTable(
+  "auth_tokens",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["verify_email", "reset_password"] }).notNull(),
+    tokenHash: text("token_hash").notNull(),
+    /** The address the link was sent to; a verification only counts if it still matches. */
+    email: text("email").notNull(),
+    expiresAt: ts("expires_at").notNull(),
+    usedAt: ts("used_at"),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("auth_tokens_hash_uq").on(t.tokenHash), index("auth_tokens_user_idx").on(t.userId, t.kind)],
 );
 
 export const apiKeys = sqliteTable(
@@ -483,6 +510,7 @@ export const notifications = sqliteTable(
 );
 
 export type User = typeof users.$inferSelect;
+export type AuthToken = typeof authTokens.$inferSelect;
 export type Pact = typeof pacts.$inferSelect;
 export type Milestone = typeof milestones.$inferSelect;
 export type Criterion = typeof criteria.$inferSelect;

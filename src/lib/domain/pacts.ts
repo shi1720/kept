@@ -233,7 +233,8 @@ export async function sendPact(user: User, pactId: string): Promise<Pact> {
   });
   if (pact.counterpartyEmail) {
     const [cp] = await db.select().from(users).where(eq(users.email, pact.counterpartyEmail)).limit(1);
-    if (cp) await notify(db, [cp.id], { pactId, title: "You've been invited to a pact", body: `${user.name} sent you “${pact.title}” to review and sign.` });
+    // Only a verified owner of the address hears about the invite inside Kept; the link is shared directly.
+    if (cp?.emailVerifiedAt) await notify(db, [cp.id], { pactId, title: "You've been invited to a pact", body: `${user.name} sent you “${pact.title}” to review and sign.` });
   }
   return loadPact(pactId);
 }
@@ -309,8 +310,9 @@ export async function listPactsForUser(user: User) {
         eq(pacts.clientId, user.id),
         eq(pacts.freelancerId, user.id),
         eq(pacts.creatorId, user.id),
-        // Invitations addressed to this user's email that they haven't answered yet.
-        and(eq(pacts.status, "pending_acceptance"), eq(pacts.counterpartyEmail, user.email)),
+        // Invitations addressed to this user's email that they haven't answered yet, but only once
+        // they've proved the address is theirs; otherwise anyone could register it to intercept invites.
+        user.emailVerifiedAt ? and(eq(pacts.status, "pending_acceptance"), eq(pacts.counterpartyEmail, user.email)) : undefined,
       ),
     )
     .orderBy(desc(pacts.updatedAt));

@@ -33,7 +33,7 @@ export const POST = handler(async (req) => {
   const other = await demoCounterpart(user);
   if (!other) throw new AppError("forbidden", "Persona switching is only available in demo workspaces");
   const { path } = body.parse(await req.json().catch(() => ({})));
-  await setSessionCookie(other.id);
+  await setSessionCookie(other);
   return { user: { id: other.id, name: other.name }, redirect: await safeDestination(other, path) };
 });
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
   if (want && !user.name.startsWith(want)) {
     const other = await demoCounterpart(user);
     if (other) {
-      await setSessionCookie(other.id);
+      await setSessionCookie(other);
       target = other;
     }
   }

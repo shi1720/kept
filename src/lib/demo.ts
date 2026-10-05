@@ -247,6 +247,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     demoWorkspace: ws,
     avatarHue: 24,
     handle: `maya-${suffix}`,
+    emailVerified: true,
   });
   const freelancer = await createUser({
     name: "Ana Reyes",
@@ -255,6 +256,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     demoWorkspace: ws,
     avatarHue: 160,
     handle: `ana-${suffix}`,
+    emailVerified: true,
     paypalEmail: env.paypal.demoPayoutEmail || `ana.${ws}@demo.kept.app`,
     paypalVerified: Boolean(env.paypal.demoPayoutEmail),
   });
@@ -265,6 +267,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     demoWorkspace: ws,
     avatarHue: 210,
     handle: `jonas-${suffix}`,
+    emailVerified: true,
   });
 
   await db

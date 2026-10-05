@@ -13,25 +13,27 @@ const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14;
 
 const secretKey = () => new TextEncoder().encode(env.sessionSecret);
 
-export async function createSessionToken(userId: string): Promise<string> {
-  return new SignJWT({ uid: userId })
+export async function createSessionToken(userId: string, sessionVersion = 0): Promise<string> {
+  return new SignJWT({ uid: userId, sv: sessionVersion })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_TTL_SECONDS}s`)
     .sign(secretKey());
 }
 
-export async function verifySessionToken(token: string): Promise<string | null> {
+export async function verifySessionToken(token: string): Promise<{ uid: string; sv: number } | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey(), { algorithms: ["HS256"] });
-    return typeof payload.uid === "string" ? payload.uid : null;
+    if (typeof payload.uid !== "string") return null;
+    return { uid: payload.uid, sv: typeof payload.sv === "number" ? payload.sv : 0 };
   } catch {
     return null;
   }
 }
 
-export async function setSessionCookie(userId: string) {
-  const token = await createSessionToken(userId);
+/** Sign the user in on this browser. Sessions end early when the user's sessionVersion moves on. */
+export async function setSessionCookie(user: Pick<User, "id" | "sessionVersion">) {
+  const token = await createSessionToken(user.id, user.sessionVersion);
   const jar = await cookies();
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -75,10 +77,12 @@ export async function getActor(): Promise<Actor | null> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const uid = await verifySessionToken(token);
-  if (!uid) return null;
-  const [user] = await db.select().from(users).where(eq(users.id, uid)).limit(1);
-  return user ? { user, via: "session" } : null;
+  const session = await verifySessionToken(token);
+  if (!session) return null;
+  const [user] = await db.select().from(users).where(eq(users.id, session.uid)).limit(1);
+  // A password change, reset or "sign out everywhere" bumps sessionVersion and ends older sessions.
+  if (!user || user.sessionVersion !== session.sv) return null;
+  return { user, via: "session" };
 }
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -89,6 +93,14 @@ export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
   if (!user) throw new AppError("unauthorized", "Please sign in to continue");
   return user;
+}
+
+/** Account-security changes need a signed-in browser session; API keys can't change passwords. */
+export async function requireSessionUser(): Promise<User> {
+  const actor = await getActor();
+  if (!actor) throw new AppError("unauthorized", "Please sign in to continue");
+  if (actor.via !== "session") throw new AppError("forbidden", "Sign in on the website to change account security settings");
+  return actor.user;
 }
 
 export async function requireAdmin(): Promise<User> {

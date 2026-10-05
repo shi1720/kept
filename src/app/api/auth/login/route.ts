@@ -10,6 +10,6 @@ export const POST = handler(async (req) => {
   const { email, password } = body.parse(await readJson(req));
   rateLimit(`login:${await clientIp()}`, 30, 15 * 60_000);
   const user = await authenticate(email, password);
-  await setSessionCookie(user.id);
+  await setSessionCookie(user);
   return { user: { id: user.id, name: user.name, email: user.email } };
 });

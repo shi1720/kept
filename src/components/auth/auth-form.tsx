@@ -63,7 +63,9 @@ function PayPalLoginButton() {
 export function AuthForm({ mode, paypalLogin }: { mode: "login" | "signup"; paypalLogin: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/app";
+  // Only same-site paths: "//host" and "/\\host" would leave the site (open redirect).
+  const requested = params.get("next");
+  const next = requested && /^\/(?![/\\])/.test(requested) ? requested : "/app";
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
@@ -72,7 +74,7 @@ export function AuthForm({ mode, paypalLogin }: { mode: "login" | "signup"; payp
     setLoading(true);
     try {
       await api(mode === "login" ? "/api/auth/login" : "/api/auth/signup", { body: form });
-      router.push(next.startsWith("/") ? next : "/app");
+      router.push(next);
       router.refresh();
     } catch {
       setLoading(false);
@@ -90,7 +92,18 @@ export function AuthForm({ mode, paypalLogin }: { mode: "login" | "signup"; payp
         <Field label="Email">
           <Input required type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@studio.com" />
         </Field>
-        <Field label="Password" hint={mode === "signup" ? "At least 8 characters." : undefined}>
+        <Field
+          label="Password"
+          hint={
+            mode === "signup" ? (
+              "At least 8 characters."
+            ) : (
+              <Link href="/forgot-password" className="font-medium text-jade-700 hover:underline">
+                Forgot your password?
+              </Link>
+            )
+          }
+        >
           <Input required type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "signup" ? 8 : 1} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" />
         </Field>
         <Button type="submit" size="lg" loading={loading} className="mt-1">

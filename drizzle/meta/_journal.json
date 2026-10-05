@@ -15,6 +15,13 @@
       "when": 1791179206721,
       "tag": "0001_paypal_disputes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791186909786,
+      "tag": "0002_auth_v2",
+      "breakpoints": true
     }
   ]
 }
