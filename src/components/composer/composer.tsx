@@ -303,7 +303,7 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
                 <Input value={pact.title} onChange={(e) => setPact({ ...pact, title: e.target.value })} placeholder="Logo design for Pan de Rosa" className="text-[15px] font-medium" />
               </Field>
               <Field label="Summary" className="sm:col-span-2">
-                <Textarea rows={2} value={pact.summary} onChange={(e) => setPact({ ...pact, summary: e.target.value })} placeholder="What's being delivered, in two sentences." />
+                <Textarea rows={Math.max(2, Math.ceil(pact.summary.length / 95))} value={pact.summary} onChange={(e) => setPact({ ...pact, summary: e.target.value })} placeholder="What's being delivered, in two sentences." />
               </Field>
               <Field label={`The ${counterpartyRole}'s name`}>
                 <Input value={pact.counterpartyName ?? ""} onChange={(e) => setPact({ ...pact, counterpartyName: e.target.value })} placeholder="Optional" />
@@ -334,7 +334,7 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
                 )}
               </div>
               <CardContent className="flex flex-col gap-4">
-                <Textarea rows={2} value={m.description} onChange={(e) => updateMilestone(mi, { description: e.target.value })} placeholder="What this milestone delivers" />
+                <Textarea rows={Math.max(2, Math.ceil(m.description.length / 95))} value={m.description} onChange={(e) => updateMilestone(mi, { description: e.target.value })} placeholder="What this milestone delivers" />
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-3">Acceptance criteria</p>
                   <ul className="flex flex-col gap-2">
