@@ -163,13 +163,21 @@ export async function executePayout(payoutId: string) {
   } catch (err) {
     // A duplicate sender_batch_id means a previous attempt actually reached PayPal.
     const msg = err instanceof Error ? err.message : String(err);
-    await db.update(payouts).set({ status: "FAILED", raw: { error: msg }, updatedAt: new Date() }).where(eq(payouts.id, p.id));
+    // PayPal refuses a reused sender_batch_id for 30 days: an earlier attempt reached PayPal even
+    // though we never saw the response. Never retry blindly — flag it for reconciliation.
+    const duplicate = /sender_batch_id.*already|DUPLICATE/i.test(msg);
+    await db
+      .update(payouts)
+      .set({ status: duplicate ? "NEEDS_RECONCILIATION" : "FAILED", raw: { error: msg }, updatedAt: new Date() })
+      .where(eq(payouts.id, p.id));
     await recordEvent(db, {
       pactId: pact.id,
       milestoneId: milestone.id,
       actorKind: "paypal",
       type: "payout.failed",
-      message: `Payout attempt failed and will be retried automatically: ${msg}`,
+      message: duplicate
+        ? "PayPal reports this payout batch already exists — flagged for reconciliation instead of paying twice"
+        : `Payout attempt failed and will be retried automatically: ${msg}`,
     });
   }
 }
