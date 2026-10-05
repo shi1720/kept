@@ -1,6 +1,7 @@
 import { formatDistanceToNowStrict } from "date-fns";
 
-export const ago = (d: Date | string | number) => `${formatDistanceToNowStrict(new Date(d))} ago`;
+export const ago = (d: Date | string | number) =>
+  Date.now() - new Date(d).getTime() < 45_000 ? "just now" : `${formatDistanceToNowStrict(new Date(d))} ago`;
 
 export function until(d: Date | string | number): string {
   const ms = new Date(d).getTime() - Date.now();

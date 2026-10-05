@@ -70,7 +70,7 @@ test("AI mediation settles a dispute as payout + refund", async ({ page }) => {
   await switchPersona(page, "Ade");
   await openPact(page, /Instagram launch captions/);
   await page.getByRole("button", { name: /Accept 65\/35 split/ }).click();
-  await expect(page.getByText("Settled 65/35")).toBeVisible();
+  await expect(page.getByText("Settled 65/35").first()).toBeVisible();
   await expect(page.getByText("PayPal refund to client")).toBeVisible();
 });
 
