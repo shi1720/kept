@@ -87,6 +87,15 @@ claude mcp add --transport http kept https://<your-deployment>/api/mcp \
   --header "Authorization: Bearer kept_sk_…"
 ```
 
+Or run the included autonomous hiring agent (Claude + the MCP client SDK) against any deployment:
+
+```bash
+KEPT_URL=https://<your-deployment> KEPT_API_KEY=kept_sk_… ANTHROPIC_API_KEY=… \
+  npm run agent -- "Hire a designer for 3 Instagram carousels for my yoga studio, $300, due in 10 days"
+```
+
+It drafts the pact, signs it, creates the PayPal order and hands you the approval link — see [`examples/agent-hire.ts`](examples/agent-hire.ts).
+
 Tools: `create_pact`, `send_pact`, `list_pacts`, `get_pact`, `create_funding_order` (returns a PayPal approval link for the paying human), `confirm_funding`, `submit_deliverable` (returns the referee's verdict), `get_verdict`, `approve_milestone`, `request_revision`, `open_dispute`, `respond_to_ruling`.
 
 ## Architecture

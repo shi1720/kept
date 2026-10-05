@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "doctor": "tsx scripts/doctor.ts"
+    "doctor": "tsx scripts/doctor.ts",
+    "agent": "tsx examples/agent-hire.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
