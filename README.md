@@ -74,7 +74,7 @@ The options today are bad on both sides: the freelancer works first and hopes to
 | **Payouts v1** | Releases escrow to the freelancer's PayPal; `sender_batch_id = kept-<milestone>` makes double payment impossible; batch/item status reconciled by webhook and by the sweeper. | [`src/lib/paypal/live.ts`](src/lib/paypal/live.ts) |
 | **Webhooks** + `verify-webhook-signature` | `CHECKOUT.ORDER.APPROVED` (captures server-side if the buyer closed the tab after approving), `PAYMENT.CAPTURE.*`, `PAYMENT.PAYOUTS-ITEM.*`; verified, stored and de-duplicated on event id. | [`src/lib/domain/webhooks.ts`](src/lib/domain/webhooks.ts) |
 | **Disputes API** + `CUSTOMER.DISPUTE.*` webhooks | **Chargeback shield:** if a client goes around Kept and disputes the payment with PayPal, Kept freezes automatic release and submits the signed criteria, delivery record, referee verdict and audit trail as seller evidence (`provide-evidence`). | [`src/lib/domain/chargebacks.ts`](src/lib/domain/chargebacks.ts) |
-| **Log in with PayPal** (OpenID Connect) | Sign in, or link a **verified** PayPal account as the payout destination so released money provably goes to the freelancer. | [`src/lib/paypal/identity.ts`](src/lib/paypal/identity.ts) |
+| **Log in with PayPal** (OpenID Connect) | Sign in, or link a **verified** PayPal account as the payout destination so released money provably goes to the freelancer. PayPal-confirmed emails count as verified Kept emails. | [`src/lib/paypal/identity.ts`](src/lib/paypal/identity.ts) |
 
 ## Built with AI (meaningfully)
 

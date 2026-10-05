@@ -50,7 +50,8 @@ Kept is escrow with an AI referee for freelance work agreed anywhere on the inte
 
 ## Accomplishments that we're proud of
 
-- A complete product, not a mock-up: sign-up and Log in with PayPal, invites, funding, delivery, verdicts, revisions, mediation, arbitration, payouts, refunds, chargeback evidence, notifications, a public track record, an ops console and an agent API.
+- A complete product, not a mock-up: accounts with email verification, password reset and Log in with PayPal, invites, funding, delivery, verdicts, revisions, mediation, arbitration, payouts, refunds, chargeback evidence, notifications, a public track record, an ops console and an agent API.
+- Tested like a product: unit and integration tests for the money paths and account security, Playwright end-to-end tests for both sides of a pact and for sign-up/reset flows, and browser QA passes (real accounts, phone and desktop, accessibility checks) whose findings were fixed before submission.
 - Money that can't be double-spent: compare-and-set state transitions, a double-entry ledger that must balance on every journal, idempotent PayPal calls, and a sweeper that reconciles anything left mid-flight. The test suite races approve against auto-release and webhooks, and replays duplicate captures and returned payouts.
 - Without any keys, Kept still runs end to end. A PayPal simulator and an offline referee stand in, and the UI labels them honestly. With keys, the same flows hit the PayPal sandbox and Claude.
 - A judge can play both sides in under a minute, in a private demo world, with real PayPal sandbox payments.

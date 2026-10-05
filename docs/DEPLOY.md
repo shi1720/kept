@@ -46,7 +46,8 @@ turso db tokens create kept       # DATABASE_AUTH_TOKEN
 | `PAYPAL_DEMO_PAYOUT_EMAIL` | the sandbox personal account email |
 | `ANTHROPIC_API_KEY` *or* `GEMINI_API_KEY` | from step 2 |
 | `DATABASE_URL` / `DATABASE_AUTH_TOKEN` | Turso values, or `file:./data/kept.db` and blank |
-| `ADMIN_EMAILS` | your email, if you want the full ops console after signing up |
+| `ADMIN_EMAILS` | your email, if you want the full ops console (it applies once you've verified that address) |
+| `RESEND_API_KEY` / `EMAIL_FROM` | optional, for email verification and password-reset emails (see step 8) |
 
 `SESSION_SECRET` and `CRON_SECRET` are generated automatically.
 
@@ -83,6 +84,16 @@ Open `https://<your-app>.onrender.com/api/doctor`. You should see:
 ```
 
 Then click **Try as Maya** on the landing page and walk the tour. In the PayPal popup either log in with the sandbox personal account, or choose **Debit or Credit Card** and use `4012 0000 3333 0026` (any future expiry, any CVV).
+
+## 8. Emails (optional, 3 min)
+
+Kept sends two kinds of email: "confirm your email" after sign-up, and "reset your password". Without a provider the app still works (the links are written to the server log), but real users need one:
+
+1. Create a free account at <https://resend.com> (3,000 emails a month) → **API Keys** → *Create API key*.
+2. In Render, set `RESEND_API_KEY` to that key.
+3. To email anyone, verify a domain you own in Resend (**Domains** → *Add domain*, then add the DNS records it shows) and set `EMAIL_FROM` to something like `Kept <hello@yourdomain.com>`. Until you do, Resend only delivers to the email address you signed up to Resend with, which is enough to try the flow yourself.
+
+`ADMIN_EMAILS` only takes effect for an address that has been verified, so sign up, open the verification email (or check the server log for the link), and you'll have the full ops console.
 
 ## Scheduled sweeper
 

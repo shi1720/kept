@@ -94,7 +94,10 @@ The **sweeper** ([`sweep.ts`](../src/lib/domain/sweep.ts)) runs every minute in-
 
 ## 6. Security
 
-- Sessions are HS256 JWT cookies (`httpOnly`, `sameSite=lax`, `secure` in production). API keys are random 192-bit secrets stored as SHA-256 hashes and shown once.
+- Sessions are HS256 JWT cookies (`httpOnly`, `sameSite=lax`, `secure` in production) that carry the user's `sessionVersion`; changing or resetting a password, or "sign out other devices", bumps it and ends every other session. API keys are random 192-bit secrets stored as SHA-256 hashes and shown once, and can't manage keys or change the payout email (those need a browser session).
+- Accounts: email verification, forgot/reset password and password change ([`src/lib/auth/account.ts`](../src/lib/auth/account.ts)). Email links carry a random 256-bit token stored only as a SHA-256 hash, work once, expire (48 h to verify, 1 h to reset), and a new link cancels older ones. "Forgot password" answers the same way whether or not the account exists. Email goes out through Resend when `RESEND_API_KEY` is set and is logged otherwise.
+- Anything that trusts an email address requires it to be verified: invites addressed to an email only show up for a verified owner of that address, and `ADMIN_EMAILS` only grants admin to a verified address. PayPal-confirmed emails (Log in with PayPal) count as verified.
+- Sign-in redirects (`?next=`) only follow same-site paths.
 - Every route resolves the actor and checks party/role (`assertParty`). Files are only downloadable by the pact's parties, served as attachments with `nosniff`.
 - Evidence fetching blocks private, loopback, link-local and CGNAT ranges (re-checked on each redirect), caps size (2 MB) and time (10 s).
 - In-memory rate limits protect AI-costly and auth endpoints.
