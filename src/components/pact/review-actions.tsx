@@ -103,7 +103,7 @@ export function FastForwardButton({ milestoneId, hours }: { milestoneId: string;
   const { busy, run } = useAction();
   return (
     <Button variant="outline" size="sm" className="border-dashed border-ember-100 text-ember-700" loading={busy === "ff"} onClick={() => run("ff", `/api/milestones/${milestoneId}/fast-forward`, {}, `Skipped ahead ${hours}h — the sweeper ran.`)}>
-      <FastForward /> Demo: skip ahead {hours}h (client ghosts)
+      <FastForward /> Skip ahead {hours}h — the client goes silent
     </Button>
   );
 }

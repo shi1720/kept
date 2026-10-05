@@ -104,11 +104,28 @@ export function offlineDraft(source: string, hintedTotal?: number): DraftOutput 
     .split("\n")
     .map((l) => l.replace(/^\s*(\[[^\]]{1,20}\]\s*)?[\w .@-]{1,24}:\s+/, ""))
     .join("\n");
-  const amounts = [...text.matchAll(/(?:\$|usd\s?)\s?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\s?(k)?/gi)].map(
-    (m) => Number.parseFloat(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1),
-  );
-  const total = hintedTotal ?? (amounts.length ? Math.max(...amounts) : 500);
-  const firstSentence = text.split(/(?<=[.!?])\s+/)[0]?.slice(0, 160) || "the agreed work";
+  const priced = [...text.matchAll(/(?:\$|usd\s?)\s?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\s?(k)?/gi)].map((m) => ({
+    amount: Number.parseFloat(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1),
+    before: text.slice(Math.max(0, (m.index ?? 0) - 40), m.index ?? 0),
+  }));
+  const amounts = priced.map((p) => p.amount);
+  // Prefer the amount framed as the price ("budget is $450"); otherwise the first one mentioned.
+  // Never the largest: in an overpayment scam the biggest number is the bait cheque.
+  const bait = (p: (typeof priced)[number]) => /\b(cheque|check|extra|tip|deposit|overpay\w*)\b[^$]*$/i.test(p.before);
+  const quoted =
+    priced.find((p) => !bait(p) && /\b(budget|price|pay|rate|cost|total|fee|quote)\b[^$]*$/i.test(p.before)) ??
+    priced.find((p) => !bait(p)) ??
+    priced[0];
+  const total = hintedTotal ?? quoted?.amount ?? 500;
+  const sentences = text
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((t) => t.replace(/^([^\p{L}\p{N}]*(hi|hey|hello|yo|hiya|dear|good (morning|afternoon|evening))\b(\s+there)?[\s,!.:~-]*)+/iu, "").trim())
+    .filter((t) => t.split(/\s+/).length >= 3);
+  // The sentence that states the job, not the small talk around it.
+  const asks = /\b(need|want|looking for|build|design|write|create|make|edit|translate|deliver)\b/i;
+  const firstSentence =
+    (sentences.find((t) => asks.test(t) && DELIVERABLES.some(([re]) => re.test(t))) ?? sentences.find((t) => asks.test(t)) ?? sentences[0])?.slice(0, 160) ||
+    "the agreed work";
   const wordReq = text.match(/(\d{3,5})\s*(?:-|to)?\s*words?/i);
   const days = text.match(/(\d{1,2})\s*(days?|weeks?)/i);
   const dueInDays = days ? Number(days[1]) * (/week/i.test(days[2]) ? 7 : 1) : 14;
@@ -129,7 +146,7 @@ export function offlineDraft(source: string, hintedTotal?: number): DraftOutput 
 
   const criteria: DraftOutput["milestones"][number]["criteria"] = [
     {
-      text: `The delivery matches the brief: “${firstSentence.replace(/^(hi|hey|hello)[,!]?\s*/i, "").slice(0, 140)}”`,
+      text: `The delivery matches the brief: “${firstSentence.slice(0, 140)}”`,
       kind: "subjective",
       check: { type: "none", value: null, values: null, width: null, height: null },
     },

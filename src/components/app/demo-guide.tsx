@@ -55,7 +55,11 @@ export function DemoGuide({ steps, currentPersona }: { steps: GuideStep[]; curre
         <ol className="grid gap-px border-t border-ember-100 bg-ember-100/60 sm:grid-cols-2 xl:grid-cols-3">
           {steps.map((s, i) => (
             <li key={s.title} className="bg-card/90">
-              <Link href={s.href} className="group flex h-full gap-3 px-5 py-4 transition-colors hover:bg-paper">
+              <Link
+                href={s.as !== "either" ? `/api/auth/switch?as=${s.as}&next=${encodeURIComponent(s.href)}` : s.href}
+                prefetch={false}
+                className="group flex h-full gap-3 px-5 py-4 transition-colors hover:bg-paper"
+              >
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-paper">{i + 1}</span>
                 <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-1.5 text-[13.5px] font-medium">

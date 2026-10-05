@@ -74,10 +74,16 @@ test("AI mediation settles a dispute as payout + refund", async ({ page }) => {
   await expect(page.getByText("PayPal refund to client")).toBeVisible();
 });
 
-test("anti-ghosting: skip ahead resolves an unanswered review", async ({ page }) => {
+test("anti-ghosting: silence releases a PASS, and mediates anything less", async ({ page }) => {
   await startDemo(page, "freelancer");
+  await openPact(page, /Menu photo retouching/);
+  await page.getByText("Demo controls").click();
+  await page.getByRole("button", { name: /Skip ahead/ }).click();
+  await expect(page.getByText("Released in full")).toBeVisible();
+
   await openPact(page, /Brand identity/);
-  await page.getByRole("button", { name: /skip ahead/ }).click();
+  await page.getByText("Demo controls").click();
+  await page.getByRole("button", { name: /Skip ahead/ }).click();
   // The seeded verdict is PARTIAL, so silence opens mediation rather than paying out.
   await expect(page.getByText(/In mediation ·/)).toBeVisible();
 });
@@ -89,6 +95,8 @@ test("contract compiler turns a DM into a signed pact", async ({ page }) => {
   await page.getByRole("button", { name: /Compile into a pact/ }).click();
   await expect(page.getByRole("heading", { name: "Review your pact" })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/risk flag/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /Sign & send/ })).toBeDisabled();
+  await page.getByText(/I’ve read these warnings/).click();
   await page.getByRole("button", { name: /Sign & send/ }).click();
   await page.waitForURL(/\/app\/pacts\/pct_/);
   await expect(page.getByText(/Waiting for the other party to countersign/)).toBeVisible();

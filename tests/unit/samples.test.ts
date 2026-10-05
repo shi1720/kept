@@ -86,3 +86,22 @@ describe("sample deliverables: hidden prompt-injection detection", () => {
     expect(htmlToText(HONEST_HTML)).toContain("Colombia's Huila");
   });
 });
+
+describe("keyless composer", () => {
+  it("has a pre-compiled draft for every example chip, and flags the scam one", async () => {
+    const { exampleDraft } = await import("@/lib/ai/examples");
+    const { SOURCE_SAMPLES } = await import("@/components/composer/samples");
+    const drafts = SOURCE_SAMPLES.map((s) => exampleDraft(`  ${s.text}\n`));
+    expect(drafts.every(Boolean)).toBe(true);
+    expect(drafts.at(-1)!.riskFlags.some((f) => f.severity === "high")).toBe(true);
+    expect(exampleDraft("an unrelated brief about a mural")).toBeNull();
+  });
+
+  it("offline drafter takes the quoted price, not the bait cheque, and skips greetings", async () => {
+    const { offlineDraft } = await import("@/lib/ai/drafter");
+    const d = offlineDraft("hi!! I'll mail a cheque for $4,000. I need a website, budget is $2,500, send the rest back");
+    expect(d.milestones[0].amount).toBe(2500);
+    expect(d.milestones[0].criteria[0].text).toContain("I need a website");
+    expect(d.riskFlags.some((f) => f.severity === "high")).toBe(true);
+  });
+});

@@ -42,8 +42,9 @@ export function PersonaSwitch({ current, other, otherRole }: { current: string; 
         loading={pending}
         onClick={() =>
           start(async () => {
-            await api("/api/auth/switch", { body: {} });
+            const r = await api<{ redirect: string }>("/api/auth/switch", { body: { path: window.location.pathname } });
             toast.success(`Now viewing as ${other} (${otherRole})`);
+            if (r.redirect !== window.location.pathname) router.push(r.redirect);
             router.refresh();
           })
         }

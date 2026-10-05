@@ -48,7 +48,7 @@ export default async function DashboardPage() {
   const guide: GuideStep[] | null = user.demoWorkspace
     ? [
         { title: "Compile a DM into a pact", detail: "Paste a chat (or pick the suspicious one) and watch criteria, vague terms and scam flags appear.", href: "/app/pacts/new", as: "either" },
-        { title: "Countersign the packaging pact", detail: "Review the invitation Maya sent and seal it.", href: byTitle("Holiday Blend packaging")?.href ?? "/app", as: "Ana" },
+        { title: "Countersign the packaging pact", detail: "Review the invitation Maya sent and seal it. (The tour switches you to Ana.)", href: byTitle("Holiday Blend packaging") ? `/app/pacts/${byTitle("Holiday Blend packaging")!.id}` : "/app", as: "Ana" },
         { title: "Fund milestone 1 with PayPal", detail: "Real sandbox checkout — PayPal account or a test card (4012 0000 3333 0026).", href: byTitle("Holiday Blend packaging") ? `/app/pacts/${byTitle("Holiday Blend packaging")!.id}` : "/app", as: "Maya" },
         { title: "Deliver the landing page", detail: "Submit work → try the honest, the half-finished and the sneaky (prompt-injection) samples.", href: byTitle("Pre-order landing") ? `/app/pacts/${byTitle("Pre-order landing")!.id}` : "/app", as: "Ana" },
         { title: "Settle a dispute with AI mediation", detail: "Accept the 65/35 proposal as both people → PayPal Payout + partial refund.", href: byTitle("Instagram") ? `/app/pacts/${byTitle("Instagram")!.id}` : "/app", as: "either" },

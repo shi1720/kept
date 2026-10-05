@@ -57,7 +57,7 @@ export function SimulatePayPalDisputeButton({ milestoneId }: { milestoneId: stri
         }
       }}
     >
-      <ShieldAlert /> Demo: client disputes with PayPal instead
+      <ShieldAlert /> Client disputes with PayPal instead
     </Button>
   );
 }

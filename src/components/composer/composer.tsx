@@ -134,6 +134,8 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
   const [pact, setPact] = useState<PactInput>(initial ?? blankPact(defaultRole));
   const [ai, setAi] = useState<AiMeta | null>(null);
   const [saving, setSaving] = useState<"draft" | "send" | null>(null);
+  const [ackRisk, setAckRisk] = useState(false);
+  const highRisk = pact.riskFlags.some((r) => r.severity === "high");
 
   const total = useMemo(() => pact.milestones.reduce((s, m) => s + (Number(m.amount) || 0), 0), [pact.milestones]);
   const counterpartyRole = pact.creatorRole === "client" ? "freelancer" : "client";
@@ -280,7 +282,14 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
           <Button variant="outline" size="lg" loading={saving === "draft"} disabled={saving !== null} onClick={() => save(false)}>
             <Save /> Save draft
           </Button>
-          <Button variant="jade" size="lg" loading={saving === "send"} disabled={saving !== null} onClick={() => save(true)}>
+          <Button
+            variant="jade"
+            size="lg"
+            loading={saving === "send"}
+            disabled={saving !== null || (highRisk && !ackRisk)}
+            title={highRisk && !ackRisk ? "Review the high-risk flags first" : undefined}
+            onClick={() => save(true)}
+          >
             <Send /> Sign & send
           </Button>
         </div>
@@ -334,7 +343,7 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
                         <div className="flex gap-2">
                           <span className="mt-2 text-xs text-ink-3">{ci + 1}.</span>
                           <Textarea
-                            rows={1}
+                            rows={Math.max(1, Math.ceil(c.text.length / 70))}
                             value={c.text}
                             onChange={(e) => updateCriterion(mi, ci, { text: e.target.value })}
                             className="min-h-0 resize-none border-0 px-1 py-1.5 focus:shadow-none"
@@ -395,7 +404,7 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
           </Card>
         </div>
 
-        <aside className="flex flex-col gap-5 xl:sticky xl:top-24 xl:self-start">
+        <aside className={cn("flex flex-col gap-5 xl:sticky xl:top-24 xl:self-start", highRisk && "order-first xl:order-none")}>
           <Card>
             <CardContent className="space-y-1.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-3">Total</p>
@@ -417,7 +426,7 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
           )}
 
           {pact.riskFlags.length > 0 && (
-            <Card className="border-rose-100 bg-rose-50/40">
+            <Card className="order-first border-rose-100 bg-rose-50/40">
               <CardHeader><CardTitle className="flex items-center gap-2 text-rose-700"><AlertOctagon className="size-4" /> {pact.riskFlags.length} risk flag{pact.riskFlags.length === 1 ? "" : "s"}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {pact.riskFlags.map((r, i) => (
@@ -429,6 +438,12 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
                     <p className="mt-1 text-ink-3">{r.explanation}</p>
                   </div>
                 ))}
+                {highRisk && (
+                  <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-rose-100 bg-card p-3 text-[12.5px] font-medium text-rose-700">
+                    <input type="checkbox" checked={ackRisk} onChange={(e) => setAckRisk(e.target.checked)} className="mt-0.5 accent-rose-600" />
+                    I’ve read these warnings. Keep every payment inside Kept’s PayPal escrow — never Friends & Family, gift cards or “refund the difference”.
+                  </label>
+                )}
               </CardContent>
             </Card>
           )}
@@ -452,7 +467,7 @@ export function Composer({ initial, editId, defaultRole }: { initial?: PactInput
 
           {ai && (
             <p className="flex items-center gap-1.5 px-1 text-[11.5px] text-ink-3">
-              <Bot className="size-3.5" /> Compiled by {ai.provider === "offline" ? "the offline heuristic" : ai.model} in {(ai.latencyMs / 1000).toFixed(1)}s
+              <Bot className="size-3.5" /> {ai.provider === "example" ? "Pre-compiled example — add an AI key to compile live" : <>Compiled by {ai.provider === "offline" ? "the offline heuristic" : ai.model} in {(ai.latencyMs / 1000).toFixed(1)}s</>}
             </p>
           )}
         </aside>

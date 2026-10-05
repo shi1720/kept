@@ -102,8 +102,8 @@ export function MilestoneCard({
               <p className="mt-0.5 text-xs text-ink-3">{m.revisionsUsed > 0 ? "A revision was requested — see the activity feed for the client’s note." : "Deliver against the criteria above. Passing work is paid even if the client goes quiet."}</p>
             </div>
             <div className="flex items-center gap-2">
-              <RefundButton milestoneId={m.id} amountCents={m.amountCents} />
               <SubmitWorkDialog milestoneId={m.id} milestoneTitle={m.title} demo={demo} revision={m.revisionsUsed > 0} />
+              <RefundButton milestoneId={m.id} amountCents={m.amountCents} />
             </div>
           </div>
         )}
@@ -131,7 +131,6 @@ export function MilestoneCard({
             ) : (
               <p className="text-[13px] text-ink-3">Waiting for {clientName} to review. You can’t be ghosted: passing work is released when the window closes.</p>
             )}
-            {demo && <div><FastForwardButton milestoneId={m.id} hours={pact.terms.reviewWindowHours} /></div>}
           </div>
         )}
 
@@ -173,8 +172,16 @@ export function MilestoneCard({
         )}
 
         {m.payment?.paypalDispute && <PayPalDisputeBanner info={m.payment.paypalDispute} />}
-        {demo && m.payment?.paypalCaptureId && !m.payment.paypalDispute && ["in_review", "released", "settled", "funded"].includes(m.status) && (
-          <div><SimulatePayPalDisputeButton milestoneId={m.id} /></div>
+        {demo && (m.status === "in_review" || (m.status === "funded" && m.payment?.paypalCaptureId && !m.payment.paypalDispute)) && (
+          <details className="group rounded-xl border border-dashed border-ember-100 bg-ember-50/40 px-4 py-2.5">
+            <summary className="cursor-pointer list-none text-xs font-medium text-ember-700">
+              Demo controls <span className="font-normal text-ink-3">· simulate time passing or a PayPal dispute</span>
+            </summary>
+            <div className="mt-2.5 flex flex-wrap gap-2 pb-1">
+              {m.status === "in_review" && <FastForwardButton milestoneId={m.id} hours={pact.terms.reviewWindowHours} />}
+              {m.payment?.paypalCaptureId && !m.payment.paypalDispute && <SimulatePayPalDisputeButton milestoneId={m.id} />}
+            </div>
+          </details>
         )}
 
         {m.payment && (
