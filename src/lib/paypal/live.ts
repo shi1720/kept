@@ -99,17 +99,23 @@ export class LivePayPalGateway implements PayPalGateway {
               ],
             },
           ],
-          paymentSource: {
-            paypal: {
-              experienceContext: {
-                brandName: env.paypal.brandName,
-                shippingPreference: PaypalWalletContextShippingPreference.NoShipping,
-                userAction: PaypalExperienceUserAction.PayNow,
-                returnUrl: `${env.appUrl}/app/pacts/${input.pactId}?paypal=return`,
-                cancelUrl: `${env.appUrl}/app/pacts/${input.pactId}?paypal=cancel`,
+          // Wallet-specific experience context only for approval-link flows; the v6 buttons (incl. guest
+          // card checkout) expect a plain order, exactly like PayPal's official v6 sample integration.
+          ...(input.flow === "redirect"
+            ? {
+              paymentSource: {
+                paypal: {
+                  experienceContext: {
+                    brandName: env.paypal.brandName,
+                    shippingPreference: PaypalWalletContextShippingPreference.NoShipping,
+                    userAction: PaypalExperienceUserAction.PayNow,
+                    returnUrl: `${env.appUrl}/app/pacts/${input.pactId}?paypal=return`,
+                    cancelUrl: `${env.appUrl}/app/pacts/${input.pactId}?paypal=cancel`,
+                  },
+                },
               },
-            },
-          },
+              }
+            : {}),
         },
       });
       return {

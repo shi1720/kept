@@ -12,6 +12,11 @@ export interface CreateOrderInput {
   quote: FeeQuote;
   /** Idempotency key (PayPal-Request-Id). */
   requestId: string;
+  /**
+   * "sdk": approved in the JS SDK v6 buttons (PayPal or guest card) — plain order, as in PayPal's v6 samples.
+   * "redirect": approved via the returned approval link (agents/MCP) — carries return/cancel URLs.
+   */
+  flow?: "sdk" | "redirect";
 }
 
 export interface CreatedOrder {

@@ -631,6 +631,14 @@ function Inner({ escrowId, onPaid }: { escrowId: string; onPaid: () => void }) {
 - **SSR:** `PayPalProvider` handles hydration. You can pre-fetch eligibility in a Server Component with `fetchEligibleMethods` from `@paypal/react-paypal-js/sdk-v6/server` and pass `eligibleMethodsResponse` as a resolved value, not a promise. This is optional.
 - For the redirect presentation mode, the `return_url`/`cancel_url` pages must call capture themselves. The approved order id is in the `token` query parameter.
 
+### v6 guest (card) payments: `PayPalGuestPaymentButton` (follow-up research)
+- **Order shape:** PayPal's official samples deliberately create a **plain order with no `payment_source`** and use it for both `PayPalOneTimePaymentButton` and `PayPalGuestPaymentButton`. This covers the React prebuilt page, which shares one `createOrder` across both buttons, and the guest HTML sample, which uses `createPayPalGuestOneTimePaymentSession`. The endpoint is `/paypal-api/checkout/orders/create-order-for-one-time-payment`, and its body is just `intent` plus `purchaseUnits` (amount, breakdown, items).
+- The samples send `payment_source.paypal.experience_context` (return_url, cancel_url, NO_SHIPPING) **only** from a separate redirect endpoint (`create-order-for-paypal-one-time-payment-with-redirect`).
+- An order with `payment_source.paypal` is bound to the PayPal wallet source. Whether the guest card session accepts it is **undocumented and untested**, so omit `payment_source` for SDK-button orders.
+- **Auth:** `clientId` works. The official React sample uses `PayPalProvider clientId=... environment="sandbox" pageType="checkout" components=[..."paypal-guest-payments"...]`. The v6 set-up page says a client token is required **only for Fastlane**. The standalone-button docs page shows `clientToken`, but that is optional.
+- `PayPalGuestPaymentButton` wraps itself in `<paypal-basic-card-container>`, has no `type` prop, and can render `null` when the buyer is not eligible. `onApprove` must return the capture promise.
+- **COOP:** Next.js sets no Cross-Origin-Opener-Policy by default, so popups work as-is. PayPal's sample server explicitly sends `Cross-Origin-Opener-Policy: same-origin-allow-popups`. Never use `same-origin` on checkout pages.
+
 ### Fallback: classic v5 (same package, root import)
 ```tsx
 "use client";

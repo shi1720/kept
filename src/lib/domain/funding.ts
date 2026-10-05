@@ -23,7 +23,11 @@ export function quoteForMilestone(amountCents: number) {
 }
 
 /** Step 1 of PayPal Checkout: create an Orders v2 order for the milestone. */
-export async function createFundingOrder(user: User, milestoneId: string, opts: { gateway?: PayPalGateway } = {}) {
+export async function createFundingOrder(
+  user: User,
+  milestoneId: string,
+  opts: { gateway?: PayPalGateway; flow?: "sdk" | "redirect" } = {},
+) {
   const { milestone, pact } = await loadMilestone(milestoneId);
   assertParty(user, pact, "client");
   assertTransition(milestone.status, "fund");
@@ -39,6 +43,7 @@ export async function createFundingOrder(user: User, milestoneId: string, opts: 
     currency: pact.currency,
     quote,
     requestId,
+    flow: opts.flow ?? "sdk",
   });
   await db.insert(payments).values({
     id: newId("pay"),

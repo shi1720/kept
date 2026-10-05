@@ -149,7 +149,7 @@ export function buildMcpServer(user: User): McpServer {
     },
     async ({ milestone_id }) =>
       safely(async () => {
-        const r = await createFundingOrder(user, milestone_id);
+        const r = await createFundingOrder(user, milestone_id, { flow: "redirect" });
         const link = r.approveUrl ?? pactUrl((await loadMilestone(milestone_id)).pact.id);
         return ok(
           `PayPal order ${r.orderId} created for ${formatMoney(r.quote.totalCents)} (milestone ${formatMoney(r.quote.milestoneCents)} + Kept fee ${formatMoney(r.quote.platformFeeCents)} + processing ${formatMoney(r.quote.processingFeeCents)}).\nAsk the payer to approve it here: ${link}`,
