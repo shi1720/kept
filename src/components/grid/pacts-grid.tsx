@@ -96,7 +96,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
           columnDefs={columns}
           quickFilterText={quick}
           defaultColDef={{ sortable: true, resizable: true, suppressHeaderMenuButton: true }}
-          onRowClicked={(e) => e.data && router.push(`/app/pacts/${e.data.id}`)}
+          onRowClicked={(e) => e.data && router.push(e.data.href)}
           rowClass="cursor-pointer"
           animateRows
           overlayNoRowsTemplate='<span class="text-sm text-ink-3">No pacts yet — start one from a chat or description.</span>'

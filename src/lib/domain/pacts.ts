@@ -301,11 +301,23 @@ export async function listPactsForUser(user: User) {
   const rows = await db
     .select()
     .from(pacts)
-    .where(or(eq(pacts.clientId, user.id), eq(pacts.freelancerId, user.id), eq(pacts.creatorId, user.id)))
+    .where(
+      or(
+        eq(pacts.clientId, user.id),
+        eq(pacts.freelancerId, user.id),
+        eq(pacts.creatorId, user.id),
+        // Invitations addressed to this user's email that they haven't answered yet.
+        and(eq(pacts.status, "pending_acceptance"), eq(pacts.counterpartyEmail, user.email)),
+      ),
+    )
     .orderBy(desc(pacts.updatedAt));
   if (!rows.length) return [];
   const ms = await db.select().from(milestones).where(inArray(milestones.pactId, rows.map((r) => r.id))).orderBy(asc(milestones.position));
-  return rows.map((p) => ({ ...p, role: roleOf(user, p) ?? p.creatorRole, milestones: ms.filter((m) => m.pactId === p.id) }));
+  return rows.map((p) => {
+    const invited = p.creatorId !== user.id && !roleOf(user, p);
+    const role = roleOf(user, p) ?? (invited ? (p.creatorRole === "client" ? "freelancer" : "client") : p.creatorRole);
+    return { ...p, role, invited, milestones: ms.filter((m) => m.pactId === p.id) };
+  });
 }
 
 export async function refreshPactStatus(pactId: string) {

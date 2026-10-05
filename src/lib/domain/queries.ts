@@ -172,7 +172,7 @@ export async function getDashboard(user: User) {
       title: p.title,
       status: p.status,
       role: p.role,
-      counterparty: p.counterpartyName ?? p.counterpartyEmail ?? "—",
+      counterparty: p.invited ? "you're invited" : (p.counterpartyName ?? p.counterpartyEmail ?? "—"),
       creatorId: p.creatorId,
       amountCents: p.milestones.reduce((s, m) => s + m.amountCents, 0),
       heldCents: p.milestones.filter((m) => ["funded", "submitted", "in_review", "disputed"].includes(m.status)).reduce((s, m) => s + m.amountCents, 0),
@@ -181,6 +181,7 @@ export async function getDashboard(user: User) {
       next: p.milestones.find((m) => !["released", "settled", "refunded", "cancelled"].includes(m.status))?.status ?? null,
       updatedAt: p.updatedAt.toISOString(),
       createdVia: p.createdVia,
+      href: p.invited ? `/invite/${p.inviteToken}` : `/app/pacts/${p.id}`,
     })),
     actions,
     stats: {
