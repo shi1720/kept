@@ -104,7 +104,13 @@ export class SimulatedPayPalGateway implements PayPalGateway {
     if (cached) return cached;
     const orderId = state.captures.get(input.captureId);
     const order = orderId ? state.orders.get(orderId) : undefined;
-    if (!order) throw new AppError("payment_failed", "PayPal RESOURCE_NOT_FOUND: capture does not exist");
+    if (!order) {
+      // Captures from a previous process (seeded demo history): accept statelessly.
+      if (!input.captureId.startsWith("SIM-CAP-")) throw new AppError("payment_failed", "PayPal RESOURCE_NOT_FOUND: capture does not exist");
+      const result: RefundResult = { refundId: simId("SIM-RFD-"), status: "COMPLETED", raw: { simulated: true } };
+      state.requestIds.set(`refund:${input.requestId}`, result);
+      return result;
+    }
     if (order.refundedCents + input.amountCents > order.input.quote.totalCents) {
       throw new AppError("payment_failed", "PayPal REFUND_AMOUNT_EXCEEDED");
     }

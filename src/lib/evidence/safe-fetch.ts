@@ -1,5 +1,6 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { env } from "@/lib/env";
 
 /**
  * Fetch untrusted, user-supplied URLs without opening an SSRF hole: only
@@ -41,6 +42,8 @@ export function isPrivateAddress(ip: string): boolean {
 
 async function assertPublic(url: URL) {
   if (!["http:", "https:"].includes(url.protocol)) throw new Error("Only http(s) URLs can be checked");
+  // Kept's own sample deliverables are always allowed (they live on APP_URL, which may be localhost in dev).
+  if (url.origin === new URL(env.appUrl).origin && url.pathname.startsWith("/samples/")) return;
   if (url.username || url.password) throw new Error("URLs with credentials are not allowed");
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) {

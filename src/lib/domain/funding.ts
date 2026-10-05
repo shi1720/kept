@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 import { AppError, invalidState } from "@/lib/errors";
 import { newId, newToken } from "@/lib/ids";
 import { formatMoney } from "@/lib/money";
-import { getPayPal } from "@/lib/paypal";
+import { gatewayFor, getPayPal, type PayPalGateway } from "@/lib/paypal";
 import { assertParty, casMilestone, loadMilestone } from "./context";
 import { notify, recordEvent } from "./events";
 import { quoteFunding } from "./fees";
@@ -23,13 +23,13 @@ export function quoteForMilestone(amountCents: number) {
 }
 
 /** Step 1 of PayPal Checkout: create an Orders v2 order for the milestone. */
-export async function createFundingOrder(user: User, milestoneId: string) {
+export async function createFundingOrder(user: User, milestoneId: string, opts: { gateway?: PayPalGateway } = {}) {
   const { milestone, pact } = await loadMilestone(milestoneId);
   assertParty(user, pact, "client");
   assertTransition(milestone.status, "fund");
 
   const quote = quoteForMilestone(milestone.amountCents);
-  const gateway = getPayPal();
+  const gateway = opts.gateway ?? getPayPal();
   const requestId = `kept-order-${milestoneId}-${newToken().slice(0, 10)}`;
   const order = await gateway.createOrder({
     milestoneId,
@@ -69,7 +69,7 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
   if (opts.user) assertParty(opts.user, pact, "client");
   if (payment.status === "completed") return { milestone, pact, payment, alreadyCaptured: true };
 
-  const gateway = getPayPal();
+  const gateway = gatewayFor(payment);
   const capture =
     opts.source === "checkout"
       ? await gateway.captureOrder(orderId, `kept-capture-${payment.id}`)

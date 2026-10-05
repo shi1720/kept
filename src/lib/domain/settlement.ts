@@ -4,7 +4,7 @@ import { payouts, payments, refunds, type MilestoneStatus, type Payout, type Ref
 import { env } from "@/lib/env";
 import { newId } from "@/lib/ids";
 import { formatMoney, splitByPct } from "@/lib/money";
-import { getPayPal } from "@/lib/paypal";
+import { gatewayFor } from "@/lib/paypal";
 import { casMilestone, loadMilestone, loadUser } from "./context";
 import { notify, recordEvent, type ActorKind } from "./events";
 import { postJournal } from "./ledger";
@@ -96,7 +96,13 @@ export async function executePayout(payoutId: string) {
   const [p] = await db.select().from(payouts).where(eq(payouts.id, payoutId)).limit(1);
   if (!p || !["QUEUED", "FAILED"].includes(p.status)) return p;
   const { milestone, pact } = await loadMilestone(p.milestoneId);
-  const gateway = getPayPal();
+  const [funding] = await db
+    .select({ simulated: payments.simulated })
+    .from(payments)
+    .where(and(eq(payments.milestoneId, p.milestoneId), inArray(payments.status, ["completed", "partially_refunded", "refunded"])))
+    .limit(1);
+  // Escrow funded through the simulator (seeded demo history) settles through it too.
+  const gateway = gatewayFor({ simulated: funding?.simulated ?? false });
   try {
     const res = await gateway.createPayout({
       senderBatchId: p.senderBatchId,
@@ -173,7 +179,7 @@ export async function executeRefund(refundId: string) {
   if (!r || !["QUEUED", "FAILED"].includes(r.status)) return;
   const [payment] = await db.select().from(payments).where(eq(payments.id, r.paymentId)).limit(1);
   const { milestone, pact } = await loadMilestone(r.milestoneId);
-  const gateway = getPayPal();
+  const gateway = gatewayFor(payment);
   try {
     const res = await gateway.refundCapture({
       captureId: payment.paypalCaptureId!,
@@ -247,12 +253,11 @@ export async function reconcileMoneyMovement() {
   const failedRefunds = await db.select().from(refunds).where(inArray(refunds.status, ["QUEUED", "FAILED"]));
   for (const r of failedRefunds) await executeRefund(r.id);
 
-  const gateway = getPayPal();
   const inflight = await db.select().from(payouts).where(inArray(payouts.status, ["PENDING", "PROCESSING", "ONHOLD"]));
   for (const p of inflight) {
     if (!p.paypalBatchId) continue;
     try {
-      const res = await gateway.getPayoutBatch(p.paypalBatchId);
+      const res = await gatewayFor({ simulated: p.simulated }).getPayoutBatch(p.paypalBatchId);
       const status = res.itemStatus ?? res.status;
       if (status !== p.status) {
         await db.update(payouts).set({ status, paypalItemId: res.itemId, raw: res.raw, updatedAt: new Date() }).where(eq(payouts.id, p.id));

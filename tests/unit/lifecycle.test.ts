@@ -8,7 +8,7 @@ import { loadMilestone } from "@/lib/domain/context";
 import { openDispute, respondToRuling } from "@/lib/domain/disputes";
 import { captureFunding, createFundingOrder } from "@/lib/domain/funding";
 import { accountBalances } from "@/lib/domain/ledger";
-import { acceptPact, createPact, sendPact } from "@/lib/domain/pacts";
+import { acceptPact, createPact, sendPact, type PactInput } from "@/lib/domain/pacts";
 import { fastForwardReview } from "@/lib/domain/sweep";
 import { approveMilestone, requestRevision, runReview, submitWork } from "@/lib/domain/work";
 
@@ -27,7 +27,12 @@ beforeAll(async () => {
   });
 });
 
-async function activePact(amount = 300, criteria = [{ text: "Blog post is at least 50 words", kind: "objective" as const, check: { type: "min_words" as const, value: 50 } }]) {
+type CriteriaInput = PactInput["milestones"][number]["criteria"];
+
+async function activePact(
+  amount = 300,
+  criteria: CriteriaInput = [{ text: "Blog post is at least 50 words", kind: "objective", check: { type: "min_words", value: 50 } }],
+) {
   const pact = await createPact(client, {
     title: "Launch blog post",
     summary: "One blog post",

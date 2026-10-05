@@ -12,6 +12,17 @@ export function getPayPal(): PayPalGateway {
   return g.__paypalGateway;
 }
 
+const sim = new SimulatedPayPalGateway();
+
+/** Payments created by the simulator (seeded demo history) must keep using it. */
+export function gatewayFor(payment: { simulated: boolean }): PayPalGateway {
+  return payment.simulated ? sim : getPayPal();
+}
+
+export function simulator(): SimulatedPayPalGateway {
+  return sim;
+}
+
 /** Test hook: swap the gateway (e.g. force the simulator). */
 export function setPayPalGateway(gateway: PayPalGateway) {
   g.__paypalGateway = gateway;
