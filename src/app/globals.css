@@ -5,14 +5,14 @@
  * ember (wax-seal) as the accent, amber for money held in escrow.
  */
 @theme {
-  --color-paper: #f6f8fa;
-  --color-paper-2: #eef2f5;
-  --color-card: #ffffff;
-  --color-ink: #18252d;
-  --color-ink-2: #485b67;
-  --color-ink-3: #657681;
-  --color-line: #e1e8ec;
-  --color-line-2: #cdd8df;
+  --color-paper: #f7f3eb;
+  --color-paper-2: #eee8dc;
+  --color-card: #fffdf8;
+  --color-ink: #193c34;
+  --color-ink-2: #455f54;
+  --color-ink-3: #64746a;
+  --color-line: #e2ddcf;
+  --color-line-2: #cfc8b8;
 
   --color-jade-50: #edf7f4;
   --color-jade-100: #d3ebe3;
@@ -140,8 +140,8 @@
 
 /* Workspace: quiet surfaces, a distinct navigation rail, and focused motion. */
 .kept-workspace { background:#f4f7f9; }
-.kept-workspace > aside { background:#fff; border-color:#e1e8ec; }
-.kept-workspace header { background:#ffffffed; border-color:#e1e8ec; }
+.kept-workspace > aside { background:#fff; border-color:#e2ddcf; }
+.kept-workspace header { background:#fffdf8ed; border-color:#e2ddcf; }
 .kept-workspace .display { font-family:var(--font-sans); font-weight:500; font-size:32px; letter-spacing:-.045em; line-height:1.2; }
 .kept-workspace main > div { animation-duration:.4s; }
 .kept-workspace main section { scroll-margin-top:90px; }

@@ -7,7 +7,10 @@ test("mobile landing cards open accessible visual walkthroughs", async ({page}) 
   for (let i=0;i<3;i++) {
     await page.locator(".workflow-card").nth(i).click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByRole("link",{name:"Start your own pact"})).toBeVisible();
+    await expect(page.getByRole("img")).toBeVisible();
+    await expect(page.locator(".workflow-card").nth(i)).toHaveAttribute("aria-pressed", "true");
+    await page.waitForTimeout(4700);
+    await expect(page.locator(".workflow-card").nth(i)).toHaveClass(/selected/);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
