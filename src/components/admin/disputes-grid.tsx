@@ -205,10 +205,15 @@ function ArbitrateForm({ dispute, onDone }: { dispute: DisputeRow; onDone: () =>
               {[
                 { who: `${dispute.client ?? "Client"} (client)`, text: dispute.clientStatement },
                 { who: `${dispute.freelancer ?? "Freelancer"} (freelancer)`, text: dispute.freelancerStatement },
-              ].map((s) => (
+              ]
+                // The opener's first statement is the reason quoted above; don't show it twice.
+                .map((s) => (s.text?.trim() === dispute.reason.trim() ? { ...s, text: null, same: true } : { ...s, same: false }))
+                .map((s) => (
                 <div key={s.who} className="rounded-lg border border-line bg-card px-3 py-2">
                   <p className="text-[11.5px] font-medium uppercase tracking-wide text-ink-3">{s.who}</p>
-                  <p className="mt-1 whitespace-pre-line leading-relaxed text-ink-2">{s.text ? `“${s.text}”` : <span className="italic text-ink-3">No statement yet</span>}</p>
+                  <p className="mt-1 whitespace-pre-line leading-relaxed text-ink-2">
+                    {s.text ? `“${s.text}”` : <span className="italic text-ink-3">{s.same ? "Same as the reason above" : "No statement yet"}</span>}
+                  </p>
                 </div>
               ))}
             </div>

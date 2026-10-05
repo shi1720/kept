@@ -227,9 +227,14 @@ function Receipt({ icon, title, amount, lines }: { icon: React.ReactNode; title:
     <div className="rounded-xl border border-line bg-card p-4">
       <p className="flex items-center gap-2 text-xs font-medium text-ink-3 [&_svg]:size-3.5">{icon} {title}</p>
       <p className="num mt-1 text-[18px] font-semibold">{formatMoney(amount)}</p>
-      {lines.filter(Boolean).map((l) => (
-        <p key={l} className="truncate font-mono text-[11px] text-ink-3">{l}</p>
-      ))}
+      {lines.filter(Boolean).map((l, i) =>
+        // The first line is a plain-language status and may wrap; the rest are ids and addresses.
+        i === 0 ? (
+          <p key={l} className="mt-0.5 text-[12px] leading-snug text-ink-2">{l}</p>
+        ) : (
+          <p key={l} className="truncate font-mono text-[11px] text-ink-3" title={l}>{l}</p>
+        ),
+      )}
     </div>
   );
 }

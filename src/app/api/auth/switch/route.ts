@@ -21,7 +21,8 @@ async function safeDestination(user: User, path: string | null | undefined): Pro
   const pact = await loadPact(m[1]).catch(() => null);
   if (!pact) return "/app";
   if (roleOf(user, pact) || pact.creatorId === user.id) return path;
-  if (pact.status === "pending_acceptance" && pact.counterpartyEmail === user.email) return `/invite/${pact.inviteToken}`;
+  // Same rule as everywhere else: an email-addressed invite only opens for a verified owner of that address.
+  if (pact.status === "pending_acceptance" && user.emailVerifiedAt && pact.counterpartyEmail === user.email) return `/invite/${pact.inviteToken}`;
   return "/app";
 }
 

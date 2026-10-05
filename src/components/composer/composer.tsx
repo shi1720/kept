@@ -413,7 +413,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
               <Field label={`The ${counterpartyRole}'s name`}>
                 <Input value={pact.counterpartyName ?? ""} onChange={(e) => setPact({ ...pact, counterpartyName: e.target.value })} placeholder="Optional" />
               </Field>
-              <Field label={`The ${counterpartyRole}'s email`} hint="They'll see the invite in Kept if they already have an account.">
+              <Field label={`The ${counterpartyRole}'s email`} hint="We'll email them the invite. You'll also get a link to share however you like.">
                 <Input type="email" value={pact.counterpartyEmail ?? ""} onChange={(e) => setPact({ ...pact, counterpartyEmail: e.target.value })} placeholder="Optional" />
               </Field>
             </CardContent>
@@ -429,8 +429,13 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                 <Field label="Amount (USD)" className="w-32">
                   <Input type="number" min={1} step="0.01" value={m.amount} onChange={(e) => updateMilestone(mi, { amount: Number(e.target.value) })} className="num" />
                 </Field>
-                <Field label="Due in (days)" className="w-28">
-                  <Input type="number" min={1} value={m.dueInDays ?? ""} onChange={(e) => updateMilestone(mi, { dueInDays: e.target.value ? Number(e.target.value) : null })} />
+                <Field label="Days to deliver" className="w-32">
+                  <Input
+                    type="number"
+                    min={1}
+                    title={mi === 0 ? "Days from the start until this milestone is due" : "Days after the previous milestone is due"}
+                    aria-description={mi === 0 ? "Counted from the start" : "Counted from the previous milestone's due date"}
+                    value={m.dueInDays ?? ""} onChange={(e) => updateMilestone(mi, { dueInDays: e.target.value ? Number(e.target.value) : null })} />
                 </Field>
                 {pact.milestones.length > 1 && (
                   <Button variant="ghost" size="icon" onClick={() => setPact({ ...pact, milestones: pact.milestones.filter((_, j) => j !== mi) })} aria-label="Remove milestone">

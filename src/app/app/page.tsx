@@ -26,8 +26,9 @@ const TONE: Record<string, string> = {
   ember: "border-l-ember-500",
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ password?: string }> }) {
   const user = await requireUser();
+  const justReset = (await searchParams).password === "reset";
   const d = await getDashboard(user);
   const firstName = user.name.split(" ")[0];
   const isFreelancerish = d.stats.earnedCents + d.stats.earningPendingCents > 0 || d.pacts.some((p) => p.role === "freelancer");
@@ -82,6 +83,11 @@ export default async function DashboardPage() {
         </Button>
       </div>
 
+      {justReset && (
+        <p role="status" className="rounded-2xl border border-jade-100 bg-jade-50 px-4 py-3 text-[13.5px] text-jade-700">
+          <b className="font-semibold">Password updated.</b> You’re signed in here, and every other session was signed out.
+        </p>
+      )}
       {!user.demoWorkspace && !user.emailVerifiedAt && <VerifyEmailBanner email={user.email} />}
 
       {guide && <DemoGuide steps={guide} sandbox={sandbox} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}

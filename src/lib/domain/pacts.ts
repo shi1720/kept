@@ -14,6 +14,8 @@ import {
   type PactTerms,
   type User,
 } from "@/lib/db/schema";
+import { sendEmail } from "@/lib/email";
+import { env } from "@/lib/env";
 import { badRequest, forbidden, invalidState, notFound } from "@/lib/errors";
 import { newId, newToken } from "@/lib/ids";
 import { toCents } from "@/lib/money";
@@ -277,6 +279,16 @@ export async function sendPact(user: User, pactId: string): Promise<Pact> {
     const [cp] = await db.select().from(users).where(eq(users.email, pact.counterpartyEmail)).limit(1);
     // Only a verified owner of the address hears about the invite inside Kept; the link is shared directly.
     if (cp?.emailVerifiedAt) await notify(db, [cp.id], { pactId, title: "You've been invited to a pact", body: `${user.name} sent you “${pact.title}” to review and sign.` });
+    // Email the invitation to the address itself (only its owner can read it). Demo worlds use
+    // made-up addresses, so they're skipped. Sending never blocks the pact.
+    if (!pact.demoWorkspace) {
+      await sendEmail({
+        to: pact.counterpartyEmail,
+        subject: `${user.name} sent you a pact to review on Kept`,
+        text: `${user.name} wants to work with you on “${pact.title}” and has signed the terms on Kept.\n\nOpen the invitation to read the milestones and acceptance criteria. If they look right, countersign; if not, ask for changes. Money is held in PayPal escrow and released when the work meets what you both agreed.`,
+        action: { label: "Review the pact", url: `${env.appUrl}/invite/${pact.inviteToken}` },
+      }).catch((err) => console.error("[pacts] invite email failed", err));
+    }
   }
   return loadPact(pactId);
 }
@@ -393,7 +405,7 @@ export async function refreshPactStatus(pactId: string) {
       const message =
         settled + refunded === 0
           ? "All milestones paid in full. Promise kept."
-          : `All milestones resolved: ${[paid && `${paid} paid in full`, settled && `${settled} settled by agreement`, refunded && `${refunded} refunded`].filter(Boolean).join(", ")}.`;
+          : `All milestones resolved: ${[paid && `${paid} paid in full`, settled && `${settled} settled with a split`, refunded && `${refunded} refunded`].filter(Boolean).join(", ")}.`;
       await recordEvent(db, { pactId, actorKind: "system", type: "pact.completed", message });
     }
   } else {

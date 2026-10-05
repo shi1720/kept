@@ -44,7 +44,10 @@ export const draftSchema = z.object({
         title: z.string(),
         description: z.string(),
         amount: z.number().describe("Amount in major units (e.g. 250 for $250)"),
-        dueInDays: z.number().nullable().describe("Days from start until due, if stated or inferable"),
+        dueInDays: z
+          .number()
+          .nullable()
+          .describe("Days this milestone takes: counted from the previous milestone's due date (the first from the start). E.g. 'concepts in a week, final two weeks later' → 7 then 14. Null if not stated or inferable."),
         criteria: z
           .array(
             z.object({

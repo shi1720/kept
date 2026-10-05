@@ -85,6 +85,11 @@ describe("email verification", () => {
       milestones: [{ title: "Logo", description: "Final logo", amount: 200, criteria: [{ text: "SVG and PNG delivered", kind: "objective", check: { type: "none" } }] }],
     });
     await app.pacts.sendPact(client, pact.id);
+    // The invitee is emailed the invite link (only the owner of the inbox can read it).
+    const invite = readdirSync(outbox)
+      .map((f) => JSON.parse(readFileSync(path.join(outbox, f), "utf8")) as { to: string; action?: { url: string } })
+      .find((m) => m.to === "tomas@kept.test" && m.action?.url.includes(`/invite/${pact.inviteToken}`));
+    expect(invite).toBeTruthy();
 
     // Someone registers the invitee's address before the real owner does.
     const squatter = await app.users.createUser({ name: "Not Tomas", email: "tomas@kept.test", password: "password123" });

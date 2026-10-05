@@ -70,7 +70,7 @@ function SplitCard() {
           <span className="num">$400.00 in escrow</span>
         </div>
         <div className="mt-3 flex h-14 overflow-hidden rounded-xl" role="img" aria-label="Split: 65 percent, $260, paid to Ana; 35 percent, $140, refunded to Maya">
-          <div className="kp-grow flex items-center justify-between bg-jade-500 px-4" style={{ width: "65%" }}>
+          <div className="kp-grow flex items-center justify-between bg-jade-600 px-4" style={{ width: "65%" }}>
             <span className="display text-[28px] leading-none">65%</span>
             <span className="num hidden text-[13px] font-medium sm:inline">$260.00</span>
           </div>
