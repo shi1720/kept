@@ -25,6 +25,15 @@ export interface PayPalDisputeResource {
 
 export const OPEN_PAYPAL_DISPUTE = (d: PayPalDisputeInfo | null | undefined) => Boolean(d && d.status !== "RESOLVED");
 
+/** True while the payer has an unresolved dispute with PayPal on this milestone's capture. */
+export async function hasOpenPayPalDispute(milestoneId: string): Promise<boolean> {
+  const rows = await db
+    .select({ d: payments.paypalDispute })
+    .from(payments)
+    .where(and(eq(payments.milestoneId, milestoneId), inArray(payments.status, ["completed", "partially_refunded"])));
+  return rows.some((r) => OPEN_PAYPAL_DISPUTE(r.d));
+}
+
 export async function buildEvidenceDossier(milestoneId: string): Promise<string> {
   const { milestone, pact, criteria } = await loadMilestone(milestoneId);
   const [client, freelancer] = await Promise.all([loadUser(pact.clientId), loadUser(pact.freelancerId)]);

@@ -4,10 +4,10 @@
  *   KEPT_URL=https://<your-kept> npm run agents:demo            # works with or without ANTHROPIC_API_KEY
  *
  * 1. Bootstraps a private demo world and mints an API key for each persona.
- * 2. Maya's agent (client) drafts and signs a pact; Ade's agent (freelancer) countersigns.
+ * 2. Maya's agent (client) drafts and signs a pact; Ana's agent (freelancer) countersigns.
  * 3. Maya's agent creates the PayPal order. On a simulator deployment it is approved
  *    automatically; on the PayPal sandbox the script prints the approval link and waits for you.
- * 4. Ade's agent writes the deliverable (with Claude if ANTHROPIC_API_KEY is set) and submits it.
+ * 4. Ana's agent writes the deliverable (with Claude if ANTHROPIC_API_KEY is set) and submits it.
  * 5. Kept's AI referee judges it; Maya's agent approves on PASS (→ PayPal Payout) or requests a revision.
  */
 import Anthropic from "@anthropic-ai/sdk";
@@ -66,7 +66,7 @@ async function main() {
   const mayaCookie = await session("client");
   const adeCookie = await session(null, mayaCookie);
   const maya = await agent("Maya's agent", await mintKey(mayaCookie, "maya-agent"));
-  const ade = await agent("Ade's agent", await mintKey(adeCookie, "ade-agent"));
+  const ade = await agent("Ana's agent", await mintKey(adeCookie, "ade-agent"));
 
   const brief =
     "Write a product description for Lantern Coffee's Holiday Blend for our shop page. At least 120 words, mention the tasting notes (dark cherry, cocoa nib, orange peel), the Huila origin, the $22 price and a clear call to pre-order. Budget $80, due in 3 days.";
@@ -97,7 +97,7 @@ async function main() {
   void pact;
 
   const text = await writeDeliverable(`${brief}\n\nAcceptance criteria are in the pact: ${created.text}`);
-  const submitted = await ade("submit_deliverable", { milestone_id: milestoneId, note: "Delivered by Ade's writing agent", text });
+  const submitted = await ade("submit_deliverable", { milestone_id: milestoneId, note: "Delivered by Ana's writing agent", text });
   const verdict = submitted.data.verdict as { overall: string; score: number } | null;
   // Maya's agent policy: approve a PASS, or a strong PARTIAL (≥ 80) — otherwise ask for a revision.
   if (verdict && (verdict.overall === "pass" || verdict.score >= 80)) await maya("approve_milestone", { milestone_id: milestoneId });

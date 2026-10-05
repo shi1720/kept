@@ -23,7 +23,11 @@ export async function GET(req: Request) {
   }
   try {
     const identity = await exchangePayPalCode(code);
-    const patch = { paypalPayerId: identity.payerId, paypalEmail: identity.email, paypalVerified: identity.verified };
+    const patch = {
+      paypalPayerId: identity.payerId,
+      paypalVerified: identity.verified,
+      ...(identity.email ? { paypalEmail: identity.email } : {}),
+    };
 
     if (state.startsWith("link.")) {
       const current = await getCurrentUser();
@@ -33,12 +37,16 @@ export async function GET(req: Request) {
       return NextResponse.redirect(`${env.appUrl}/app/settings?linked=paypal`);
     }
 
-    const [byPayer] = await db.select().from(users).where(eq(users.paypalPayerId, identity.payerId)).limit(1);
-    const [byEmail] = identity.email ? await db.select().from(users).where(eq(users.email, identity.email)).limit(1) : [];
-    let user = byPayer ?? byEmail;
-    if (user) {
-      await db.update(users).set(patch).where(eq(users.id, user.id));
-    } else {
+    // Sign in only by PayPal payer id. We never attach a PayPal identity to an existing account by
+    // email at login (that would let someone take over an account and redirect its payouts);
+    // linking happens explicitly from Settings while signed in.
+    const [byPayer] = identity.payerId ? await db.select().from(users).where(eq(users.paypalPayerId, identity.payerId)).limit(1) : [];
+    let user = byPayer;
+    if (!user && identity.email) {
+      const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, identity.email)).limit(1);
+      if (taken) return NextResponse.redirect(`${env.appUrl}/login?error=paypal_link_required`);
+    }
+    if (!user) {
       user = await createUser({
         name: identity.name,
         email: identity.email ?? `${identity.payerId.toLowerCase()}@paypal.kept.app`,

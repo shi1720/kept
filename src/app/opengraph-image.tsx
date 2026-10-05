@@ -188,7 +188,7 @@ export default async function Image() {
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", fontSize: 17, fontWeight: 600 }}>AI referee · PASS</div>
-                <div style={{ display: "flex", fontSize: 15, color: C.ink2, marginTop: 4 }}>Payout sent · $900.00 → Ade</div>
+                <div style={{ display: "flex", fontSize: 15, color: C.ink2, marginTop: 4 }}>Payout sent · $900.00 → Ana</div>
               </div>
             </div>
 

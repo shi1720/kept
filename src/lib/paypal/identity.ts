@@ -52,7 +52,9 @@ export async function exchangePayPalCode(code: string): Promise<PayPalIdentity> 
     emails?: { value: string; primary?: boolean; confirmed?: boolean }[];
     verified_account?: string | boolean;
   };
-  const email = info.emails?.find((e) => e.primary)?.value ?? info.emails?.[0]?.value ?? null;
+  // Only trust an email PayPal says the user has confirmed.
+  const confirmed = (info.emails ?? []).filter((e) => e.confirmed === true || (e.confirmed as unknown) === "true");
+  const email = confirmed.find((e) => e.primary)?.value ?? confirmed[0]?.value ?? null;
   return {
     payerId: info.payer_id ?? info.user_id ?? "",
     name: info.name ?? email?.split("@")[0] ?? "PayPal user",

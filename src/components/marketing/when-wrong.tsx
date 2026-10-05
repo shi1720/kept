@@ -3,10 +3,10 @@ import { Container, SectionHeading } from "./section";
 
 function GhostingCard() {
   const events = [
-    { time: "Tue 10:14", text: "Ade submits the live landing page", tone: "ink" },
+    { time: "Tue 10:14", text: "Ana submits the live landing page", tone: "ink" },
     { time: "Tue 10:15", text: "Referee: PASS, 94/100, 5 of 5 criteria met", tone: "jade" },
     { time: "Tue → Thu", text: "48-hour review window. Maya doesn’t respond.", tone: "wait" },
-    { time: "Thu 10:14", text: "Auto-released: $900.00 to Ade via PayPal Payouts", tone: "pay" },
+    { time: "Thu 10:14", text: "Auto-released: $900.00 to Ana via PayPal Payouts", tone: "pay" },
   ] as const;
   return (
     <article className="flex flex-col rounded-3xl border border-line bg-card p-6 shadow-card sm:p-8">
@@ -51,7 +51,7 @@ function SplitCard() {
   const steps = [
     { icon: UserRound, text: "Maya raises an issue: “Only two real concepts. The third is a recolour.”" },
     { icon: Bot, text: "The mediator reads the verdict, both statements and the pact, and proposes 65 / 35." },
-    { icon: Check, text: "Maya accepts. Ade accepts. It executes on PayPal." },
+    { icon: Check, text: "Maya accepts. Ana accepts. It executes on PayPal." },
   ];
   return (
     <article className="relative flex flex-col overflow-hidden rounded-3xl bg-ink p-6 text-paper sm:p-8">
@@ -69,7 +69,7 @@ function SplitCard() {
           <span>Milestone 1 · Three logo concepts</span>
           <span className="num">$400.00 in escrow</span>
         </div>
-        <div className="mt-3 flex h-14 overflow-hidden rounded-xl" role="img" aria-label="Split: 65 percent, $260, paid to Ade; 35 percent, $140, refunded to Maya">
+        <div className="mt-3 flex h-14 overflow-hidden rounded-xl" role="img" aria-label="Split: 65 percent, $260, paid to Ana; 35 percent, $140, refunded to Maya">
           <div className="kp-grow flex items-center justify-between bg-jade-500 px-4" style={{ width: "65%" }}>
             <span className="display text-[28px] leading-none">65%</span>
             <span className="num hidden text-[13px] font-medium sm:inline">$260.00</span>
@@ -83,7 +83,7 @@ function SplitCard() {
           <div className="flex items-start gap-1.5 text-paper/85">
             <Send className="mt-0.5 size-3.5 shrink-0 text-jade-300" aria-hidden />
             <span>
-              <span className="num font-medium text-paper sm:hidden">$260 </span>to Ade as a <b className="font-medium text-paper">PayPal Payout</b>
+              <span className="num font-medium text-paper sm:hidden">$260 </span>to Ana as a <b className="font-medium text-paper">PayPal Payout</b>
             </span>
           </div>
           <div className="flex items-start gap-1.5 text-paper/85">

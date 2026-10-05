@@ -19,10 +19,10 @@ beforeAll(async () => {
   await ensureMigrated();
   client = await createUser({ name: "Maya Chen", email: "maya@example.com", password: "password123", demoWorkspace: "ws1" });
   freelancer = await createUser({
-    name: "Ade Okafor",
+    name: "Ana Reyes",
     email: "ade@example.com",
     password: "password123",
-    paypalEmail: "ade-paypal@example.com",
+    paypalEmail: "ana-paypal@example.com",
     demoWorkspace: "ws1",
   });
 });
@@ -77,7 +77,7 @@ describe("escrow lifecycle", () => {
     const [p] = await db.select().from(payouts).where(eq(payouts.milestoneId, milestoneId));
     expect(p.status).toBe("SUCCESS");
     expect(p.amountCents).toBe(30000);
-    expect(p.receiverEmail).toBe("ade-paypal@example.com");
+    expect(p.receiverEmail).toBe("ana-paypal@example.com");
 
     // Double approve is rejected by the state machine.
     await expect(approveMilestone(client, milestoneId)).rejects.toThrow();
@@ -108,14 +108,57 @@ describe("escrow lifecycle", () => {
     await expect(requestRevision(client, milestoneId, "Again please")).rejects.toThrow(/revisions/);
   });
 
-  it("auto-releases passing work when the client ghosts", async () => {
+  it("auto-releases model-verified passing work when the client ghosts", async () => {
+    const { setProviders } = await import("@/lib/ai/provider");
+    const { milestoneId } = await activePact();
+    const { criteria } = await loadMilestone(milestoneId);
+    // A stub "real" provider that returns a clean pass.
+    setProviders([
+      {
+        name: "anthropic",
+        model: "stub-model",
+        async generate() {
+          return {
+            criteria: criteria.map((c) => ({ criterionId: c.id, result: "met", confidence: 0.9, evidence: "80 words", reasoning: "ok" })),
+            overall: "pass", score: 100, recommendedReleasePct: 100, summary: "All met.", notesForClient: "", notesForFreelancer: "", injectionAttempt: false,
+          } as never;
+        },
+      },
+    ]);
+    try {
+      await fund(milestoneId);
+      await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
+      await runReview(milestoneId);
+      const report = await fastForwardReview(freelancer, milestoneId);
+      expect(report.autoReleased).toContain(milestoneId);
+      expect((await loadMilestone(milestoneId)).milestone.status).toBe("released");
+    } finally {
+      setProviders([]);
+    }
+  });
+
+  it("never auto-releases on an offline (keyword) verdict, even a pass", async () => {
     const { milestoneId } = await activePact();
     await fund(milestoneId);
     await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
     await runReview(milestoneId);
+    const [v] = await db.select().from(verdicts).where(eq(verdicts.milestoneId, milestoneId));
+    expect(v.provider).toBe("offline");
+    expect(v.overall).toBe("pass");
     const report = await fastForwardReview(freelancer, milestoneId);
-    expect(report.autoReleased).toContain(milestoneId);
-    expect((await loadMilestone(milestoneId)).milestone.status).toBe("released");
+    expect(report.autoReleased).not.toContain(milestoneId);
+  });
+
+  it("refuses to capture a second order for an already-funded milestone", async () => {
+    const { milestoneId } = await activePact();
+    const first = await createFundingOrder(client, milestoneId);
+    const second = await createFundingOrder(client, milestoneId);
+    await captureFunding(first.orderId, { user: client, source: "checkout" });
+    await expect(captureFunding(second.orderId, { user: client, source: "checkout" })).rejects.toThrow(/already funded/);
+    const { payments } = await import("@/lib/db/schema");
+    const rows = await db.select().from(payments).where(eq(payments.milestoneId, milestoneId));
+    expect(rows.filter((r) => r.status === "completed")).toHaveLength(1);
+    expect(rows.find((r) => r.paypalOrderId === second.orderId)?.status).toBe("failed");
   });
 
   it("routes failing work to mediation on timeout and settles a split via payout + refund", async () => {

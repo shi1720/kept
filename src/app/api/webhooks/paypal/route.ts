@@ -22,9 +22,13 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[webhook] verification error", err);
   }
+  if (!verified) {
+    // Non-2xx makes PayPal retry later; nothing is recorded or acted on.
+    return NextResponse.json({ error: "signature verification failed" }, { status: 401 });
+  }
   try {
-    const result = await handlePayPalWebhook(event, verified);
-    return NextResponse.json(result, { status: verified ? 200 : 202 });
+    const result = await handlePayPalWebhook(event, true);
+    return NextResponse.json(result);
   } catch (err) {
     console.error("[webhook] processing failed", err);
     // Non-2xx makes PayPal retry later.

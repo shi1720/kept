@@ -28,6 +28,9 @@ export interface PayPalWebhookEvent {
  * for up to 3 days, so events are de-duplicated on their id.
  */
 export async function handlePayPalWebhook(event: PayPalWebhookEvent, verified: boolean) {
+  // Unverified events are never recorded: recording them would make the de-duplication swallow
+  // PayPal's retry of the same (genuine) event after a transient verification failure.
+  if (!verified) return { ignored: "unverified" as const };
   const [inserted] = await db
     .insert(webhookEvents)
     .values({
@@ -41,7 +44,6 @@ export async function handlePayPalWebhook(event: PayPalWebhookEvent, verified: b
     .onConflictDoNothing()
     .returning();
   if (!inserted) return { duplicate: true };
-  if (!verified) return { ignored: "unverified" };
 
   try {
     await dispatch(event);
@@ -120,6 +122,6 @@ async function knownOrder(orderId: string) {
 
 function ignoreState(err: unknown) {
   // Another path (browser capture) already moved the milestone — that's fine.
-  if (err instanceof Error && /updated by someone else|not funded yet/.test(err.message)) return;
+  if (err instanceof Error && /updated by someone else|not funded yet|already funded|funded by another payment/.test(err.message)) return;
   throw err;
 }

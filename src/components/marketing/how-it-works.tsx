@@ -58,7 +58,7 @@ function SealVisual() {
           <div className="mt-1 text-[10px] uppercase tracking-wider text-ink-3">Signed</div>
         </div>
         <div>
-          <div className="display text-[20px] italic leading-none">Ade Okafor</div>
+          <div className="display text-[20px] italic leading-none">Ana Reyes</div>
           <div className="mt-1 text-[10px] uppercase tracking-wider text-ink-3">Signed</div>
         </div>
       </div>
@@ -133,7 +133,7 @@ function EvidenceVisual() {
 
 function OutcomeVisual() {
   const outcomes = [
-    { icon: Send, title: "Approve", detail: "PayPal Payout · 100% to Ade", cls: "border-jade-100 bg-jade-50 text-jade-700" },
+    { icon: Send, title: "Approve", detail: "PayPal Payout · 100% to Ana", cls: "border-jade-100 bg-jade-50 text-jade-700" },
     { icon: RotateCcw, title: "Request a revision", detail: "1 of 1 included rounds", cls: "border-line bg-paper text-ink-2" },
     { icon: Scale, title: "Raise an issue", detail: "AI mediator proposes a split", cls: "border-ember-100 bg-ember-50 text-ember-700" },
   ];

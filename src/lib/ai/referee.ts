@@ -136,7 +136,8 @@ export function reconcile(
     ? Math.round((criteriaResults.reduce((s, r) => s + RESULT_WEIGHT[r.result], 0) / criteria.length) * 100)
     : 0;
   const anyNotMet = criteriaResults.some((r) => r.result === "not_met");
-  const allMet = criteriaResults.every((r) => r.result === "met" || r.result === "cannot_verify");
+  // A PASS (which can trigger automatic release) requires every criterion to be positively met.
+  const allMet = criteriaResults.every((r) => r.result === "met");
   const overall = allMet && score >= 85 ? "pass" : score < 50 ? "fail" : "partial";
   const recommendedReleasePct =
     overall === "pass" ? 100 : Math.round(Math.min(anyNotMet ? 95 : 100, Math.max(0, (model.recommendedReleasePct + score) / 2)) / 5) * 5;

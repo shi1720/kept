@@ -22,12 +22,12 @@
 > "Paste the chat. Claude compiles it into milestones and acceptance criteria a neutral referee can actually check. It scores how vague the brief was, rewrites phrases like 'a few revisions' before they become disputes — and if the DM smells like a scam, it says so."
 
 ### Scene 4 — Seal and fund with PayPal (0:52–1:15)
-**Screen:** Switch to Ade → open **Holiday Blend packaging illustration** → **Countersign** (wax seal appears). Switch to Maya → the funding card → click the **PayPal** button → sandbox popup → **Pay** → toast "Funded!" → header shows **Held in escrow**.
+**Screen:** Switch to Ana → open **Holiday Blend packaging illustration** → **Countersign** (wax seal appears). Switch to Maya → the funding card → click the **PayPal** button → sandbox popup → **Pay** → toast "Funded!" → header shows **Held in escrow**.
 **VO:**
 > "Both sides sign the same terms. The client funds the milestone with PayPal Checkout — real sandbox money, captured through the Orders API. It's now held in escrow and booked in a double-entry ledger. The freelancer knows the money exists before starting work."
 
 ### Scene 5 — Deliver and judge (1:15–1:50)
-**Screen:** Switch to Ade → **Pre-order landing page** → **Submit work** → demo sample **"Honest landing page"** → **Submit for review**. Show the referee steps animating, then the verdict: score ring, each criterion with evidence quotes and "Machine check passed".
+**Screen:** Switch to Ana → **Pre-order landing page** → **Submit work** → demo sample **"Honest landing page"** → **Submit for review**. Show the referee steps animating, then the verdict: score ring, each criterion with evidence quotes and "Machine check passed".
 Then **(cut)**: the same flow with **"Sneaky one"** → verdict shows the red **"Manipulation attempt detected"** banner.
 **VO:**
 > "When the work arrives, Kept's evidence engine measures it — is the link live, does the page say 'Pre-order', how many words, does the repo have tests. Then the AI referee judges every criterion and cites its evidence. Code measures; the model judges.
@@ -35,7 +35,7 @@ Then **(cut)**: the same flow with **"Sneaky one"** → verdict shows the red **
 
 ### Scene 6 — Settle: payout, or a fair split (1:50–2:18)
 **Screen:** Maya → **Approve & release** → confirm → receipt "PayPal Payout to freelancer" with batch id.
-Then open **Instagram launch captions** → the mediation panel: statements, the 65/35 bar, rationale → **Accept** as Maya → switch → **Accept** as Ade → "Settled 65/35" with **PayPal Payout** and **PayPal refund** receipts.
+Then open **Instagram launch captions** → the mediation panel: statements, the 65/35 bar, rationale → **Accept** as Maya → switch → **Accept** as Ana → "Settled 65/35" with **PayPal Payout** and **PayPal refund** receipts.
 **VO:**
 > "Approve, and PayPal Payouts sends one hundred percent to the freelancer. If there's a disagreement, an AI mediator reads the contract, the evidence and both sides' stories, and proposes a split. When both accept, Kept executes it as a PayPal payout plus a partial refund — in seconds, not weeks."
 

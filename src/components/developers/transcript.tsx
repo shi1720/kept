@@ -16,7 +16,7 @@ const TURNS: Turn[] = [
     result: "Drafted pact pct_9x2k…: “Instagram launch captions (6 posts)” — clarity of the brief 64/100.\n1. Six captions — $240\n   • Exactly 6 captions [auto-check: min_words]\n   • Each caption 40–80 words with 3 hashtags [auto-check: keywords_present]\n   • Tone matches the Lantern brand voice",
   },
   { kind: "tool", name: "send_pact", args: '{ pact_id: "pct_9x2k…" }', result: "Signed and sent. Share this link with the other party to countersign: …/invite/Qm7…" },
-  { kind: "agent", text: "I turned the brief into a pact with checkable criteria and sent it to Ade. He countersigned. To lock the money in escrow I need you to approve the PayPal payment:" },
+  { kind: "agent", text: "I turned the brief into a pact with checkable criteria and sent it to Ana. She countersigned. To lock the money in escrow I need you to approve the PayPal payment:" },
   {
     kind: "tool",
     name: "create_funding_order",
@@ -26,7 +26,7 @@ const TURNS: Turn[] = [
   },
   { kind: "human", text: "Approved in PayPal." },
   { kind: "tool", name: "confirm_funding", args: '{ order_id: "5O190127TN364715T" }', result: "Funded. $240.00 is held in escrow for “Six captions”." },
-  { kind: "agent", text: "Ade delivered on Thursday. The referee checked every caption against the criteria:" },
+  { kind: "agent", text: "Ana delivered on Thursday. The referee checked every caption against the criteria:" },
   {
     kind: "tool",
     name: "get_verdict",
@@ -34,7 +34,7 @@ const TURNS: Turn[] = [
     result: "PASS 94/100 — All six captions are on-brand and within length.\n• [met] Exactly 6 captions — 6 found in deliverable.md\n• [met] 40–80 words with 3 hashtags — every caption 46–71 words, 3 hashtags each\n• [met] Tone matches the brand voice — warm, playful, references the roast",
   },
   { kind: "tool", name: "approve_milestone", args: '{ milestone_id: "mil_4hq…" }', result: "Approved. The escrowed amount is being paid out to the freelancer via PayPal.", gate: "Releases escrow via PayPal Payouts" },
-  { kind: "agent", text: "Done. Ade was paid $240 through PayPal Payouts, every criterion was backed by evidence, and the pact is on both of your track records." },
+  { kind: "agent", text: "Done. Ana was paid $240 through PayPal Payouts, every criterion was backed by evidence, and the pact is on both of your track records." },
 ];
 
 export function AgentTranscript() {

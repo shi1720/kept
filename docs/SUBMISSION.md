@@ -10,7 +10,7 @@
 
 ## Inspiration
 
-Picture Ade, a brand designer in Lagos (he's the freelancer persona in our demo). A coffee-shop owner finds him on Instagram, agrees a $600 logo package in the DMs, receives the files — and goes quiet. No platform, no escrow, no one to appeal to. Stories like this are the norm: **71% of US freelancers have struggled to get paid** (Freelancers Union), **62% of New York freelancers have been stiffed at least once and fewer than 1% ever went to court** (Authors Guild / Freelancers Union, 2022).
+Picture Ana, a brand designer in Manila (she's the freelancer persona in our demo). A coffee-shop owner finds her on Instagram, agrees a $600 logo package in the DMs, receives the files — and goes quiet. No platform, no escrow, no one to appeal to. Stories like this are the norm: **71% of US freelancers have struggled to get paid** (Freelancers Union), **62% of New York freelancers have been stiffed at least once and fewer than 1% ever went to court** (Authors Guild / Freelancers Union, 2022).
 
 Clients have the mirror-image fear: pay upfront and hope the work arrives. Marketplaces fix this by taking ~20% and settling disputes with humans over days — but **58% of US independents don't find work primarily through platforms** (MBO Partners, 2025). And PayPal's own Purchase Protection excludes "Significantly Not as Described claims for wholly or partly custom-made items" — which is what bespoke freelance work is.
 

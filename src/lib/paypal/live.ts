@@ -180,8 +180,9 @@ export class LivePayPalGateway implements PayPalGateway {
       },
       items: [
         {
-          recipient_type: "EMAIL",
-          receiver: input.receiverEmail,
+          ...(input.receiverEmail.startsWith("payer:")
+            ? { recipient_type: "PAYPAL_ID", receiver: input.receiverEmail.slice("payer:".length) }
+            : { recipient_type: "EMAIL", receiver: input.receiverEmail }),
           amount: { value: toPayPalValue(input.amountCents), currency: input.currency },
           note: truncate(input.note, 4000),
           sender_item_id: input.senderItemId,
@@ -228,21 +229,20 @@ export class LivePayPalGateway implements PayPalGateway {
 
   async verifyWebhook({ headers, rawBody }: WebhookVerificationInput): Promise<boolean> {
     if (!env.paypal.webhookId) return false;
-    const res = await paypalRequest<{ verification_status: string }>(
-      "POST",
-      "/v1/notifications/verify-webhook-signature",
-      {
-        body: {
-          auth_algo: headers.get("paypal-auth-algo"),
-          cert_url: headers.get("paypal-cert-url"),
-          transmission_id: headers.get("paypal-transmission-id"),
-          transmission_sig: headers.get("paypal-transmission-sig"),
-          transmission_time: headers.get("paypal-transmission-time"),
-          webhook_id: env.paypal.webhookId,
-          webhook_event: JSON.parse(rawBody),
-        },
-      },
-    );
+    // Splice the raw event in verbatim: re-serialising it (JSON.parse → stringify) can change
+    // number/unicode formatting and make PayPal's signature check fail intermittently.
+    const envelope = {
+      auth_algo: headers.get("paypal-auth-algo"),
+      cert_url: headers.get("paypal-cert-url"),
+      transmission_id: headers.get("paypal-transmission-id"),
+      transmission_sig: headers.get("paypal-transmission-sig"),
+      transmission_time: headers.get("paypal-transmission-time"),
+      webhook_id: env.paypal.webhookId,
+    };
+    const rawEnvelope = `${JSON.stringify(envelope).slice(0, -1)},"webhook_event":${rawBody}}`;
+    const res = await paypalRequest<{ verification_status: string }>("POST", "/v1/notifications/verify-webhook-signature", {
+      rawBody: rawEnvelope,
+    });
     return res.verification_status === "SUCCESS";
   }
 }

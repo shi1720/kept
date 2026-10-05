@@ -8,7 +8,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const body = z.object({ as: z.enum(["client", "freelancer"]).default("client") });
 
-/** One click → a private demo world (Maya the client ⇄ Ade the freelancer). */
+/** One click → a private demo world (Maya the client ⇄ Ana the freelancer). */
 export const POST = handler(async (req) => {
   if (!env.demo.enabled) throw new AppError("forbidden", "Demo mode is disabled on this deployment");
   rateLimit(`demo:${await clientIp()}`, 20, 3_600_000);

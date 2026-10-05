@@ -25,7 +25,7 @@ export function HeroVisual() {
     <div
       className="relative mx-auto w-full max-w-[560px] xl:h-[730px]"
       role="img"
-      aria-label="Illustration: a DM between Maya and Ade is compiled into a Kept pact for a $900 landing page with five acceptance criteria, sealed by both, funded through PayPal, and judged by the AI referee at 94 out of 100 before the payout is sent."
+      aria-label="Illustration: a DM between Maya and Ana is compiled into a Kept pact for a $900 landing page with five acceptance criteria, sealed by both, funded through PayPal, and judged by the AI referee at 94 out of 100 before the payout is sent."
     >
       {/* Soft light behind the composition */}
       <div aria-hidden className="pointer-events-none absolute -inset-10 -z-10">
@@ -55,7 +55,7 @@ export function HeroVisual() {
                 <p className="max-w-[220px] rounded-2xl rounded-br-md bg-jade-600 px-3 py-2 text-white">
                   Love it. Live in 5 days. Let’s do it on Kept 🙌
                 </p>
-                <Avatar name="Ade Okafor" hue={160} size={22} />
+                <Avatar name="Ana Reyes" hue={160} size={22} />
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ export function HeroVisual() {
                 <div className="mt-1 text-[10px] uppercase tracking-wider text-ink-3">Client</div>
               </div>
               <div>
-                <div className="display text-[19px] italic leading-none text-ink">Ade Okafor</div>
+                <div className="display text-[19px] italic leading-none text-ink">Ana Reyes</div>
                 <div className="mt-1 text-[10px] uppercase tracking-wider text-ink-3">Freelancer</div>
               </div>
             </div>
@@ -154,7 +154,7 @@ export function HeroVisual() {
             </span>
             <span className="text-[12px] leading-tight">
               <span className="block font-medium">PayPal Payout sent</span>
-              <span className="num block text-paper/60">$900.00 → Ade · 100%</span>
+              <span className="num block text-paper/60">$900.00 → Ana · 100%</span>
             </span>
           </div>
         </div>

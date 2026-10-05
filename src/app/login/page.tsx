@@ -10,6 +10,7 @@ const ERRORS: Record<string, string> = {
   paypal_login_disabled: "Log in with PayPal isn't enabled on this deployment.",
   paypal_state: "That PayPal sign-in link expired. Please try again.",
   paypal_failed: "PayPal sign-in failed. Please try again.",
+  paypal_link_required: "An account with that email already exists. Sign in with your password, then link PayPal from Settings.",
 };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {

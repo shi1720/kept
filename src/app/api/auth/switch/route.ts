@@ -3,7 +3,7 @@ import { demoCounterpart } from "@/lib/demo";
 import { AppError } from "@/lib/errors";
 import { handler } from "@/lib/http";
 
-/** Demo only: flip between Maya (client) and Ade (freelancer) in the same workspace. */
+/** Demo only: flip between Maya (client) and Ana (freelancer) in the same workspace. */
 export const POST = handler(async () => {
   const user = await requireUser();
   const other = await demoCounterpart(user);

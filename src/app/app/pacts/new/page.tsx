@@ -38,6 +38,6 @@ export default async function NewPactPage({ searchParams }: { searchParams: Prom
     return <Composer initial={initial} editId={edit} defaultRole={pact.creatorRole} />;
   }
 
-  const defaultRole = role === "freelancer" || role === "client" ? role : user.name.startsWith("Ade") ? "freelancer" : "client";
+  const defaultRole = role === "freelancer" || role === "client" ? role : user.name.startsWith("Ana") ? "freelancer" : "client";
   return <Composer defaultRole={defaultRole} />;
 }

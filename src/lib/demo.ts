@@ -25,7 +25,7 @@ import { simulator } from "@/lib/paypal";
 
 /**
  * "Try the demo" builds a private, isolated world for every visitor:
- * Maya (client, Lantern Coffee Roasters) and Ade (freelance designer), with
+ * Maya (client, Lantern Coffee Roasters) and Ana (freelance designer), with
  * pacts in every interesting state so a judge can play both sides in minutes.
  * Seeded history runs on the PayPal simulator; anything the visitor funds
  * from here on goes through the real PayPal sandbox.
@@ -33,21 +33,21 @@ import { simulator } from "@/lib/paypal";
 
 const none = { type: "none" as const };
 
-const DM_SOURCE = `Maya: Hey Ade! Loved your work for Bluebird Café. We're launching a holiday blend and need packaging art.
-Ade: Thanks! Happy to help. What do you have in mind?
+const DM_SOURCE = `Maya: Hey Ana! Loved your work for Bluebird Café. We're launching a holiday blend and need packaging art.
+Ana: Thanks! Happy to help. What do you have in mind?
 Maya: Something warm, a bit vintage, fits our Lantern brand. Bag front + a matching sticker. Budget is around $350.
-Ade: Works for me. I'll do 2 concepts, you pick one, then I finalize. Print-ready files?
+Ana: Works for me. I'll do 2 concepts, you pick one, then I finalize. Print-ready files?
 Maya: Yes please, print-ready. We need it before Nov 20 for the printer.
-Ade: 👍 I'll include a few revisions.`;
+Ana: 👍 I'll include a few revisions.`;
 
 function brandPact(): PactInput {
   return {
     title: "Brand identity for Lantern Coffee Roasters",
     summary:
-      "Ade designs a new logo system and a compact brand guide for Lantern, a specialty roastery in Austin. Delivered in two milestones: concepts, then the final suite.",
+      "Ana designs a new logo system and a compact brand guide for Lantern, a specialty roastery in Austin. Delivered in two milestones: concepts, then the final suite.",
     currency: "USD",
     creatorRole: "client",
-    counterpartyName: "Ade Okafor",
+    counterpartyName: "Ana Reyes",
     terms: { revisionsIncluded: 2, reviewWindowHours: 72, ipTransfer: "All rights transfer to Lantern Coffee Roasters when the final milestone is released." },
     clarityScore: 58,
     ambiguities: [
@@ -118,7 +118,7 @@ function captionsPact(): PactInput {
     summary: "Six on-brand Instagram captions for the Holiday Blend launch week.",
     currency: "USD",
     creatorRole: "client",
-    counterpartyName: "Ade Okafor",
+    counterpartyName: "Ana Reyes",
     terms: { revisionsIncluded: 1, reviewWindowHours: 72, ipTransfer: "Lantern owns the captions once paid." },
     clarityScore: 66,
     ambiguities: [],
@@ -210,13 +210,13 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     handle: `maya-${suffix}`,
   });
   const freelancer = await createUser({
-    name: "Ade Okafor",
-    email: `ade.${ws}@demo.kept.app`,
-    headline: "Brand & web designer · Lagos",
+    name: "Ana Reyes",
+    email: `ana.${ws}@demo.kept.app`,
+    headline: "Brand & web designer · Manila",
     demoWorkspace: ws,
     avatarHue: 160,
-    handle: `ade-${suffix}`,
-    paypalEmail: env.paypal.demoPayoutEmail || `ade.${ws}@demo.kept.app`,
+    handle: `ana-${suffix}`,
+    paypalEmail: env.paypal.demoPayoutEmail || `ana.${ws}@demo.kept.app`,
     paypalVerified: Boolean(env.paypal.demoPayoutEmail),
   });
   const pastClient = await createUser({
@@ -249,7 +249,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     return subId;
   };
 
-  /* -- Past work for Ade's public track record ---------------------- */
+  /* -- Past work for Ana's public track record ---------------------- */
   {
     setEventClock(timeline(40, 24 * 26, 8));
     const { ms } = await seal(pastClient, freelancer, {
@@ -304,7 +304,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       id: newId("vrd"), milestoneId: m2.id, submissionId: s2, provider: "kept-demo-seed", model: "pre-computed demo verdict",
       overall: "partial", score: 81, recommendedReleasePct: 85,
       summary: "The brand guide is thorough — HEX palette, typography and clear-space rules are all specified and single-colour use is shown. However, the SVG and PNG logo files themselves were not attached to this submission.",
-      notesForClient: "Everything in the guide checks out. Ask Ade to attach the SVG/PNG files before approving, or approve if you received them by email.",
+      notesForClient: "Everything in the guide checks out. Ask Ana to attach the SVG/PNG files before approving, or approve if you received them by email.",
       notesForFreelancer: "Attach the logo exports (SVG + PNG) to the submission so the file-format criterion can be verified.",
       criteriaResults: v(c2.map((c) => c.id), [
         ["not_met", 0.97, "No SVG or PNG files in the submission (only brand-guide.md)", "The required file formats were not delivered through Kept."],
@@ -319,7 +319,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await stampPact(pact.id, new Date(Date.now() - 20 * 3_600_000));
   }
 
-  /* -- B: landing page — funded, waiting for Ade to deliver ------------ */
+  /* -- B: landing page — funded, waiting for Ana to deliver ------------ */
   {
     setEventClock(timeline(3, 5, 4));
     const { pact, ms } = await seal(freelancer, client, landingPact());
@@ -369,7 +369,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
           { point: "Sending a partial set for direction approval was never agreed in the pact", favors: "client" },
         ],
         messageToParties:
-          "Maya, Ade — the work delivered is good but incomplete. We propose releasing 65% ($156) to Ade and refunding 35% ($84) to Maya. If you both accept, PayPal settles it in seconds.",
+          "Maya, Ana — the work delivered is good but incomplete. We propose releasing 65% ($156) to Ana and refunding 35% ($84) to Maya. If you both accept, PayPal settles it in seconds.",
         provider: "kept-demo-seed",
         model: "pre-computed demo ruling",
       },
@@ -379,7 +379,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await stampPact(pact.id, new Date(Date.now() - 2 * 3_600_000));
   }
 
-  /* -- D: packaging — sent by Maya, waiting for Ade's signature --------- */
+  /* -- D: packaging — sent by Maya, waiting for Ana's signature --------- */
   {
     setEventClock(timeline(0.1, 0.5, 2));
     const pact = await createPact(client, {
@@ -387,7 +387,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       summary: "Illustrated front-of-bag artwork and a matching round sticker for the Holiday Blend, delivered print-ready.",
       currency: "USD",
       creatorRole: "client",
-      counterpartyName: "Ade Okafor",
+      counterpartyName: "Ana Reyes",
       counterpartyEmail: freelancer.email,
       sourceText: DM_SOURCE,
       terms: { revisionsIncluded: 2, reviewWindowHours: 72, ipTransfer: "Full rights transfer to Lantern Coffee Roasters on final payment." },
@@ -434,6 +434,6 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
 export async function demoCounterpart(user: User): Promise<User | null> {
   if (!user.demoWorkspace) return null;
   const others = await db.select().from(users).where(and(eq(users.demoWorkspace, user.demoWorkspace)));
-  const target = user.name.startsWith("Maya") ? "Ade" : "Maya";
+  const target = user.name.startsWith("Maya") ? "Ana" : "Maya";
   return others.find((u) => u.name.startsWith(target)) ?? null;
 }

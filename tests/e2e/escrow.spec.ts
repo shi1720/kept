@@ -13,9 +13,9 @@ async function startDemo(page: Page, as: "client" | "freelancer") {
   await expect(page.getByRole("heading", { name: /Good (morning|afternoon|evening)/ })).toBeVisible();
 }
 
-async function switchPersona(page: Page, to: "Ade" | "Maya") {
+async function switchPersona(page: Page, to: "Ana" | "Maya") {
   await page.getByRole("button", { name: new RegExp(`Switch to ${to}`) }).click();
-  await expect(page.getByText(new RegExp(`you are ${to === "Ade" ? "Ade Okafor" : "Maya Chen"}`))).toBeVisible();
+  await expect(page.getByText(new RegExp(`you are ${to === "Ana" ? "Ana Reyes" : "Maya Chen"}`))).toBeVisible();
 }
 
 async function openPact(page: Page, title: RegExp) {
@@ -27,7 +27,7 @@ async function openPact(page: Page, title: RegExp) {
 test("full escrow lifecycle across both personas", async ({ page }) => {
   await startDemo(page, "freelancer");
 
-  // Ade countersigns Maya's packaging pact from the invitation.
+  // Ana countersigns Maya's packaging pact from the invitation.
   const pacts = (await (await page.request.get("/api/pacts")).json()).pacts as { title: string; inviteToken: string; id: string }[];
   const packaging = pacts.find((p) => p.title.startsWith("Holiday Blend packaging"))!;
   await page.goto(`/invite/${packaging.inviteToken}`);
@@ -42,8 +42,8 @@ test("full escrow lifecycle across both personas", async ({ page }) => {
   await expect(page.getByText(/Funded!/)).toBeVisible();
   await expect(page.getByText(/is working on it/)).toBeVisible();
 
-  // Ade delivers; the referee reviews.
-  await switchPersona(page, "Ade");
+  // Ana delivers; the referee reviews.
+  await switchPersona(page, "Ana");
   await page.goto(`/app/pacts/${packaging.id}`);
   await page.getByRole("button", { name: /^Submit work$/ }).click();
   await page.getByRole("tab", { name: /Write/ }).click();
@@ -67,7 +67,7 @@ test("AI mediation settles a dispute as payout + refund", async ({ page }) => {
   await openPact(page, /Instagram launch captions/);
   await page.getByRole("button", { name: /Accept 65\/35 split/ }).click();
   await expect(page.getByText(/You accepted/)).toBeVisible();
-  await switchPersona(page, "Ade");
+  await switchPersona(page, "Ana");
   await openPact(page, /Instagram launch captions/);
   await page.getByRole("button", { name: /Accept 65\/35 split/ }).click();
   await expect(page.getByText("Settled 65/35").first()).toBeVisible();

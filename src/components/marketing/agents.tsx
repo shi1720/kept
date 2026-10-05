@@ -32,14 +32,14 @@ const TRANSCRIPT: Line[] = [
     kind: "agent",
     text: (
       <>
-        Approve <b className="font-medium text-paper">$240 + fees</b> in PayPal and I’ll send the brief to Ade. The money stays in escrow until the captions pass.
+        Approve <b className="font-medium text-paper">$240 + fees</b> in PayPal and I’ll send the brief to Ana. The money stays in escrow until the captions pass.
       </>
     ),
   },
-  { kind: "gap", text: "Maya approves in PayPal · Ade delivers two days later" },
+  { kind: "gap", text: "Maya approves in PayPal · Ana delivers two days later" },
   { kind: "call", tool: "get_verdict", args: `{ milestone_id: "ms_k91" }`, result: "PASS · 96/100 · 4 of 4 met · 60–120 words each, 5 hashtags each", ok: true },
-  { kind: "call", tool: "approve_milestone", args: `{ milestone_id: "ms_k91" }`, result: "Payout sent · $240.00 → Ade", ok: true },
-  { kind: "agent", text: "Done. All six captions passed review and Ade has been paid. They’re attached below." },
+  { kind: "call", tool: "approve_milestone", args: `{ milestone_id: "ms_k91" }`, result: "Payout sent · $240.00 → Ana", ok: true },
+  { kind: "agent", text: "Done. All six captions passed review and Ana has been paid. They’re attached below." },
 ];
 
 function TranscriptLine({ line }: { line: Line }) {

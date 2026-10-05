@@ -2,9 +2,11 @@ import { and, eq, inArray, lt } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { payouts, payments, refunds, type MilestoneStatus, type Payout, type Refund } from "@/lib/db/schema";
 import { env } from "@/lib/env";
+import { invalidState } from "@/lib/errors";
 import { newId } from "@/lib/ids";
 import { formatMoney, splitByPct } from "@/lib/money";
 import { gatewayFor } from "@/lib/paypal";
+import { hasOpenPayPalDispute } from "./chargebacks";
 import { casMilestone, loadMilestone, loadUser } from "./context";
 import { notify, recordEvent, type ActorKind } from "./events";
 import { postJournal } from "./ledger";
@@ -26,6 +28,9 @@ export interface SettleOptions {
  */
 export async function settleMilestone(milestoneId: string, releasePct: number, opts: SettleOptions) {
   const { milestone, pact } = await loadMilestone(milestoneId);
+  if (releasePct > 0 && (await hasOpenPayPalDispute(milestoneId))) {
+    throw invalidState("The payer has an open dispute with PayPal on this payment — releases are frozen until PayPal decides");
+  }
   const pct = Math.round(Math.min(100, Math.max(0, releasePct)));
   const [toFreelancer, toClient] = splitByPct(milestone.amountCents, pct);
   const [payment] = await db
@@ -36,8 +41,13 @@ export async function settleMilestone(milestoneId: string, releasePct: number, o
   if (!payment) throw new Error("Milestone has no completed payment to settle");
 
   const freelancer = await loadUser(pact.freelancerId);
+  // Prefer the PayPal account ID linked via Log in with PayPal (provably the freelancer's own
+  // account); fall back to the payout email. Demo freelancers are paid to the sandbox test account.
   const receiver =
-    (freelancer?.demoWorkspace && env.paypal.demoPayoutEmail) || freelancer?.paypalEmail || null;
+    (freelancer?.demoWorkspace && env.paypal.demoPayoutEmail) ||
+    (freelancer?.paypalVerified && freelancer.paypalPayerId ? `payer:${freelancer.paypalPayerId}` : null) ||
+    freelancer?.paypalEmail ||
+    null;
 
   const { payoutRow, refundRow } = await db.transaction(async (tx) => {
     await casMilestone(tx, milestoneId, opts.from, {

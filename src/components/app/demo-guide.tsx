@@ -9,11 +9,11 @@ export interface GuideStep {
   title: string;
   detail: string;
   href: string;
-  as: "Maya" | "Ade" | "either";
+  as: "Maya" | "Ana" | "either";
 }
 
 /** Demo-only guided tour so a first-time visitor (or judge) sees every key flow in minutes. */
-export function DemoGuide({ steps, currentPersona }: { steps: GuideStep[]; currentPersona: "Maya" | "Ade" }) {
+export function DemoGuide({ steps, currentPersona }: { steps: GuideStep[]; currentPersona: "Maya" | "Ana" }) {
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(true);
   useEffect(() => {

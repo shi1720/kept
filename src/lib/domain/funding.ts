@@ -75,9 +75,15 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
   if (payment.status === "completed") return { milestone, pact, payment, alreadyCaptured: true };
 
   const gateway = gatewayFor(payment);
+  // Never capture a second order for a milestone that is already funded (two tabs, an agent's
+  // approval link plus the button, a retry…). The uncaptured order simply expires at PayPal.
+  if (milestone.status !== "awaiting_funding" && opts.source === "checkout") {
+    await db.update(payments).set({ status: "failed" }).where(and(eq(payments.id, payment.id), eq(payments.status, "created")));
+    throw invalidState("This milestone is already funded — the extra PayPal order was not captured, so you were not charged twice");
+  }
   const capture =
     opts.source === "checkout"
-      ? await gateway.captureOrder(orderId, `kept-capture-${payment.id}`)
+      ? await gateway.captureOrder(orderId, `kept-capture-${payment.id}-${Date.now().toString(36)}`)
       : await gateway.getOrder(orderId);
 
   if (capture.status !== "COMPLETED" || !capture.captureId) {
@@ -94,7 +100,28 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
     throw new AppError("payment_failed", `Captured amount ${capture.amountCents} does not match expected ${payment.totalCents}`);
   }
 
-  const result = await db.transaction(async (tx) => {
+  // A capture that completed at PayPal for a milestone that's no longer awaiting funding
+  // (e.g. a webhook for a second approved order) is refunded in full, never silently kept.
+  if (milestone.status !== "awaiting_funding") {
+    await refundDuplicateCapture(payment.id, capture.captureId, capture.raw);
+    throw invalidState("This milestone was already funded — the duplicate PayPal payment was refunded automatically");
+  }
+
+  let result;
+  try {
+    result = await captureTransaction();
+  } catch (err) {
+    if (err instanceof AppError && err.code === "invalid_state") {
+      await refundDuplicateCapture(payment.id, capture.captureId, capture.raw);
+      throw invalidState("This milestone was funded by another payment at the same moment — this one was refunded automatically");
+    }
+    throw err;
+  }
+  await refreshPactStatus(pact.id);
+  return { ...result, pact };
+
+  async function captureTransaction() {
+    return db.transaction(async (tx) => {
     const [updated] = await tx
       .update(payments)
       .set({
@@ -155,9 +182,32 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
       body: `${formatMoney(payment.milestoneCents, pact.currency)} for “${milestone.title}” is secured in escrow.`,
     });
     return { milestone: funded, payment: updated, alreadyCaptured: false };
+    });
+  }
+}
+
+async function refundDuplicateCapture(paymentId: string, captureId: string, raw: unknown) {
+  const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
+  const { pact, milestone } = await loadMilestone(payment.milestoneId);
+  const gateway = gatewayFor(payment);
+  const refund = await gateway.refundCapture({
+    captureId,
+    amountCents: payment.totalCents,
+    currency: pact.currency,
+    note: "Duplicate payment for an already-funded milestone — refunded in full",
+    requestId: `kept-dup-refund-${payment.id}`,
   });
-  await refreshPactStatus(pact.id);
-  return { ...result, pact };
+  await db
+    .update(payments)
+    .set({ status: "refunded", paypalCaptureId: captureId, refundedCents: payment.totalCents, raw })
+    .where(eq(payments.id, payment.id));
+  await recordEvent(db, {
+    pactId: pact.id,
+    milestoneId: milestone.id,
+    actorKind: "paypal",
+    type: "payment.duplicate_refunded",
+    message: `A second PayPal payment arrived for an already-funded milestone and was refunded in full (${formatMoney(payment.totalCents, pact.currency)}, refund ${refund.refundId})`,
+  });
 }
 
 export async function latestPayment(milestoneId: string) {

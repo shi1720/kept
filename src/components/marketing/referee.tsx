@@ -119,7 +119,7 @@ function VerdictMock() {
       <div className="mx-5 mb-5 flex gap-2.5 rounded-xl bg-paper px-4 py-3 text-[13px] leading-relaxed text-ink-2">
         <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
         <span>
-          <b className="text-ink">Before you approve: </b>ask Ade to add a clear-space page. You have 2 revision rounds included.
+          <b className="text-ink">Before you approve: </b>ask Ana to add a clear-space page. You have 2 revision rounds included.
         </span>
       </div>
     </div>

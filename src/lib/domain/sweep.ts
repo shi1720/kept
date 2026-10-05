@@ -1,13 +1,26 @@
 import { and, eq, lt } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { OPEN_PAYPAL_DISPUTE } from "./chargebacks";
-import { milestones, payments, type User } from "@/lib/db/schema";
+import { hasOpenPayPalDispute } from "./chargebacks";
+import { milestones, type User, type Verdict } from "@/lib/db/schema";
 import { forbidden, invalidState } from "@/lib/errors";
 import { latestVerdict, loadMilestone } from "./context";
 import { openDispute } from "./disputes";
 import { recordEvent } from "./events";
 import { reconcileMoneyMovement, settleMilestone } from "./settlement";
 import { runReview } from "./work";
+
+/**
+ * Silence may only release money on a clean, model-backed PASS: every criterion met, no
+ * manipulation attempt, and a real AI provider (never the offline keyword heuristic).
+ */
+export function canAutoRelease(v: Verdict): boolean {
+  return (
+    v.overall === "pass" &&
+    !v.injectionDetected &&
+    v.provider !== "offline" &&
+    v.criteriaResults.every((r) => r.result === "met")
+  );
+}
 
 export interface SweepReport {
   autoReleased: string[];
@@ -36,10 +49,9 @@ export async function sweep(now = new Date()): Promise<SweepReport> {
     .where(and(eq(milestones.status, "in_review"), lt(milestones.reviewDeadlineAt, now)));
   for (const m of expired) {
     try {
-      const [pay] = await db.select({ d: payments.paypalDispute }).from(payments).where(eq(payments.milestoneId, m.id)).limit(1);
-      if (OPEN_PAYPAL_DISPUTE(pay?.d)) continue; // frozen while PayPal reviews a payer dispute
+      if (await hasOpenPayPalDispute(m.id)) continue; // frozen while PayPal reviews a payer dispute
       const verdict = await latestVerdict(m.id);
-      if (verdict && verdict.overall === "pass" && !verdict.injectionDetected) {
+      if (verdict && canAutoRelease(verdict)) {
         await settleMilestone(m.id, 100, {
           from: ["in_review"],
           actorKind: "system",

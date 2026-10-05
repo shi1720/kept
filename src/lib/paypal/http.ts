@@ -81,7 +81,7 @@ export class PayPalApiError extends AppError {
 export async function paypalRequest<T>(
   method: "GET" | "POST" | "PATCH",
   path: string,
-  opts: { body?: unknown; requestId?: string; headers?: Record<string, string>; retries?: number } = {},
+  opts: { body?: unknown; rawBody?: string; requestId?: string; headers?: Record<string, string>; retries?: number } = {},
 ): Promise<T> {
   const retries = opts.retries ?? 2;
   let lastErr: unknown;
@@ -97,7 +97,7 @@ export async function paypalRequest<T>(
           ...(opts.requestId ? { "PayPal-Request-Id": opts.requestId } : {}),
           ...opts.headers,
         },
-        body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+        body: opts.rawBody ?? (opts.body === undefined ? undefined : JSON.stringify(opts.body)),
         cache: "no-store",
       });
       if (res.status === 401 && attempt < retries) {

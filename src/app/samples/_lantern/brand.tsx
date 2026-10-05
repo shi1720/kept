@@ -3,7 +3,7 @@
  * deliverables. Everything here renders on the server so the probed HTML
  * contains the full content (Kept's evidence engine never runs client JS).
  *
- * Palette mirrors the brand guide Ade delivers in the seeded demo:
+ * Palette mirrors the brand guide Ana delivers in the seeded demo:
  * Ember #C2410C · Roast #3B2A20 · Cream #F6EEDF · Brass #B88A3B
  */
 

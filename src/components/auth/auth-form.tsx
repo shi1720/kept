@@ -41,7 +41,7 @@ export function DemoButtons({ compact }: { compact?: boolean }) {
       >
         <span className="rounded-lg bg-jade-50 p-2 text-jade-700"><Palette className="size-4" /></span>
         <span className="min-w-0">
-          <span className="block text-[13.5px] font-medium">{loading === "freelancer" ? "Building your demo…" : "Try as Ade"}</span>
+          <span className="block text-[13.5px] font-medium">{loading === "freelancer" ? "Building your demo…" : "Try as Ana"}</span>
           <span className="block text-xs text-ink-3">Freelancer · brand designer</span>
         </span>
       </button>
