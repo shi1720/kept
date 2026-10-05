@@ -4,9 +4,9 @@
 
 # Kept
 
-### Promises, kept. Escrow with an AI referee, built on PayPal.
+### Paste the DM. Get a contract that pays itself.
 
-**Turn the DM where a freelance deal was made into a contract that enforces itself.**
+**Escrow with an AI referee, built on PayPal, for freelance deals made in DMs.**
 Kept holds the money with PayPal, an AI referee checks the delivered work against the criteria both sides signed, and payment is released — or fairly split — in minutes, not weeks.
 
 [**▶ Live demo**](#-try-it-in-60-seconds) · [**Demo video**](#) · [**Devpost**](#) · [**How it works**](#how-it-works) · [**For AI agents (MCP)**](#for-ai-agents-mcp)
@@ -170,7 +170,16 @@ With no keys, Kept runs on its built-in **PayPal simulator** and **offline refer
 
 - **Freelancers keep 100%** of the milestone. Clients pay a **2.9% protection fee (min $1)** plus PayPal processing passed through at cost. AI mediation is included; human arbitration is a paid escalation.
 - Compared with ~20% blended on Upwork, 20% + 5.5% on Fiverr, or a $50 minimum on Escrow.com, Kept is cheapest exactly where the market is: small, off-platform milestones.
-- **Unit economics** on a $300 milestone: $8.70 fee revenue − ~$0.25 payout fee − ~$0.10 of AI review ≈ **$8.35 contribution (96% of fee revenue)**.
+- **Unit economics** on a $300 milestone (client pays $320.37 all-in, +6.8%: $8.70 Kept fee + PayPal processing grossed up at cost):
+
+  | | Domestic freelancer | Cross-border freelancer (e.g. Manila) |
+  |---|---:|---:|
+  | Kept fee (2.9%) | $8.70 | $8.70 |
+  | PayPal Payouts fee (API: $0.25 cap US · 2% capped at $20 international) | −$0.25 | −$6.00 |
+  | AI: compile + evidence + referee (budgeted per milestone) | ≈ −$0.30 | ≈ −$0.30 |
+  | **Contribution** | **≈ $8.15 (94%)** | **≈ $2.40 (28%)** |
+
+  The cross-border column is the honest weak spot of the sandbox MVP, which pays freelancers with a separate Payout. The production design (below) removes that leg: the freelancer is the order's payee under delayed disbursement, so there is no Payouts fee and PayPal's processing is grossed up to the client exactly as it is today. Until then, a cross-border pass-through is a one-line fee-config change.
 - **Distribution:** every pact is an invite link sent to the other party (each user recruits the next); freelancers share a public *track record* page and a "Paid safely with Kept" badge.
 - **Moat:** a growing corpus of agreements, deliverables and rulings that makes the referee better calibrated, plus portable reputation that lives on Kept.
 - **Production path:** in production Kept would run on **PayPal's multiparty platform with delayed disbursement** (freelancers onboarded via Partner Referrals; `disbursement_mode: DELAYED`; release via referenced payouts) so **PayPal holds the funds and Kept never touches them** — no money-transmitter licensing, and escrow pre-approval as PayPal's AUP requires. The sandbox MVP captures to the platform account and pays out, behind a `PayPalGateway` interface designed for that swap.

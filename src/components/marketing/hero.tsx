@@ -19,7 +19,7 @@ export function Hero() {
         <div className="min-w-0">
           <div className="kp-in inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-line bg-card/80 py-1 pl-1 pr-3 text-[12.5px] text-ink-2 shadow-card" style={{ "--d": "0s" } as React.CSSProperties}>
             <span className="rounded-full bg-jade-600 px-2 py-0.5 text-[11px] font-medium text-white">New</span>
-            Escrow with an AI referee, built on PayPal
+            Paste the DM. Get a contract that pays itself.
           </div>
           <h1 id="hero-title" className="display kp-in mt-6 text-[64px] leading-[0.95] sm:text-[96px] lg:text-[112px]" style={{ "--d": "0.08s" } as React.CSSProperties}>
             Promises,{" "}

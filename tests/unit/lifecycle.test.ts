@@ -137,6 +137,44 @@ describe("escrow lifecycle", () => {
     }
   });
 
+  it("pays exactly once when approve, auto-release and a webhook race", async () => {
+    const { setProviders } = await import("@/lib/ai/provider");
+    const { milestoneId } = await activePact();
+    const { criteria } = await loadMilestone(milestoneId);
+    setProviders([
+      {
+        name: "anthropic",
+        model: "stub-model",
+        async generate() {
+          return {
+            criteria: criteria.map((c) => ({ criterionId: c.id, result: "met", confidence: 0.9, evidence: "80 words", reasoning: "ok" })),
+            overall: "pass", score: 100, recommendedReleasePct: 100, summary: "All met.", notesForClient: "", notesForFreelancer: "", injectionAttempt: false,
+          } as never;
+        },
+      },
+    ]);
+    try {
+      const order = await fund(milestoneId);
+      await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
+      await runReview(milestoneId);
+      const raced = await Promise.allSettled([
+        approveMilestone(client, milestoneId),
+        fastForwardReview(freelancer, milestoneId),
+        approveMilestone(client, milestoneId),
+        captureFunding(order.orderId, { source: "webhook" }),
+      ]);
+      // Exactly one approve wins; the losers are refused by the state machine, not by a database error.
+      for (const r of raced) if (r.status === "rejected") expect(String(r.reason)).not.toMatch(/SQLITE|locked/i);
+      expect((await loadMilestone(milestoneId)).milestone.status).toBe("released");
+      const sent = await db.select().from(payouts).where(eq(payouts.milestoneId, milestoneId));
+      expect(sent).toHaveLength(1);
+      const bal = await accountBalances(db);
+      expect(Object.values(bal).reduce((s, x) => s + x, 0)).toBe(0);
+    } finally {
+      setProviders([]);
+    }
+  });
+
   it("never auto-releases on an offline (keyword) verdict, even a pass", async () => {
     const { milestoneId } = await activePact();
     await fund(milestoneId);

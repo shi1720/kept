@@ -13,9 +13,14 @@ function makeClient(url: string, authToken?: string): Client {
   if (url.startsWith("file:")) {
     const path = url.slice("file:".length);
     if (path && path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
+    // Local SQLite: one connection per process. The driver is synchronous, so with several
+    // pooled connections a writer waiting on a lock would block the event loop the lock holder
+    // needs to finish (approve vs. sweeper deadlock). With one connection, other queries queue
+    // asynchronously behind an open transaction instead. The busy timeout only covers other
+    // processes (scripts, a separate cron worker) touching the same file.
+    return createClient({ url, concurrency: 1, timeout: 5_000 });
   }
-  const client = createClient({ url, authToken: authToken || undefined });
-  return client;
+  return createClient({ url, authToken: authToken || undefined });
 }
 
 export function getClient(): Client {

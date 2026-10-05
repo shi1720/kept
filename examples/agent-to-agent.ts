@@ -8,7 +8,7 @@
  * 3. Maya's agent creates the PayPal order. On a simulator deployment it is approved
  *    automatically; on the PayPal sandbox the script prints the approval link and waits for you.
  * 4. Ana's agent writes the deliverable (with Claude if ANTHROPIC_API_KEY is set) and submits it.
- * 5. Kept's AI referee judges it; Maya's agent approves on PASS (→ PayPal Payout) or requests a revision.
+ * 5. Kept's AI referee judges it; Maya's agent approves on PASS or a score ≥ 80 (→ PayPal Payout), otherwise requests a revision.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
