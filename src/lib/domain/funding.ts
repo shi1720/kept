@@ -93,11 +93,21 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
     }
     throw new AppError("payment_failed", `PayPal payment is ${capture.status.toLowerCase()} — the milestone is not funded yet`);
   }
-  if (capture.customId && capture.customId !== milestone.id) {
-    throw new AppError("payment_failed", "Captured payment does not belong to this milestone");
-  }
-  if (capture.amountCents !== payment.totalCents) {
-    throw new AppError("payment_failed", `Captured amount ${capture.amountCents} does not match expected ${payment.totalCents}`);
+  // The money has already moved at PayPal: a capture that doesn't match this order's milestone or
+  // amount is refunded in full and recorded, never kept and never silently dropped.
+  const mismatch =
+    capture.customId && capture.customId !== milestone.id
+      ? "it does not belong to this milestone"
+      : capture.amountCents !== payment.totalCents
+        ? `PayPal captured ${formatMoney(capture.amountCents, pact.currency)} instead of ${formatMoney(payment.totalCents, pact.currency)}`
+        : null;
+  if (mismatch) {
+    await refundUnusableCapture(payment.id, capture.captureId, capture.raw, {
+      amountCents: capture.amountCents,
+      type: "payment.mismatch_refunded",
+      message: `A PayPal payment was refunded in full because ${mismatch}`,
+    });
+    throw new AppError("payment_failed", `The PayPal payment was refunded because ${mismatch} — please fund the milestone again`);
   }
 
   // A capture that completed at PayPal for a milestone that's no longer awaiting funding
@@ -188,25 +198,40 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
 
 async function refundDuplicateCapture(paymentId: string, captureId: string, raw: unknown) {
   const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
-  const { pact, milestone } = await loadMilestone(payment.milestoneId);
-  const gateway = gatewayFor(payment);
-  const refund = await gateway.refundCapture({
-    captureId,
+  const { pact } = await loadMilestone(payment.milestoneId);
+  await refundUnusableCapture(paymentId, captureId, raw, {
     amountCents: payment.totalCents,
+    type: "payment.duplicate_refunded",
+    message: `A second PayPal payment arrived for an already-funded milestone and was refunded in full (${formatMoney(payment.totalCents, pact.currency)})`,
+  });
+}
+
+/** Refund a completed capture that can't fund the milestone. Idempotent per payment (PayPal-Request-Id). */
+async function refundUnusableCapture(
+  paymentId: string,
+  captureId: string,
+  raw: unknown,
+  why: { amountCents: number; type: string; message: string },
+) {
+  const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
+  const { pact, milestone } = await loadMilestone(payment.milestoneId);
+  const refund = await gatewayFor(payment).refundCapture({
+    captureId,
+    amountCents: why.amountCents,
     currency: pact.currency,
-    note: "Duplicate payment for an already-funded milestone — refunded in full",
+    note: "Payment could not fund the milestone — refunded in full",
     requestId: `kept-dup-refund-${payment.id}`,
   });
   await db
     .update(payments)
-    .set({ status: "refunded", paypalCaptureId: captureId, refundedCents: payment.totalCents, raw })
+    .set({ status: "refunded", paypalCaptureId: captureId, refundedCents: why.amountCents, raw })
     .where(eq(payments.id, payment.id));
   await recordEvent(db, {
     pactId: pact.id,
     milestoneId: milestone.id,
     actorKind: "paypal",
-    type: "payment.duplicate_refunded",
-    message: `A second PayPal payment arrived for an already-funded milestone and was refunded in full (${formatMoney(payment.totalCents, pact.currency)}, refund ${refund.refundId})`,
+    type: why.type,
+    message: `${why.message} (refund ${refund.refundId})`,
   });
 }
 

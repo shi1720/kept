@@ -101,6 +101,21 @@ const RESULT_WEIGHT: Record<CriterionResult["result"], number> = {
 };
 
 /**
+ * The money-moving numbers, computed in code from the per-criterion results: the score, the
+ * overall result and the share of the milestone the referee recommends releasing.
+ */
+export function scoreVerdict(results: Pick<CriterionResult, "result">[], modelReleasePct: number) {
+  const score = results.length ? Math.round((results.reduce((s, r) => s + RESULT_WEIGHT[r.result], 0) / results.length) * 100) : 0;
+  const anyNotMet = results.some((r) => r.result === "not_met");
+  // A PASS (which can trigger automatic release) requires every criterion to be positively met.
+  const allMet = results.every((r) => r.result === "met");
+  const overall: "pass" | "partial" | "fail" = allMet && score >= 85 ? "pass" : score < 50 ? "fail" : "partial";
+  const recommendedReleasePct =
+    overall === "pass" ? 100 : Math.round(Math.min(anyNotMet ? 95 : 100, Math.max(0, (modelReleasePct + score) / 2)) / 5) * 5;
+  return { score, overall, recommendedReleasePct };
+}
+
+/**
  * Merge the model's judgment with deterministic checks and compute the
  * final score with code, so the money-moving number is reproducible.
  */
@@ -132,15 +147,7 @@ export function reconcile(
     };
   });
 
-  const score = criteria.length
-    ? Math.round((criteriaResults.reduce((s, r) => s + RESULT_WEIGHT[r.result], 0) / criteria.length) * 100)
-    : 0;
-  const anyNotMet = criteriaResults.some((r) => r.result === "not_met");
-  // A PASS (which can trigger automatic release) requires every criterion to be positively met.
-  const allMet = criteriaResults.every((r) => r.result === "met");
-  const overall = allMet && score >= 85 ? "pass" : score < 50 ? "fail" : "partial";
-  const recommendedReleasePct =
-    overall === "pass" ? 100 : Math.round(Math.min(anyNotMet ? 95 : 100, Math.max(0, (model.recommendedReleasePct + score) / 2)) / 5) * 5;
+  const { score, overall, recommendedReleasePct } = scoreVerdict(criteriaResults, model.recommendedReleasePct);
   const injectionDetected = model.injectionAttempt || pack.injection.length > 0;
 
   return {

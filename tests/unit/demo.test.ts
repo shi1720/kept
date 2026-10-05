@@ -57,3 +57,18 @@ describe("demo anti-ghosting", () => {
     expect(report.autoReleased).toContain(photos.milestones[0].id);
   });
 });
+
+describe("seeded verdicts", () => {
+  it("carry the score the referee's own formula gives their criteria", async () => {
+    const { scoreVerdict } = await import("@/lib/ai/referee");
+    const { db } = await import("@/lib/db/client");
+    const { verdicts } = await import("@/lib/db/schema");
+    const rows = await db.select().from(verdicts);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const v of rows) {
+      const { score, overall } = scoreVerdict(v.criteriaResults, v.recommendedReleasePct);
+      expect(v.score).toBe(score);
+      expect(v.overall).toBe(overall);
+    }
+  });
+});

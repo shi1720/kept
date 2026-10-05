@@ -1,5 +1,7 @@
 import { lookup } from "node:dns/promises";
+import { readFile } from "node:fs/promises";
 import { isIP } from "node:net";
+import path from "node:path";
 import { env } from "@/lib/env";
 
 /**
@@ -42,8 +44,6 @@ export function isPrivateAddress(ip: string): boolean {
 
 async function assertPublic(url: URL) {
   if (!["http:", "https:"].includes(url.protocol)) throw new Error("Only http(s) URLs can be checked");
-  // Kept's own sample deliverables are always allowed (they live on APP_URL, which may be localhost in dev).
-  if (url.origin === new URL(env.appUrl).origin && url.pathname.startsWith("/samples/")) return;
   if (url.username || url.password) throw new Error("URLs with credentials are not allowed");
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) {
@@ -64,6 +64,8 @@ export async function safeFetch(
   } catch {
     return { ok: false, status: 0, finalUrl: rawUrl, contentType: "", body: "", latencyMs: 0, error: "Invalid URL" };
   }
+  const own = await ownSample(url, started);
+  if (own) return own;
   try {
     for (let hop = 0; hop < 5; hop++) {
       await assertPublic(url);
@@ -117,4 +119,45 @@ async function readCapped(res: Response): Promise<string> {
     chunks.push(value);
   }
   return new TextDecoder().decode(Buffer.concat(chunks));
+}
+
+/* ------------------------------------------------------------------ */
+/* Kept's own demo deliverables                                         */
+/* ------------------------------------------------------------------ */
+
+const SAMPLES = new Set(["lantern", "lantern-sneaky", "lantern-draft"]);
+
+function isOwnHost(url: URL): boolean {
+  const own = [env.appUrl, process.env.RENDER_EXTERNAL_URL].filter(Boolean).map((u) => new URL(u!).host);
+  return own.includes(url.host) || ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+}
+
+/**
+ * The demo's sample deliverables (/samples/lantern…) are read in-process from the build's
+ * prerendered HTML instead of over the network, so the demo works on any port, preview URL or
+ * custom domain, and the SSRF guard never has to allow a loopback address. Only the three known
+ * paths on Kept's own hosts qualify; every other URL goes through the full public-network checks.
+ */
+async function ownSample(url: URL, started: number): Promise<SafeFetchResult | null> {
+  const name = url.pathname.match(/^\/samples\/([a-z-]+)\/?$/)?.[1];
+  if (!name || !SAMPLES.has(name) || !isOwnHost(url)) return null;
+  const done = (body: string, status = 200): SafeFetchResult => ({
+    ok: status < 400,
+    status,
+    finalUrl: url.toString(),
+    contentType: "text/html; charset=utf-8",
+    body,
+    latencyMs: Date.now() - started,
+  });
+  try {
+    return done(await readFile(path.join(process.cwd(), ".next", "server", "app", "samples", `${name}.html`), "utf8"));
+  } catch {
+    // Dev server (no prerender on disk): fetch it from this deployment, a destination we chose.
+    try {
+      const res = await fetch(new URL(url.pathname, env.appUrl), { signal: AbortSignal.timeout(10_000), cache: "no-store" });
+      return done(await res.text(), res.status);
+    } catch {
+      return null;
+    }
+  }
 }

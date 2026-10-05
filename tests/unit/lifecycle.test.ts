@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { createUser } from "@/lib/auth/users";
 import { db } from "@/lib/db/client";
 import { ensureMigrated } from "@/lib/db/migrate";
@@ -172,6 +172,27 @@ describe("escrow lifecycle", () => {
       expect(Object.values(bal).reduce((s, x) => s + x, 0)).toBe(0);
     } finally {
       setProviders([]);
+    }
+  });
+
+  it("refunds a capture whose amount doesn't match the order instead of keeping it", async () => {
+    const { simulator } = await import("@/lib/paypal");
+    const { payments } = await import("@/lib/db/schema");
+    const { milestoneId } = await activePact();
+    const order = await createFundingOrder(client, milestoneId);
+    const sim = simulator();
+    const real = sim.captureOrder.bind(sim);
+    const refundSpy = vi.spyOn(sim, "refundCapture");
+    const spy = vi.spyOn(sim, "captureOrder").mockImplementationOnce(async (id: string) => ({ ...(await real(id)), amountCents: 100 }));
+    try {
+      await expect(captureFunding(order.orderId, { user: client, source: "checkout" })).rejects.toThrow(/refunded/);
+      expect(refundSpy).toHaveBeenCalledWith(expect.objectContaining({ amountCents: 100 }));
+      const [p] = await db.select().from(payments).where(eq(payments.paypalOrderId, order.orderId));
+      expect(p.status).toBe("refunded");
+      expect((await loadMilestone(milestoneId)).milestone.status).toBe("awaiting_funding");
+    } finally {
+      spy.mockRestore();
+      refundSpy.mockRestore();
     }
   });
 

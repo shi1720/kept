@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { payments, payouts, refunds, webhookEvents } from "@/lib/db/schema";
 import { newId } from "@/lib/ids";
@@ -44,15 +44,24 @@ export async function handlePayPalWebhook(event: PayPalWebhookEvent, verified: b
     })
     .onConflictDoNothing()
     .returning();
-  if (!inserted) return { duplicate: true };
+  // A redelivery of an event whose earlier attempt failed is claimed again (compare-and-set on
+  // the error marker) and re-processed; one already processed, or still in flight, is a duplicate.
+  const [row] = inserted
+    ? [inserted]
+    : await db
+        .update(webhookEvents)
+        .set({ error: null })
+        .where(and(eq(webhookEvents.paypalEventId, event.id), isNull(webhookEvents.processedAt), isNotNull(webhookEvents.error)))
+        .returning();
+  if (!row) return { duplicate: true };
 
   try {
     await dispatch(event);
-    await db.update(webhookEvents).set({ processedAt: new Date() }).where(eq(webhookEvents.id, inserted.id));
+    await db.update(webhookEvents).set({ processedAt: new Date() }).where(eq(webhookEvents.id, row.id));
     return { processed: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    await db.update(webhookEvents).set({ error: message }).where(eq(webhookEvents.id, inserted.id));
+    await db.update(webhookEvents).set({ error: message }).where(eq(webhookEvents.id, row.id));
     throw err;
   }
 }

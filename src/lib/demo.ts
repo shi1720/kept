@@ -25,6 +25,7 @@ import { settleMilestone } from "@/lib/domain/settlement";
 import { env } from "@/lib/env";
 import { newId, newToken } from "@/lib/ids";
 import { simulator } from "@/lib/paypal";
+import { scoreVerdict } from "@/lib/ai/referee";
 
 /**
  * "Try the demo" builds a private, isolated world for every visitor:
@@ -219,6 +220,13 @@ async function stampPact(pactId: string, at: Date) {
   }
 }
 
+/** Seeded verdicts get their score, overall result and release recommendation from the same code as live ones. */
+function scored<T extends { criteriaResults: { result: "met" | "partially_met" | "not_met" | "cannot_verify" }[]; recommendedReleasePct: number }>(
+  v: T,
+): Omit<T, "overall" | "score" | "recommendedReleasePct"> & ReturnType<typeof scoreVerdict> {
+  return { ...v, ...scoreVerdict(v.criteriaResults, v.recommendedReleasePct) };
+}
+
 export async function createDemoWorkspace(): Promise<{ client: User; freelancer: User; workspace: string }> {
   try {
     return await seedWorkspace();
@@ -315,7 +323,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     const s1 = await addSubmission(m1.id, "Three directions attached — my favourite is B.", [
       { kind: "text", name: "concepts-board.md", content: "Concept A — Lantern Glow: a hand-drawn lantern whose flame is a coffee bean. Rationale: warmth, craft, a nod to slow mornings.\n\nConcept B — The Roaster's Mark: monogram L inside a stamped circle, inspired by roaster tins. Rationale: heritage and trust.\n\nConcept C — Night Shift: geometric lantern with long shadows. Rationale: modern, distinctive on shelves." },
     ]);
-    await db.insert(verdicts).values({
+    await db.insert(verdicts).values(scored({
       id: newId("vrd"), milestoneId: m1.id, submissionId: s1, provider: "kept-demo-seed", model: "seeded example verdict",
       overall: "pass", score: 100, recommendedReleasePct: 100,
       summary: "All three concepts are present and distinct, each with a clear rationale, and the hand-drawn, stamp-inspired styling is consistent with the warm craft references.",
@@ -327,7 +335,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       ]),
       evidence: [{ probe: "text", label: "concepts-board.md", detail: "Inline text · 74 words", ok: true }],
       latencyMs: 8400,
-    });
+    }));
     await settleMilestone(m1.id, 100, { from: ["in_review"], actorId: client.id, actorKind: "user", reason: "approved by Maya Chen" });
 
     await fundSim(client, m2.id);
@@ -336,9 +344,9 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       { kind: "text", name: "brand-guide.md", content: "# Lantern Brand Guide\n\n## Colour palette\nEmber #C2410C · Roast #3B2A20 · Cream #F6EEDF · Brass #B88A3B\n\n## Typography\nHeadlines: Fraunces Semibold. Body: Inter Regular. Never set headlines in all caps.\n\n## Clear space\nKeep clear space equal to the height of the lantern flame on all sides.\n\n## Logo usage\nThe primary mark works in single-colour Roast on Cream, and reversed in Cream on Roast. Minimum size 24px / 8mm.\n\n## Photography\nWarm, natural light; hands and process over product shots." },
     ]);
     await db.update(milestones).set({ status: "in_review", submittedAt: new Date(Date.now() - 20 * 3600000), reviewDeadlineAt: new Date(Date.now() + 52 * 3600000) }).where(eq(milestones.id, m2.id));
-    await db.insert(verdicts).values({
+    await db.insert(verdicts).values(scored({
       id: newId("vrd"), milestoneId: m2.id, submissionId: s2, provider: "kept-demo-seed", model: "seeded example verdict",
-      overall: "partial", score: 81, recommendedReleasePct: 85,
+      overall: "partial", score: 75, recommendedReleasePct: 85,
       summary: "The brand guide is thorough — HEX palette, typography and clear-space rules are all specified and single-colour use is shown. However, the SVG and PNG logo files themselves were not attached to this submission.",
       notesForClient: "Everything in the guide checks out. Ask Ana to attach the SVG/PNG files before approving, or approve if you received them by email.",
       notesForFreelancer: "Attach the logo exports (SVG + PNG) to the submission so the file-format criterion can be verified.",
@@ -350,8 +358,8 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       ]).map((r, i) => (i === 0 ? { ...r, machineCheck: { type: "file_types" as const, passed: false, detail: "Missing formats: svg, png" } } : i === 1 ? { ...r, machineCheck: { type: "keywords_present" as const, passed: true, detail: "All keywords present" } } : r)),
       evidence: [{ probe: "text", label: "brand-guide.md", detail: "Inline text · 112 words", ok: true }],
       latencyMs: 11200,
-    });
-    await recordEvent(db, { pactId: pact.id, milestoneId: m2.id, actorKind: "ai", type: "review.completed", message: "AI referee: PARTIAL — 3/4 criteria met, score 81/100" });
+    }));
+    await recordEvent(db, { pactId: pact.id, milestoneId: m2.id, actorKind: "ai", type: "review.completed", message: "AI referee: PARTIAL — 3/4 criteria met, score 75/100" });
     await stampPact(pact.id, new Date(Date.now() - 20 * 3_600_000));
   }
 
@@ -371,9 +379,9 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await fundSim(client, m.id);
     const { criteria: cc } = await loadMilestone(m.id);
     const sub = await addSubmission(m.id, "Here are the captions!", [{ kind: "text", name: "captions.txt", content: CAPTIONS }]);
-    await db.insert(verdicts).values({
+    await db.insert(verdicts).values(scored({
       id: newId("vrd"), milestoneId: m.id, submissionId: sub, provider: "kept-demo-seed", model: "seeded example verdict",
-      overall: "partial", score: 56, recommendedReleasePct: 65,
+      overall: "partial", score: 63, recommendedReleasePct: 65,
       summary: "Four of the six agreed captions were delivered. Those four are on-voice and mostly within length; caption 3 is too short (19 words) and has 5 hashtags.",
       notesForClient: "Four usable captions were delivered; two are missing.",
       notesForFreelancer: "Deliver captions 5 and 6, and extend caption 3 to at least 60 words.",
@@ -385,7 +393,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       ]),
       evidence: [{ probe: "text", label: "captions.txt", detail: "Inline text · 196 words", ok: true }],
       latencyMs: 9100,
-    });
+    }));
     await db.update(milestones).set({ status: "disputed", submittedAt: new Date(Date.now() - 3 * 86400000) }).where(eq(milestones.id, m.id));
     await db.insert(disputes).values({
       id: newId("dsp"),
@@ -449,7 +457,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     const sub = await addSubmission(m.id, "All 12 are in the album — notes below.", [
       { kind: "text", name: "retouching-notes.md", content: `Album: lantern-menu-photos (12 images, 2400×1600 JPG)\n\n${notes}` },
     ]);
-    await db.insert(verdicts).values({
+    await db.insert(verdicts).values(scored({
       id: newId("vrd"), milestoneId: m.id, submissionId: sub, provider: "kept-demo-seed", model: "seeded example verdict",
       overall: "pass", score: 100, recommendedReleasePct: 100,
       summary: "All twelve photos are accounted for, each with a before/after note, and the notes describe a consistent warm white-balance treatment across the set.",
@@ -462,7 +470,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       ]),
       evidence: [{ probe: "text", label: "retouching-notes.md", detail: "Inline text · 214 words", ok: true }],
       latencyMs: 7600,
-    });
+    }));
     await db.update(milestones).set({ status: "in_review", reviewDeadlineAt: new Date(Date.now() + 30 * 3_600_000) }).where(eq(milestones.id, m.id));
     await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorKind: "ai", type: "review.completed", message: "AI referee: PASS — 3/3 criteria met, score 100/100" });
     await stampPact(pact.id, new Date(Date.now() - 18 * 3_600_000));
