@@ -177,6 +177,10 @@ export async function resolveDispute(disputeId: string, releasePct: number, opts
 
 /** Human arbitrator (admin) decides an escalated dispute. */
 export async function arbitrate(admin: User, disputeId: string, releasePct: number, note: string) {
-  if (admin.role !== "admin") throw forbidden("Arbitrators only");
+  const dispute = await loadDispute(disputeId);
+  const { pact } = await loadMilestone(dispute.milestoneId);
+  // Admins arbitrate everything; demo visitors may play arbitrator inside their own sandbox world.
+  const demoArbiter = Boolean(admin.demoWorkspace && pact.demoWorkspace === admin.demoWorkspace);
+  if (admin.role !== "admin" && !demoArbiter) throw forbidden("Arbitrators only");
   await resolveDispute(disputeId, releasePct, { actorId: admin.id, how: `human arbitrator decision: ${note || "see ruling"}` });
 }
