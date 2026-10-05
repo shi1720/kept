@@ -72,7 +72,7 @@ function AgeCell(p: ICellRendererParams<DisputeRow, number>) {
 function ActionCell(p: ICellRendererParams<DisputeRow, unknown, Ctx>) {
   if (!p.data) return null;
   if (p.data.status === "resolved") {
-    return centered(<span className="text-[12px] text-ink-3">Settled at {p.data.finalPct ?? "—"}%</span>);
+    return centered(<span className="text-[12px] text-ink-3">Settled at {p.data.finalPct ?? "N/A"}%</span>);
   }
   const d = p.data;
   return centered(
@@ -116,7 +116,7 @@ export function DisputesQueue({ rows }: { rows: DisputeRow[] }) {
       { field: "reason", headerName: "Reason", flex: 1, minWidth: 240, cellRenderer: ReasonCell, tooltip: (p) => p.value ?? undefined, cellClass: "py-0!" },
       { field: "createdAt", headerName: "Opened", type: "timestamp", sort: "desc" },
       { colId: "age", headerName: "Age", width: 80, valueGetter: (p) => (p.data ? (p.data.resolvedAt ?? Date.now()) - p.data.createdAt : null), cellRenderer: AgeCell, filter: false },
-      { field: "openedBy", headerName: "Raised by", width: 140, cellClass: "text-ink-2", valueFormatter: (p) => p.value ?? "—" },
+      { field: "openedBy", headerName: "Raised by", width: 140, cellClass: "text-ink-2", valueFormatter: (p) => p.value ?? "N/A" },
       { colId: "action", headerName: "", cellRenderer: ActionCell, width: 130, pinned: "right", sortable: false, filter: false, resizable: false, context: { noExport: true }, suppressSizeToFit: true },
     ],
     [],
@@ -147,7 +147,7 @@ export function DisputesQueue({ rows }: { rows: DisputeRow[] }) {
         }
         rowClassRules={ROW_RULES}
         searchPlaceholder="Search disputes…"
-        emptyText={view === "queue" ? "The queue is clear — no disputes waiting on a decision." : "No disputes have been raised."}
+        emptyText={view === "queue" ? "The queue is clear; no disputes waiting on a decision." : "No disputes have been raised."}
         height={420}
       />
       <ArbitrateDialog dispute={target} onClose={() => setTarget(null)} />
@@ -190,7 +190,7 @@ function ArbitrateForm({ dispute, onDone }: { dispute: DisputeRow; onDone: () =>
 
   return (
     <>
-      <DialogHeader title="Arbitrate dispute" description={`${dispute.pactTitle} — ${dispute.milestoneTitle}`} />
+      <DialogHeader title="Arbitrate dispute" description={`${dispute.pactTitle}; ${dispute.milestoneTitle}`} />
       <div className="flex flex-col gap-5">
         <div className="rounded-xl border border-line bg-paper/60 p-4 text-[13px]">
           <div className="flex items-center justify-between gap-3">

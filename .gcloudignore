@@ -1,0 +1,12 @@
+.git
+node_modules
+.next
+data
+.env*
+!.env.example
+test-results
+playwright-report
+docs/video-assets
+
+*.tmp.mjs
+.firebase

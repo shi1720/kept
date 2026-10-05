@@ -5,21 +5,21 @@
  * ember (wax-seal) as the accent, amber for money held in escrow.
  */
 @theme {
-  --color-paper: #faf8f3;
-  --color-paper-2: #f3efe6;
+  --color-paper: #f6f8fa;
+  --color-paper-2: #eef2f5;
   --color-card: #ffffff;
-  --color-ink: #16140f;
-  --color-ink-2: #4a463e;
-  --color-ink-3: #6b665c;
-  --color-line: #e7e1d5;
-  --color-line-2: #d9d1c2;
+  --color-ink: #18252d;
+  --color-ink-2: #485b67;
+  --color-ink-3: #657681;
+  --color-line: #e1e8ec;
+  --color-line-2: #cdd8df;
 
-  --color-jade-50: #eaf4f0;
-  --color-jade-100: #d0e8df;
+  --color-jade-50: #edf7f4;
+  --color-jade-100: #d3ebe3;
   --color-jade-300: #7fbea8;
-  --color-jade-500: #148a6f;
-  --color-jade-600: #0f6b57;
-  --color-jade-700: #0b5646;
+  --color-jade-500: #16856e;
+  --color-jade-600: #116b59;
+  --color-jade-700: #105748;
   --color-jade-900: #0a2f27;
 
   --color-ember-50: #fdf1ea;
@@ -50,9 +50,9 @@
   --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
 
   --radius-xl: 14px;
-  --radius-2xl: 20px;
+  --radius-2xl: 16px;
 
-  --shadow-card: 0 1px 0 rgba(22, 20, 15, 0.04), 0 1px 3px rgba(22, 20, 15, 0.06);
+  --shadow-card: 0 2px 8px -4px rgba(24, 37, 45, 0.09);
   --shadow-lift: 0 1px 0 rgba(22, 20, 15, 0.04), 0 12px 32px -12px rgba(22, 20, 15, 0.18);
   --shadow-glow: 0 0 0 4px rgba(15, 107, 87, 0.12);
 
@@ -132,8 +132,43 @@
   --ag-background-color: var(--color-card);
   --ag-header-background-color: var(--color-paper);
   --ag-border-color: var(--color-line);
-  --ag-row-hover-color: #f7f4ec;
+  --ag-row-hover-color: #f4f7f9;
   --ag-selected-row-background-color: var(--color-jade-50);
   --ag-header-foreground-color: var(--color-ink-2);
   --ag-accent-color: var(--color-jade-600);
+}
+
+/* Workspace: quiet surfaces, a distinct navigation rail, and focused motion. */
+.kept-workspace { background:#f4f7f9; }
+.kept-workspace > aside { background:#fff; border-color:#e1e8ec; }
+.kept-workspace header { background:#ffffffed; border-color:#e1e8ec; }
+.kept-workspace .display { font-family:var(--font-sans); font-weight:500; font-size:32px; letter-spacing:-.045em; line-height:1.2; }
+.kept-workspace main > div { animation-duration:.4s; }
+.kept-workspace main section { scroll-margin-top:90px; }
+.kept-workspace details { border-radius:10px; }
+.kept-workspace details summary { user-select:none; }
+.kept-workspace details[open] > :not(summary) { animation:fade-up .2s ease both; }
+.kept-workspace main a.group { transition:background .2s,transform .2s; }
+.kept-workspace main a.group:hover { transform:translateX(3px); }
+@media(prefers-reduced-motion:reduce){.kept-workspace *{animation:none!important;transition:none!important}}
+
+.kept-workspace > aside { background:#172e32; border:0; }
+.kept-workspace > aside .display { color:#f3faf7; font-size:26px; }
+.kept-workspace > aside nav > p { color:#8fa8ab; }
+.kept-workspace > aside nav a { color:#bdcdcf; padding:11px 13px; }
+.kept-workspace > aside nav a:hover { background:#243e41; color:white; }
+.kept-workspace > aside nav a.bg-card { background:#2a4849; color:#e2fff2; box-shadow:none; }
+.kept-workspace > aside .mt-auto span { color:#99b3b6; }
+.dashboard-stats { background:#fff; border:1px solid var(--color-line); border-radius:16px; overflow:hidden; gap:0; }
+.dashboard-stats > div { border:0; border-radius:0; box-shadow:none; padding:22px 24px; border-right:1px solid var(--color-line); }
+.dashboard-stats > div:last-child { border-right:0; }
+.dashboard-stats > div .rounded-lg { color:#57747a; background:#edf3f4; }
+.dashboard-actions a { background:#fff; border:1px solid var(--color-line); border-left:1px solid var(--color-line); padding:17px 16px; }
+.dashboard-actions a:hover { border-color:#abc9bf; background:#f7fbf9; }
+@media(max-width:640px){
+ .dashboard-stats > div { padding:18px 16px; }
+ .dashboard-stats > div:nth-child(2){border-right:0}
+ .dashboard-stats > div:nth-child(-n+2){border-bottom:1px solid var(--color-line)}
+ .dashboard-stats .text-xs { font-size:10px; }
+ .kept-workspace .display { font-size:27px; }
 }

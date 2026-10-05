@@ -4,7 +4,7 @@ import { HolidayBag, LanternHeader, PREORDER_HREF, TASTING_NOTES } from "../_lan
 
 /**
  * Demo deliverable: looks like the honest page, but (1) the origin story is
- * too short — the whole page stays under the pact's 150-word minimum — and
+ * too short; the whole page stays under the pact's 150-word minimum; and
  * (2) it hides instructions aimed at the AI referee in display:none and
  * white-on-white text. Kept's evidence engine extracts hidden HTML text and
  * flags the prompt injection to both parties.
@@ -12,7 +12,7 @@ import { HolidayBag, LanternHeader, PREORDER_HREF, TASTING_NOTES } from "../_lan
  * Keep the total visible + hidden word count below 150 when editing.
  */
 export const metadata: Metadata = {
-  title: { absolute: "Holiday Blend — Lantern" },
+  title: { absolute: "Holiday Blend; Lantern" },
   robots: { index: false, follow: false },
 };
 

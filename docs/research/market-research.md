@@ -1,10 +1,10 @@
-# Kept — Market & Hackathon Research Brief
+# Kept ;  Market & Hackathon Research Brief
 
 *Compiled 2026-10-05. Every figure has a source and a year. "Computed" means we derived the number from cited figures. "Not found" means we couldn't source it.*
 
 ---
 
-## 0. TL;DR — the five things that matter
+## 0. TL;DR ;  the five things that matter
 
 1. **The hackathon's own idea list describes our product.** Under "AI Agents or Automation" it lists *"a scheduling assistant that pays contractors automatically when a job is marked complete"*, and under money movement it lists *"a payout tool for gig workers that pays out the moment a task is approved"*. Judges have five equally weighted criteria: Tech, Design, Impact, Innovation and Presentation. Kept fits two prize categories: **Best Use of Agentic Commerce** and **Best Use of PayPal + AI** ($5k each).
 2. **The deadline is earlier than we planned.** The official rules say **Thu Nov 12, 2026, 12:00 pm PT**, not Nov 13. Nov 13 to Dec 15 is the judging window.
@@ -37,11 +37,11 @@
 - **Judges:**
   - PayPal: Jo Franchetti, Eddie Jaoude, Marco Podien, Karthik Ravi, Himraj Singh, Nathaniel Olson
   - Sponsor representatives: AG Grid, APIMatic, Bryntum, Channel3, Elastic, Postman, Render
-- **"Agentic commerce":** it is a $5k prize category, but no page defines it. The closest guidance is the idea category "Build autonomous agents or workflows that use PayPal to take action on a user's behalf — not just recommend, but actually transact."
+- **"Agentic commerce":** it is a $5k prize category, but no page defines it. The closest guidance is the idea category "Build autonomous agents or workflows that use PayPal to take action on a user's behalf ;  not just recommend, but actually transact."
 
 **Inspiration ideas, quoted verbatim from the resources page.** ★ marks ideas directly relevant to Kept.
 
-- **AI Agents or Automation:** "Build autonomous agents or workflows that use PayPal to take action on a user's behalf — not just recommend, but actually transact."
+- **AI Agents or Automation:** "Build autonomous agents or workflows that use PayPal to take action on a user's behalf ;  not just recommend, but actually transact."
   - "an AI agent that shops and checks out for you"
   - ★ "a scheduling assistant that pays contractors automatically when a job is marked complete"
   - ★ "two agents negotiating and settling a payment between themselves (agent-to-agent commerce)"
@@ -88,19 +88,19 @@ The AI Toolkit README lists these tool groups: Orders and Payments (create, capt
 
 | Stat | Source (year) |
 |---|---|
-| **71%** of US freelancers have had trouble collecting payment. The average loss was **$5,968** (14% of income) in 2014. 81% of those affected were paid late and 34% were never paid. The longest wait averaged **98 days**. n=5,358. | Freelancers Union, *The Costs of Nonpayment* (2015) — https://blog.freelancersunion.org/2015/12/10/costs-nonpayment/ · PDF: https://www.onlabor.org/wp-content/uploads/2017/05/FU_NonpaymentReport_r3.pdf |
-| **85%** of freelancers have invoices paid late at least some of the time. **21%+** are paid late or never more than half the time. | Remote, *Contractor Management Report* (2025) — https://remote.com/blog/contractor-management/reversing-late-payment-culture |
-| **62%** of New York freelancers had at least once not been paid for work performed. 51% of them lost more than $1,000. 91% had experienced late payment. **Fewer than 1%** went through the legal system. | Authors Guild, Freelancers Union et al. survey (2022) — https://authorsguild.org/news/survey-finds-62-percent-of-ny-freelance-workers-have-lost-wages-due-to-nonpayment/ |
-| UK: **35%** were paid late in the last 12 months. **18%** waited more than 3 months past the deadline. The average amount owed is **£5,230**. 20% couldn't cover basic living costs as a result. | IPSE (survey year not stated on the page; the 2020 comparison figure was £5,140) — https://www.ipse.co.uk/campaigns/prompt-payment/late-payment-within-the-self-employed-sector |
-| UK economy-wide: late payment costs **£11bn a year**, and **14,000 businesses (38 a day)** close because of it. | UK Government, Late Payments consultation (Jul 2025) — https://assets.publishing.service.gov.uk/media/69c2c7c413f1436476e443a2/late-payments-consultation-response.pdf (as summarised by https://informi.co.uk/business-administration/what-the-uk-late-payment-reform-means-for-small-business-owners) |
-| There are **154M–435M** online gig workers worldwide (4.4–12.5% of the global workforce). | World Bank, *Working Without Borders* (2023) — https://openknowledge.worldbank.org/entities/publication/ebc4a7e2-85c6-467b-8713-e2d77e954c6c |
+| **71%** of US freelancers have had trouble collecting payment. The average loss was **$5,968** (14% of income) in 2014. 81% of those affected were paid late and 34% were never paid. The longest wait averaged **98 days**. n=5,358. | Freelancers Union, *The Costs of Nonpayment* (2015) ;  https://blog.freelancersunion.org/2015/12/10/costs-nonpayment/ · PDF: https://www.onlabor.org/wp-content/uploads/2017/05/FU_NonpaymentReport_r3.pdf |
+| **85%** of freelancers have invoices paid late at least some of the time. **21%+** are paid late or never more than half the time. | Remote, *Contractor Management Report* (2025) ;  https://remote.com/blog/contractor-management/reversing-late-payment-culture |
+| **62%** of New York freelancers had at least once not been paid for work performed. 51% of them lost more than $1,000. 91% had experienced late payment. **Fewer than 1%** went through the legal system. | Authors Guild, Freelancers Union et al. survey (2022) ;  https://authorsguild.org/news/survey-finds-62-percent-of-ny-freelance-workers-have-lost-wages-due-to-nonpayment/ |
+| UK: **35%** were paid late in the last 12 months. **18%** waited more than 3 months past the deadline. The average amount owed is **£5,230**. 20% couldn't cover basic living costs as a result. | IPSE (survey year not stated on the page; the 2020 comparison figure was £5,140) ;  https://www.ipse.co.uk/campaigns/prompt-payment/late-payment-within-the-self-employed-sector |
+| UK economy-wide: late payment costs **£11bn a year**, and **14,000 businesses (38 a day)** close because of it. | UK Government, Late Payments consultation (Jul 2025) ;  https://assets.publishing.service.gov.uk/media/69c2c7c413f1436476e443a2/late-payments-consultation-response.pdf (as summarised by https://informi.co.uk/business-administration/what-the-uk-late-payment-reform-means-for-small-business-owners) |
+| There are **154M–435M** online gig workers worldwide (4.4–12.5% of the global workforce). | World Bank, *Working Without Borders* (2023) ;  https://openknowledge.worldbank.org/entities/publication/ebc4a7e2-85c6-467b-8713-e2d77e954c6c |
 
 Payoneer's 2023 Freelancer Insights Report (2,000+ freelancers in 122 countries; https://www.payoneer.com/resources/business/the-payoneer-2023-freelancer-insights-report/) gives no late-payment percentage that we could verify. Its headline finding is that 73% find getting new clients challenging. We also found aggregator sites citing "58% of freelancers face non-payment" and "$15B lost a year" (flexable.work). **We could not trace these to a primary source, so don't use them.**
 
 **Off-platform vs on-platform work:**
 
-- **42%** of US independents rely on online platforms as their *primary* way to find work. That means **about 58% rely mainly on something else**, such as referrals, their network or repeat clients (computed). 63% use any platform. 72M+ Americans work independently. Source: MBO Partners, *State of Independence* (Sep 2025) — https://www.prnewswire.com/news-releases/mbo-partners-by-beeline-releases-15th-annual-state-of-independence-study-revealing-a-growing-talent-strategy-for-businesses-302550604.html and https://www.mbopartners.com/state-of-independence/online-talent-platforms-reshape-independent-work/
-- **77%** of freelancers get at least half their work from repeat clients, and LinkedIn is the top channel for new clients. Source: The Mighty Marketer, 2025 survey, n=267 — https://themightymarketer.com/freelance-marketing-survey-2025/
+- **42%** of US independents rely on online platforms as their *primary* way to find work. That means **about 58% rely mainly on something else**, such as referrals, their network or repeat clients (computed). 63% use any platform. 72M+ Americans work independently. Source: MBO Partners, *State of Independence* (Sep 2025) ;  https://www.prnewswire.com/news-releases/mbo-partners-by-beeline-releases-15th-annual-state-of-independence-study-revealing-a-growing-talent-strategy-for-businesses-302550604.html and https://www.mbopartners.com/state-of-independence/online-talent-platforms-reshape-independent-work/
+- **77%** of freelancers get at least half their work from repeat clients, and LinkedIn is the top channel for new clients. Source: The Mighty Marketer, 2025 survey, n=267 ;  https://themightymarketer.com/freelance-marketing-survey-2025/
 - **Computed comparison of money flows.** Upwork's 2025 GSV was about $4.0B ([Upwork IR, Feb 2026](https://investors.upwork.com/news-releases/news-release-details/upwork-reports-fourth-quarter-and-full-year-2025-financial)). Fiverr's 2025 GMV was $1.07B ([Fiverr IR](https://investors.fiverr.com/news-releases/news-release-details/fiverr-announces-fourth-quarter-and-full-year-2025-results)). Together that is about $5B, against **$1.27T** in US freelancer earnings alone in 2023 ([Upwork, Dec 2023](https://investors.upwork.com/news-releases/news-release-details/upwork-study-finds-64-million-americans-freelanced-2023-adding)). The two largest marketplaces therefore handle **well under 1%** of freelance earnings. The rest moves through invoices, PayPal, bank transfers and DMs, where there is no escrow. Caveat: the GSV/GMV figures are global and the earnings figure is US-only, so this comparison is illustrative.
 
 ---
@@ -282,14 +282,14 @@ All of this works for **off-platform** relationships, where today's protection i
 
 | Metric | Value | Source (year) |
 |---|---|---|
-| US freelancers | **64M** (38% of the workforce), earning **$1.27T** | Upwork *Freelance Forward* (Dec 2023) — https://investors.upwork.com/news-releases/news-release-details/upwork-study-finds-64-million-americans-freelanced-2023-adding |
-| US independents | **72M+**, of whom 5.6M earn more than $100k | MBO Partners (Sep 2025) — link in §2 |
-| US skilled knowledge-worker freelancers | 28% of knowledge workers, generating **$1.5T** in earnings (2024) | Upwork *Future Workforce Index* (2025) — https://www.upwork.com/research/future-workforce-index-2025 |
-| Global gig economy | **$3.7T** (2023), of which independent contractors account for 48% | Staffing Industry Analysts (2024) — https://www.staffingindustry.com/news/global-daily-news/global-gig-economy-reaches-37-trillion |
-| Online gig workers | **154M–435M** | World Bank (2023) — link in §2 |
-| Freelance platforms market | **$7.65B (2025) → $16.54B (2030)**, 16.7% CAGR. Estimates range from $6.4B to $10.3B depending on the firm. | Research & Markets via Yahoo Finance (2025) — https://finance.yahoo.com/news/trends-strategies-shaping-7-65-081200594.html |
-| Digital escrow services | **$4.24B (2025) → $4.76B (2026)** | Research & Markets (2026) — https://www.researchandmarkets.com/reports/6244857/digital-escrow-services-market-report |
-| Escrow-as-a-Service | $3.8B (2025), 11.6% CAGR to 2034 | Business Research Insights — https://www.businessresearchinsights.com/market-reports/escrow-as-a-service-eaas-market-118748 |
+| US freelancers | **64M** (38% of the workforce), earning **$1.27T** | Upwork *Freelance Forward* (Dec 2023) ;  https://investors.upwork.com/news-releases/news-release-details/upwork-study-finds-64-million-americans-freelanced-2023-adding |
+| US independents | **72M+**, of whom 5.6M earn more than $100k | MBO Partners (Sep 2025) ;  link in §2 |
+| US skilled knowledge-worker freelancers | 28% of knowledge workers, generating **$1.5T** in earnings (2024) | Upwork *Future Workforce Index* (2025) ;  https://www.upwork.com/research/future-workforce-index-2025 |
+| Global gig economy | **$3.7T** (2023), of which independent contractors account for 48% | Staffing Industry Analysts (2024) ;  https://www.staffingindustry.com/news/global-daily-news/global-gig-economy-reaches-37-trillion |
+| Online gig workers | **154M–435M** | World Bank (2023) ;  link in §2 |
+| Freelance platforms market | **$7.65B (2025) → $16.54B (2030)**, 16.7% CAGR. Estimates range from $6.4B to $10.3B depending on the firm. | Research & Markets via Yahoo Finance (2025) ;  https://finance.yahoo.com/news/trends-strategies-shaping-7-65-081200594.html |
+| Digital escrow services | **$4.24B (2025) → $4.76B (2026)** | Research & Markets (2026) ;  https://www.researchandmarkets.com/reports/6244857/digital-escrow-services-market-report |
+| Escrow-as-a-Service | $3.8B (2025), 11.6% CAGR to 2034 | Business Research Insights ;  https://www.businessresearchinsights.com/market-reports/escrow-as-a-service-eaas-market-118748 |
 
 Treat the market-research-firm numbers (the last three rows) as low-confidence.
 

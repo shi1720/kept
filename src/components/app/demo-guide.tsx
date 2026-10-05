@@ -15,7 +15,7 @@ export interface GuideStep {
 /** Demo-only guided tour so a first-time visitor (or judge) sees every key flow in minutes. */
 export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep[]; currentPersona: "Maya" | "Ana"; sandbox: boolean }) {
   const [hidden, setHidden] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     try {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- read a per-browser preference after hydration
@@ -26,12 +26,12 @@ export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep
   }, []);
   if (hidden) return null;
   return (
-    <div className="overflow-hidden rounded-2xl border border-ember-100 bg-gradient-to-br from-ember-50 via-card to-card">
+    <div className="overflow-hidden rounded-2xl border border-line bg-card">
       <div className="flex items-center gap-3 px-5 py-4">
-        <span className="rounded-xl bg-ember-600 p-2 text-white"><Compass className="size-4" /></span>
+        <span className="rounded-xl bg-jade-600 p-2 text-white"><Compass className="size-4" /></span>
         <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-semibold">Your 3-minute tour of Kept</p>
-          <p className="text-xs text-ink-3">A private demo world{sandbox ? " with real PayPal sandbox checkout" : ""}. Use “Switch to …” in the header to play both sides.</p>
+          <p className="text-[14px] font-semibold">Explore the demo</p>
+          <p className="text-xs text-ink-3">Nine things to try. {sandbox ? "PayPal sandbox connected." : "Simulator mode."}</p>
         </div>
         <button onClick={() => setOpen(!open)} className="rounded-full p-1.5 text-ink-3 hover:bg-paper-2" aria-label={open ? "Collapse tour" : "Expand tour"}>
           <ChevronDown className={cn("size-4 transition-transform", open ? "rotate-180" : "")} />
@@ -52,7 +52,7 @@ export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep
         </button>
       </div>
       {open && (
-        <ol className="grid gap-px border-t border-ember-100 bg-ember-100/60 sm:grid-cols-2 xl:grid-cols-3">
+        <ol className="grid gap-px border-t border-line bg-paper-2 sm:grid-cols-2 xl:grid-cols-3">
           {steps.map((s, i) => (
             <li key={s.title} className="bg-card/90">
               <StepLink

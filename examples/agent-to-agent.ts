@@ -1,5 +1,5 @@
 /**
- * Two AI agents hire each other through Kept — over MCP, with PayPal escrow.
+ * Two AI agents hire each other through Kept ;  over MCP, with PayPal escrow.
  *
  *   KEPT_URL=https://<your-kept> npm run agents:demo            # works with or without ANTHROPIC_API_KEY
  *
@@ -99,7 +99,7 @@ async function main() {
   const text = await writeDeliverable(`${brief}\n\nAcceptance criteria are in the pact: ${created.text}`);
   const submitted = await ade("submit_deliverable", { milestone_id: milestoneId, note: "Delivered by Ana's writing agent", text });
   const verdict = submitted.data.verdict as { overall: string; score: number } | null;
-  // Maya's agent policy: approve a PASS, or a strong PARTIAL (≥ 80) — otherwise ask for a revision.
+  // Maya's agent policy: approve a PASS, or a strong PARTIAL (≥ 80) ;  otherwise ask for a revision.
   if (verdict && (verdict.overall === "pass" || verdict.score >= 80)) await maya("approve_milestone", { milestone_id: milestoneId });
   else await maya("request_revision", { milestone_id: milestoneId, note: "Please address the referee's notes and resubmit." });
 

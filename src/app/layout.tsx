@@ -9,11 +9,11 @@ const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["lati
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
-  title: { default: "Kept — escrow with an AI referee, built on PayPal", template: "%s · Kept" },
+  title: { default: "Kept ,  escrow with an AI referee, built on PayPal", template: "%s · Kept" },
   description:
-    "Turn the DM where a deal was made into a contract that enforces itself. Kept holds the money with PayPal, an AI referee checks the work against the criteria you both signed, and payment is released — or fairly split — in minutes.",
+    "Clear freelance agreements, PayPal milestone payments, and AI reviews with evidence both sides can see.",
   openGraph: {
-    title: "Kept — promises, kept.",
+    title: "Kept ,  promises, kept.",
     description: "Escrow with an AI referee for freelance work agreed anywhere on the internet. Built on PayPal.",
     type: "website",
   },

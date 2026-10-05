@@ -60,7 +60,7 @@ function V6Buttons({ milestoneId }: { milestoneId: string }) {
     onApprove: async ({ orderId }: { orderId?: string }) => {
       if (orderId) await capture(orderId);
     },
-    onCancel: () => toast("Checkout cancelled — nothing was charged."),
+    onCancel: () => toast("Checkout cancelled; nothing was charged."),
     onError: (e: Error) => toast.error(e.message || "PayPal checkout failed"),
   };
   return (
@@ -79,7 +79,7 @@ function V5Buttons({ milestoneId, clientId }: { milestoneId: string; clientId: s
         style={{ layout: "vertical", shape: "pill", label: "pay" }}
         createOrder={createOrder}
         onApprove={async (data) => capture(data.orderID)}
-        onCancel={() => toast("Checkout cancelled — nothing was charged.")}
+        onCancel={() => toast("Checkout cancelled; nothing was charged.")}
         onError={(e) => toast.error(String(e))}
       />
     </PayPalScriptProvider>
@@ -108,7 +108,7 @@ function SimulatedCheckout({ milestoneId, total }: { milestoneId: string; total:
       >
         Pay {formatMoney(total)} with <span className="italic">PayPal</span>
       </Button>
-      <p className="text-center text-[11px] text-amber-700">Simulator mode — add PayPal sandbox keys to use real checkout.</p>
+      <p className="text-center text-[11px] text-amber-700">Simulator mode; add PayPal sandbox keys to use real checkout.</p>
     </div>
   );
 }
@@ -124,7 +124,7 @@ export function FundPanel({ milestoneId, quote, paypal }: { milestoneId: string;
         <span className="rounded-xl bg-amber-100 p-2 text-amber-700"><Lock className="size-4" /></span>
         <div>
           <p className="text-[14px] font-semibold">Fund this milestone</p>
-          <p className="text-xs leading-relaxed text-ink-3">The money is held in escrow — not sent to the freelancer — until the work passes review or you approve it.</p>
+          <p className="text-xs leading-relaxed text-ink-3">The money is held in escrow; not sent to the freelancer; until the work passes review or you approve it.</p>
         </div>
       </div>
       <dl className="mt-4 space-y-1.5 text-[13px]">

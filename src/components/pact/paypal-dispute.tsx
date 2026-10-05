@@ -50,7 +50,7 @@ export function SimulatePayPalDisputeButton({ milestoneId }: { milestoneId: stri
         setBusy(true);
         try {
           await api(`/api/milestones/${milestoneId}/simulate-paypal-dispute`, { body: {} });
-          toast.success("Simulated a PayPal dispute — see the chargeback shield respond.");
+          toast.success("Simulated a PayPal dispute; see the chargeback shield respond.");
           router.refresh();
         } finally {
           setBusy(false);

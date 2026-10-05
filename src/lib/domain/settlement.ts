@@ -29,7 +29,7 @@ export interface SettleOptions {
 export async function settleMilestone(milestoneId: string, releasePct: number, opts: SettleOptions) {
   const { milestone, pact } = await loadMilestone(milestoneId);
   if (releasePct > 0 && (await hasOpenPayPalDispute(milestoneId))) {
-    throw invalidState("The payer has an open dispute with PayPal on this payment — releases are frozen until PayPal decides");
+    throw invalidState("The payer has an open dispute with PayPal on this payment; releases are frozen until PayPal decides");
   }
   const pct = Math.round(Math.min(100, Math.max(0, releasePct)));
   const [toFreelancer, toClient] = splitByPct(milestone.amountCents, pct);
@@ -78,10 +78,10 @@ export async function settleMilestone(milestoneId: string, releasePct: number, o
     }
     const message =
       pct === 100
-        ? `${formatMoney(toFreelancer, pact.currency)} released to the freelancer — ${opts.reason}`
+        ? `${formatMoney(toFreelancer, pact.currency)} released to the freelancer; ${opts.reason}`
         : pct === 0
-          ? `${formatMoney(toClient, pact.currency)} refunded to the client — ${opts.reason}`
-          : `Settled ${pct}/${100 - pct}: ${formatMoney(toFreelancer, pact.currency)} to the freelancer, ${formatMoney(toClient, pact.currency)} back to the client — ${opts.reason}`;
+          ? `${formatMoney(toClient, pact.currency)} refunded to the client; ${opts.reason}`
+          : `Settled ${pct}/${100 - pct}: ${formatMoney(toFreelancer, pact.currency)} to the freelancer, ${formatMoney(toClient, pact.currency)} back to the client; ${opts.reason}`;
     await recordEvent(tx, {
       pactId: pact.id,
       milestoneId,
@@ -177,7 +177,7 @@ export async function executePayout(payoutId: string) {
     // A duplicate sender_batch_id means a previous attempt actually reached PayPal.
     const msg = err instanceof Error ? err.message : String(err);
     // PayPal refuses a reused sender_batch_id for 30 days: an earlier attempt reached PayPal even
-    // though we never saw the response. Never retry blindly — flag it for reconciliation.
+    // though we never saw the response. Never retry blindly; flag it for reconciliation.
     const duplicate = /sender_batch_id.*already|DUPLICATE/i.test(msg);
     await db
       .update(payouts)
@@ -189,7 +189,7 @@ export async function executePayout(payoutId: string) {
       actorKind: "paypal",
       type: "payout.failed",
       message: duplicate
-        ? "PayPal reports this payout batch already exists — flagged for reconciliation instead of paying twice"
+        ? "PayPal reports this payout batch already exists; flagged for reconciliation instead of paying twice"
         : `Payout attempt failed and will be retried automatically: ${msg}`,
     });
   }
@@ -271,7 +271,7 @@ export async function markPayoutReturned(payoutId: string, paypalStatus: string)
       await postJournal(tx, {
         pactId: pact.id,
         milestoneId: milestone.id,
-        memo: `PayPal payout ${p.paypalBatchId ?? ""} ${paypalStatus.toLowerCase()} — funds back in escrow`,
+        memo: `PayPal payout ${p.paypalBatchId ?? ""} ${paypalStatus.toLowerCase()}; funds back in escrow`,
         reference: `payout-reversal:${p.id}`,
         demoWorkspace: pact.demoWorkspace,
         lines: [

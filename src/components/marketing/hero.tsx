@@ -27,8 +27,7 @@ export function Hero() {
             <span className="italic text-jade-600">kept.</span>
           </h1>
           <p className="kp-in mt-7 max-w-[540px] text-[17.5px] leading-relaxed text-ink-2 sm:text-[19px]" style={{ "--d": "0.16s" } as React.CSSProperties}>
-            Turn the DM where the deal was made into a contract that enforces itself. Kept holds the money with PayPal, an AI referee checks the work
-            against the criteria you both signed, and payment is released, or fairly split, in minutes.
+            Turn your freelance chat into a clear agreement. Fund milestones with PayPal, review delivered work against the criteria you both signed, and resolve disagreements with evidence everyone can see.
           </p>
 
           <div className="kp-in mt-9 max-w-[540px]" style={{ "--d": "0.24s" } as React.CSSProperties}>

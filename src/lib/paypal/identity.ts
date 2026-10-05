@@ -4,7 +4,7 @@ import { basicAuthHeader, PAYPAL_API_BASE, PAYPAL_WEB_BASE } from "./http";
 
 /**
  * "Log in with PayPal" (OpenID Connect). Used both to sign in and to link a
- * verified PayPal account as a freelancer's payout destination — Kept then
+ * verified PayPal account as a freelancer's payout destination; Kept then
  * knows the money is going to an account the freelancer actually controls.
  */
 export const PAYPAL_LOGIN_SCOPES = "openid email profile https://uri.paypal.com/services/paypalattributes";
@@ -37,7 +37,7 @@ export async function exchangePayPalCode(code: string): Promise<PayPalIdentity> 
     body: new URLSearchParams({ grant_type: "authorization_code", code }).toString(),
     cache: "no-store",
   });
-  if (!tokenRes.ok) throw new AppError("unauthorized", "PayPal sign-in failed — please try again");
+  if (!tokenRes.ok) throw new AppError("unauthorized", "PayPal sign-in failed; please try again");
   const { access_token } = (await tokenRes.json()) as { access_token: string };
 
   const infoRes = await fetch(`${PAYPAL_API_BASE}/v1/identity/oauth2/userinfo?schema=paypalv1.1`, {

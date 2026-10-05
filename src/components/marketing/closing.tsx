@@ -77,7 +77,7 @@ export function MarketingFooter() {
           </a>
         </div>
         <p className="text-[11.5px] leading-relaxed text-ink-2/75">
-          Kept is a hackathon project running on the PayPal sandbox. It is not affiliated with or endorsed by PayPal, Upwork, Fiverr or Escrow.com. Product
+          Kept currently runs on the PayPal sandbox. No real money moves. It is not affiliated with or endorsed by PayPal, Upwork, Fiverr or Escrow.com. Product
           names are used only to describe compatibility and comparisons.
         </p>
       </Container>

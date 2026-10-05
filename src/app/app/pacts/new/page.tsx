@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Composer } from "@/components/composer/composer";
-import { requireUser } from "@/lib/auth/session";
+import { requirePageUser } from "@/lib/auth/session";
 import { getPactDetail } from "@/lib/domain/queries";
 import { editableDraft } from "@/lib/domain/pacts";
 
 export const metadata: Metadata = { title: "New pact" };
 
 export default async function NewPactPage({ searchParams }: { searchParams: Promise<{ edit?: string; role?: string }> }) {
-  const user = await requireUser();
+  const user = await requirePageUser();
   const { edit, role } = await searchParams;
 
   if (edit) {

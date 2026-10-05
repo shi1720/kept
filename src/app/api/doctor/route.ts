@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { runDoctor } from "@/lib/doctor";
+import { env, paypalConfigured, emailConfigured } from "@/lib/env";
+import { aiStatus } from "@/lib/ai/provider";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-const g = globalThis as unknown as { __doctor?: { at: number; data: Awaited<ReturnType<typeof runDoctor>> } };
-
-/** Public integration self-test, cached for 10 minutes. Exposes outcomes, never secrets. */
+/** Public status never spends credits or initiates payments. */
 export async function GET() {
-  if (!g.__doctor || Date.now() - g.__doctor.at > 10 * 60_000) {
-    g.__doctor = { at: Date.now(), data: await runDoctor() };
+  return NextResponse.json({ paypal: paypalConfigured(), ai: aiStatus(), email: emailConfigured() });
+}
+
+/** Explicit operator-only live sandbox diagnostics. */
+export async function POST(request: Request) {
+  const actual = Buffer.from(request.headers.get("authorization") ?? "");
+  const expected = Buffer.from(`Bearer ${env.cronSecret}`);
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return NextResponse.json(g.__doctor.data);
+  if (env.paypal.environment !== "sandbox") return NextResponse.json({ error: "Sandbox only" }, { status: 409 });
+  return NextResponse.json(await runDoctor());
 }

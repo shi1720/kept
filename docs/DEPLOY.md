@@ -10,8 +10,8 @@ This is the exact sequence to get the hosted demo live with **real PayPal sandbo
 4. On the same app page, scroll to **Features** and make sure these are ticked, then **Save**:
    - Accept payments (default)
    - **Payouts**
-   - **Log in with PayPal** *(optional — see step 6)*
-   - **Disputes** *(optional — enables the chargeback shield)*
+   - **Log in with PayPal** *(optional ;  see step 6)*
+   - **Disputes** *(optional ;  enables the chargeback shield)*
 5. **Testing Tools → Sandbox Accounts**: note the default **Personal** account email (`sb-…@personal.example.com`). Click ⋯ → *View/Edit account* to see its password. This account:
    - is the **buyer** you log in with in the PayPal popup during the demo, and
    - is the **payout receiver** for demo freelancers (`PAYPAL_DEMO_PAYOUT_EMAIL`).

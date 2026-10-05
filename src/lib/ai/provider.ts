@@ -1,3 +1,4 @@
+import { accountAI, decryptKey, reserveFreeRequest, refundFreeRequest } from "./account";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { GoogleGenAI } from "@google/genai";
@@ -11,6 +12,7 @@ export type ContentPart =
   | { type: "pdf"; base64: string };
 
 export interface GenerateRequest<T extends z.ZodType> {
+  userId?: string;
   system: string;
   content: ContentPart[];
   schema: T;
@@ -20,7 +22,7 @@ export interface GenerateRequest<T extends z.ZodType> {
 }
 
 export interface AIProvider {
-  readonly name: "anthropic" | "gemini";
+  readonly name: "anthropic" | "gemini" | "openai";
   readonly model: string;
   generate<T extends z.ZodType>(req: GenerateRequest<T>): Promise<z.infer<T>>;
 }
@@ -29,8 +31,8 @@ export interface AIProvider {
 
 class AnthropicProvider implements AIProvider {
   readonly name = "anthropic" as const;
-  readonly model = env.ai.anthropicModel;
-  private client = new Anthropic({ apiKey: env.ai.anthropicKey, maxRetries: 2, timeout: 120_000 });
+  private client: Anthropic;
+  constructor(apiKey = env.ai.anthropicKey, readonly model = env.ai.anthropicModel) { this.client = new Anthropic({ apiKey, maxRetries: 1, timeout: 120_000 }); }
 
   async generate<T extends z.ZodType>(req: GenerateRequest<T>): Promise<z.infer<T>> {
     const content: Anthropic.Beta.BetaContentBlockParam[] = req.content.map((p) => {
@@ -66,8 +68,8 @@ class AnthropicProvider implements AIProvider {
 
 class GeminiProvider implements AIProvider {
   readonly name = "gemini" as const;
-  readonly model = env.ai.geminiModel;
-  private client = new GoogleGenAI({ apiKey: env.ai.geminiKey });
+  private client: GoogleGenAI;
+  constructor(apiKey = env.ai.geminiKey, readonly model = env.ai.geminiModel, vertex = false) { this.client = new GoogleGenAI(vertex ? {vertexai:true, project:env.ai.vertexProject, location:"global"} : { apiKey }); }
 
   async generate<T extends z.ZodType>(req: GenerateRequest<T>): Promise<z.infer<T>> {
     const parts = req.content.map((p) => {
@@ -96,6 +98,24 @@ class GeminiProvider implements AIProvider {
 
 /* ------------------------------------------------------------------ */
 
+class OpenAIProvider implements AIProvider {
+  readonly name = "openai" as const;
+  constructor(private apiKey: string, readonly model: string) {}
+  async generate<T extends z.ZodType>(req: GenerateRequest<T>): Promise<z.infer<T>> {
+    const content = req.content.map(p => p.type === "text" ? { type: "input_text", text: p.text } : p.type === "image" ? { type: "input_image", image_url: `data:${p.mime};base64,${p.base64}` } : { type: "input_file", filename: "evidence.pdf", file_data: `data:application/pdf;base64,${p.base64}` });
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST", signal: AbortSignal.timeout(120000),
+      headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: this.model, instructions: req.system, input: [{ role: "user", content }], max_output_tokens: req.maxTokens ?? 16000, text: { format: { type: "json_schema", name: "kept_result", strict: true, schema: z.toJSONSchema(req.schema) } } }),
+    });
+    if (!response.ok) throw new AppError("ai_unavailable", `OpenAI request failed (${response.status})`);
+    const data = await response.json();
+    const text = data.output?.flatMap((item: {content?: {type: string; text?: string}[]}) => item.content ?? []).filter((part: {type: string}) => part.type === "output_text").map((part: {text: string}) => part.text).join("");
+    if (!text) throw new AppError("ai_unavailable", "OpenAI returned no review");
+    return req.schema.parse(JSON.parse(text));
+  }
+}
+
 const g = globalThis as unknown as { __aiProviders?: AIProvider[] };
 
 /** Configured providers in priority order. Empty means offline mode. */
@@ -105,8 +125,8 @@ export function getProviders(): AIProvider[] {
   const forced = env.ai.provider;
   if (forced !== "offline") {
     const anthropic = env.ai.anthropicKey ? new AnthropicProvider() : null;
-    const gemini = env.ai.geminiKey ? new GeminiProvider() : null;
-    const ordered = forced === "gemini" ? [gemini, anthropic] : [anthropic, gemini];
+    const gemini = env.ai.vertexProject ? new GeminiProvider(undefined, env.ai.geminiModel, true) : env.ai.geminiKey ? new GeminiProvider() : null;
+    const ordered = forced === "anthropic" ? [anthropic, gemini] : [gemini, anthropic];
     for (const p of ordered) if (p) list.push(p);
   }
   g.__aiProviders = list;
@@ -134,21 +154,33 @@ export interface Generated<T> {
 /**
  * Run a task against each configured provider in turn, falling back to the
  * deterministic offline implementation if every provider fails. Money never
- * waits on a flaky API — but a degraded result is always labelled as such.
+ * waits on a flaky API; but a degraded result is always labelled as such.
  */
 export async function generateWithFallback<T extends z.ZodType>(
   req: GenerateRequest<T>,
   offline: () => z.infer<T> | Promise<z.infer<T>>,
 ): Promise<Generated<z.infer<T>>> {
-  const providers = getProviders();
+  let providers = getProviders();
+  let reserved = false;
+  if (req.userId) {
+    const settings = await accountAI(req.userId);
+    if (settings.encryptedKey) {
+      const apiKey = decryptKey(settings.encryptedKey);
+      providers = [settings.provider === "gemini" ? new GeminiProvider(apiKey, settings.model) : settings.provider === "anthropic" ? new AnthropicProvider(apiKey, settings.model) : new OpenAIProvider(apiKey, settings.model)];
+    } else if (providers.length) {
+      await reserveFreeRequest(req.userId);
+      reserved = true;
+    }
+  }
   for (const p of providers) {
     try {
       const output = await p.generate(req);
       return { output, provider: p.name, model: p.model, degraded: false };
     } catch (err) {
-      console.error(`[ai] ${p.name}/${p.model} failed:`, err instanceof Error ? err.message : err);
+      console.error(`[ai] ${p.name}/${p.model} failed (${err instanceof Error ? err.name : "unknown"})`);
     }
   }
+  if (reserved && req.userId) await refundFreeRequest(req.userId);
   return {
     output: await offline(),
     provider: "offline",

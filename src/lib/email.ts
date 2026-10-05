@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import nodemailer from "nodemailer";
 import { emailConfigured, env, isProduction } from "@/lib/env";
 
 /**
@@ -19,7 +20,7 @@ export interface Email {
 export interface SendResult {
   delivered: boolean;
   /** "resend", or "log" when no provider is configured. */
-  via: "resend" | "log";
+  via: "resend" | "smtp" | "log";
 }
 
 export async function sendEmail(email: Email): Promise<SendResult> {
@@ -32,6 +33,22 @@ export async function sendEmail(email: Email): Promise<SendResult> {
       console.warn(`[email] not sent to ${email.to}: RESEND_API_KEY is not configured`);
     }
     return { delivered: false, via: "log" };
+  }
+
+  if (env.email.smtpHost && env.email.smtpPassword) {
+    try {
+      const transport = nodemailer.createTransport({
+        host: env.email.smtpHost, port: env.email.smtpPort,
+        secure: env.email.smtpPort === 465, requireTLS: env.email.smtpPort !== 465,
+        auth: { user: env.email.smtpUser, pass: env.email.smtpPassword },
+        connectionTimeout: 10_000, socketTimeout: 15_000,
+      });
+      await transport.sendMail({ from: env.email.from, to: email.to, subject: email.subject, text: plainText(email), html: html(email) });
+      return { delivered: true, via: "smtp" };
+    } catch {
+      console.error("[email] SMTP delivery failed");
+      return { delivered: false, via: "smtp" };
+    }
   }
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -48,7 +65,7 @@ export async function sendEmail(email: Email): Promise<SendResult> {
 }
 
 function plainText(e: Email) {
-  return e.action ? `${e.text}\n\n${e.action.label}: ${e.action.url}\n\n— Kept` : `${e.text}\n\n— Kept`;
+  return e.action ? `${e.text}\n\n${e.action.label}: ${e.action.url}\n\nKept` : `${e.text}\n\nKept`;
 }
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -66,7 +83,7 @@ function html(e: Email) {
   <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e8e2d6;border-radius:20px;padding:32px">
     <p style="margin:0 0 24px;font-family:Georgia,serif;font-size:24px;color:#0f6b57">Kept</p>
     ${paragraphs}${button}
-    <p style="margin:24px 0 0;font-size:12px;color:#6b665c">Kept · escrow with an AI referee, built on PayPal</p>
+    <p style="margin:24px 0 0;font-size:12px;color:#6b665c">Kept · clear agreements, shared evidence, PayPal payments</p>
   </div></body></html>`;
 }
 

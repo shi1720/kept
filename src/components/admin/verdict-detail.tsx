@@ -40,7 +40,7 @@ function Criterion({ c, n }: { c: VerdictCriterion; n: number }) {
             <Cpu className="mt-0.5 size-3.5 shrink-0" />
             <span>
               <b className="font-semibold">Machine check {c.machineCheck.passed ? "passed" : "failed"}</b>
-              <span className="font-mono text-[11px] opacity-80"> · {c.machineCheck.type}</span> — {c.machineCheck.detail}
+              <span className="font-mono text-[11px] opacity-80"> · {c.machineCheck.type}</span>; {c.machineCheck.detail}
             </span>
           </p>
         )}
@@ -54,7 +54,7 @@ function Criterion({ c, n }: { c: VerdictCriterion; n: number }) {
 export function VerdictDetail({ v }: { v: VerdictRow }) {
   const facts = v.evidence.filter((f) => f.probe !== "security");
   return (
-    <div className="border-y border-line bg-paper px-3 py-4 sm:px-5" role="region" aria-label={`Referee audit for ${v.pactTitle} — ${v.milestoneTitle}`}>
+    <div className="border-y border-line bg-paper px-3 py-4 sm:px-5" role="region" aria-label={`Referee audit for ${v.pactTitle}; ${v.milestoneTitle}`}>
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <aside className="flex min-w-0 flex-col gap-3">
           <div>
@@ -109,7 +109,7 @@ export function VerdictDetail({ v }: { v: VerdictRow }) {
                       <CircleCheck className={cn("mt-0.5 size-3.5 shrink-0", f.ok ? "text-jade-600" : "text-ink-3")} />
                     )}
                     <span className="min-w-0">
-                      <b className="font-medium text-ink">{f.label}</b> <span className="text-ink-3">— {f.detail}</span>
+                      <b className="font-medium text-ink">{f.label}</b> <span className="text-ink-3">;  {f.detail}</span>
                     </span>
                   </li>
                 ))}
@@ -143,5 +143,5 @@ export function VerdictDetail({ v }: { v: VerdictRow }) {
 export const VERDICT_DETAIL: DetailConfig<VerdictRow> = {
   render: (v) => <VerdictDetail v={v} />,
   estimateHeight: (v) => Math.max(280, 72 + v.criteria.length * 118),
-  label: (v) => `${v.pactTitle} — ${v.milestoneTitle}`,
+  label: (v) => `${v.pactTitle}; ${v.milestoneTitle}`,
 };

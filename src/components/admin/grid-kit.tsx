@@ -72,17 +72,17 @@ export const opsGridTheme = keptGridTheme.withParams({
   spacing: 6,
   wrapperBorderRadius: 16,
   cellHorizontalPadding: 12,
-  pinnedRowBorder: { width: 1, color: "#d9d1c2" },
-  pinnedColumnBorder: { width: 1, color: "#e7e1d5" },
-  tooltipBackgroundColor: "#16140f",
-  tooltipTextColor: "#faf8f3",
+  pinnedRowBorder: { width: 1, color: "#cdd8df" },
+  pinnedColumnBorder: { width: 1, color: "#e1e8ec" },
+  tooltipBackgroundColor: "#18252d",
+  tooltipTextColor: "#f6f8fa",
   tooltipBorder: false,
-  inputFocusBorder: { color: "#148a6f" },
+  inputFocusBorder: { color: "#16856e" },
   autoHeightMinBodyHeight: 44,
 });
 
 const DATE_FMT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
-export const fmtDateTime = (ms: number | null | undefined) => (ms == null ? "—" : DATE_FMT.format(new Date(ms)));
+export const fmtDateTime = (ms: number | null | undefined) => (ms == null ? "N/A" : DATE_FMT.format(new Date(ms)));
 
 const centsOf = (v: unknown) => (typeof v === "number" ? v : null);
 
@@ -96,7 +96,7 @@ export const opsColumnTypes: Record<string, ColTypeDef> = {
     enableCellChangeFlash: true,
     valueFormatter: (p: ValueFormatterParams) => {
       const v = centsOf(p.value);
-      if (v == null) return p.node?.rowPinned ? "" : "—";
+      if (v == null) return p.node?.rowPinned ? "" : "N/A";
       return formatMoney(v, (p.data as { currency?: string } | undefined)?.currency ?? "USD");
     },
     filter: "agNumberColumnFilter",
@@ -129,7 +129,7 @@ export const opsColumnTypes: Record<string, ColTypeDef> = {
     width: 190,
     minWidth: 140,
     cellClass: "font-mono text-[11.5px] text-ink-2",
-    valueFormatter: (p: ValueFormatterParams) => (p.value ? String(p.value) : p.node?.rowPinned ? "" : "—"),
+    valueFormatter: (p: ValueFormatterParams) => (p.value ? String(p.value) : p.node?.rowPinned ? "" : "N/A"),
     tooltip: (p) => (p.value ? String(p.value) : undefined),
     filter: "agTextColumnFilter",
   },
@@ -139,7 +139,7 @@ export const opsColumnTypes: Record<string, ColTypeDef> = {
     headerClass: "ag-right-aligned-header",
     cellClass: "ag-right-aligned-cell num",
     enableCellChangeFlash: true,
-    valueFormatter: (p: ValueFormatterParams) => (p.value == null ? (p.node?.rowPinned ? "" : "—") : `${p.value}%`),
+    valueFormatter: (p: ValueFormatterParams) => (p.value == null ? (p.node?.rowPinned ? "" : "N/A") : `${p.value}%`),
     filter: "agNumberColumnFilter",
   },
 };
@@ -154,11 +154,11 @@ interface PactLike {
   milestoneTitle?: string | null;
 }
 
-/** Value for a pact column: searchable, sortable and exported as "Pact — Milestone". */
+/** Value for a pact column: searchable, sortable and exported as "Pact; Milestone". */
 export const pactValue = (p: { data?: PactLike }) => {
   const d = p.data;
   if (!d) return null;
-  return d.pactId && d.milestoneTitle ? `${d.pactTitle} — ${d.milestoneTitle}` : (d.pactTitle ?? null);
+  return d.pactId && d.milestoneTitle ? `${d.pactTitle}; ${d.milestoneTitle}` : (d.pactTitle ?? null);
 };
 
 /** Standard "Pact · milestone" column, pinned left with a deep link to the pact. */
@@ -180,7 +180,7 @@ export function pactColumn<T extends PactLike>(overrides: Partial<ColDef<T>> = {
 export function PactCell(p: ICellRendererParams<PactLike>) {
   if (p.node.rowPinned) return <span className="font-semibold text-ink">{p.value}</span>;
   const d = p.data;
-  if (!d?.pactId) return <span className="text-ink-3">—</span>;
+  if (!d?.pactId) return <span className="text-ink-3">N/A</span>;
   return (
     <div className="flex h-full min-w-0 flex-col justify-center leading-tight">
       <Link
@@ -398,11 +398,11 @@ function loadState(id: string): GridState | undefined {
 
 function saveState(id: string, state: GridState) {
   try {
-    // Persist the user's layout only — not selection, focus, scroll or pinning.
+    // Persist the user's layout only; not selection, focus, scroll or pinning.
     const { columnOrder, columnSizing, columnVisibility, sort, filter } = state;
     window.localStorage.setItem(storageKey(id), JSON.stringify({ columnOrder, columnSizing, columnVisibility, sort, filter }));
   } catch {
-    /* storage disabled — layout just won't persist */
+    /* storage disabled; layout just won't persist */
   }
 }
 
@@ -578,7 +578,7 @@ export function OpsGrid<T>({
   }, []);
   const isExternalFilterPresent = useCallback(() => Boolean(filterRef.current), []);
   const doesExternalFilterPass = useCallback((node: IRowNode<T>) => (node.data && filterRef.current ? filterRef.current(node.data) : true), []);
-  const getRowStyle = useCallback((p: RowClassParams<T>) => (p.node.rowPinned === "bottom" ? { fontWeight: 600, background: "#faf8f3" } : undefined), []);
+  const getRowStyle = useCallback((p: RowClassParams<T>) => (p.node.rowPinned === "bottom" ? { fontWeight: 600, background: "#f6f8fa" } : undefined), []);
   const onStateUpdated = useCallback((e: StateUpdatedEvent<T>) => saveState(id, e.state), [id]);
   const isFullWidthRow = useCallback((p: IsFullWidthRowParams<T>) => isDetailRow(p.rowNode.data), []);
   const getRowHeight = useCallback(

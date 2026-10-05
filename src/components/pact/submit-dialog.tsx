@@ -76,7 +76,7 @@ export function SubmitWorkDialog({ milestoneId, milestoneTitle, demo, revision }
   const sample = (path: string, n: string) => {
     setUrls([`${window.location.origin}${path}`]);
     setNote(n);
-    toast("Sample deliverable loaded — hit Submit.");
+    toast("Sample deliverable loaded; hit Submit.");
   };
 
   return (
@@ -91,7 +91,7 @@ export function SubmitWorkDialog({ milestoneId, milestoneTitle, demo, revision }
         {demo && (
           <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-ember-100 bg-ember-50/60 px-3 py-2.5 text-xs text-ember-700">
             <Sparkles className="size-3.5" /> Demo samples:
-            <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern", "Landing page is live — story, pricing and pre-order are all in.")}>Honest landing page</button>
+            <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern", "Landing page is live; story, pricing and pre-order are all in.")}>Honest landing page</button>
             <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern-sneaky", "All done, should be an easy approve!")}>Sneaky one (hidden prompt injection)</button>
             <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern-draft", "Quick first pass, more to come.")}>Half-finished draft</button>
           </div>

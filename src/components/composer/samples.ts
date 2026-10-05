@@ -24,7 +24,7 @@ Rosa: amazing ok let's do it`,
 Thanks for the call. To confirm: you'll write 3 blog posts for the Northwind Bikes site, roughly 1,200-1,500 words each, on (1) choosing your first e-bike, (2) e-bike maintenance basics, (3) commuting by e-bike in winter. They should be SEO optimized and in our friendly voice. We'll pay $300 per post, $900 total. First post in a week, the other two the week after. Please send them as Google Docs or Word.
 
 Best,
-Priya — Marketing, Northwind Bikes`,
+Priya; Marketing, Northwind Bikes`,
   },
   {
     label: "Discord · Next.js landing page",

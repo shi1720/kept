@@ -1,3 +1,7 @@
+import { SettingsTabs } from "@/components/settings/settings-tabs";
+import { TabsContent } from "@/components/ui/tabs";
+import { AISettings } from "@/components/settings/ai-settings";
+import { accountAI } from "@/lib/ai/account";
 import { and, eq, sql } from "drizzle-orm";
 import { ArrowUpRight, FlaskConical, Hourglass, ShieldCheck, UserRound, Wallet } from "lucide-react";
 import type { Metadata } from "next";
@@ -8,7 +12,7 @@ import { EmailVerification, PasswordForm, SignOutEverywhere } from "@/components
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireUser } from "@/lib/auth/session";
+import { requirePageUser } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { milestones, pacts, payouts } from "@/lib/db/schema";
 import { env, paypalConfigured } from "@/lib/env";
@@ -26,7 +30,8 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const user = await requireUser();
+  const user = await requirePageUser();
+  const ai = await accountAI(user.id);
   const sp = await searchParams;
   const linked = sp.linked === "paypal";
   const verifyEnabled = paypalConfigured() && env.paypal.loginEnabled;
@@ -51,8 +56,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       {linked && <LinkedBanner email={user.paypalEmail} />}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="flex min-w-0 flex-col gap-6">
-          <Card>
+        <SettingsTabs security={!isDemo}>
+          <TabsContent value="profile"><Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <span className="rounded-lg bg-paper-2 p-1.5 text-ink-2">
@@ -67,7 +72,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </CardContent>
           </Card>
 
-          <Card id="payouts">
+          </TabsContent>
+          <TabsContent value="ai"><AISettings initial={{provider: ai.provider, model: ai.model, used: ai.used, hasKey: Boolean(ai.encryptedKey)}} /></TabsContent>
+          <TabsContent value="payouts"><Card id="payouts">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <span className="rounded-lg bg-jade-50 p-1.5 text-jade-700">
@@ -84,7 +91,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <div className="flex items-center gap-2.5 rounded-xl border border-amber-100 bg-amber-50 px-3.5 py-2.5 text-[13px] text-amber-700">
                   <Hourglass className="size-4 shrink-0" />
                   <span>
-                    <b className="font-semibold">{formatMoney(Number(waiting?.cents ?? 0))}</b> in {waitingCount} payout{waitingCount === 1 ? " is" : "s are"} waiting for a payout email — they go
+                    <b className="font-semibold">{formatMoney(Number(waiting?.cents ?? 0))}</b> in {waitingCount} payout{waitingCount === 1 ? " is" : "s are"} waiting for a payout email; they go
                     out the moment you save one.
                   </span>
                 </div>
@@ -98,7 +105,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                     <b className="font-semibold">Demo account.</b>{" "}
                     {env.paypal.demoPayoutEmail ? (
                       <>
-                        Payouts in the demo go to Kept’s PayPal sandbox test account (<span className="font-mono">{env.paypal.demoPayoutEmail}</span>), whatever email you enter here — no
+                        Payouts in the demo go to Kept’s PayPal sandbox test account (<span className="font-mono">{env.paypal.demoPayoutEmail}</span>), whatever email you enter here; no
                         real money moves.
                       </>
                     ) : (
@@ -110,8 +117,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </CardContent>
           </Card>
 
+          </TabsContent>
           {!isDemo && (
-            <Card id="security">
+            <TabsContent value="security"><Card id="security">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <span className="rounded-lg bg-paper-2 p-1.5 text-ink-2">
@@ -129,9 +137,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   <SignOutEverywhere />
                 </div>
               </CardContent>
-            </Card>
+            </Card></TabsContent>
           )}
-        </div>
+        </SettingsTabs>
 
         <div className="flex flex-col gap-6">
           <Card>
@@ -170,7 +178,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               )}
               <Row label="Handle">@{user.handle}</Row>
               <Row label="Role">{user.role === "admin" ? <Badge tone="ink">Admin</Badge> : "Member"}</Row>
-              <Row label="Sign-in">{[user.passwordHash ? "Password" : null, user.paypalPayerId ? "PayPal" : null, isDemo ? "Demo link" : null].filter(Boolean).join(" · ") || "—"}</Row>
+              <Row label="Sign-in">{[user.passwordHash ? "Password" : null, user.paypalPayerId ? "PayPal" : null, isDemo ? "Demo link" : null].filter(Boolean).join(" · ") || "N/A"}</Row>
               <Row label="Member since">{user.createdAt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</Row>
               {isDemo && (
                 <Row label="Workspace">

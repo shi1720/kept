@@ -34,7 +34,7 @@ export function HeroVisual() {
       </div>
 
       <div className="flex flex-col gap-4 xl:block">
-        {/* 1 — The DM */}
+        {/* 1; The DM */}
         <div className="kp-in w-full max-w-[310px] xl:absolute xl:left-0 xl:top-0" style={d(0.07)}>
           <div className="kp-float rounded-2xl border border-line bg-card/95 p-3.5 shadow-lift" style={{ "--fd": "0.4s" } as React.CSSProperties}>
             <div className="flex items-center gap-2 border-b border-line pb-2.5">
@@ -78,7 +78,7 @@ export function HeroVisual() {
           </span>
         </div>
 
-        {/* 2 — The pact */}
+        {/* 2; The pact */}
         <div className="kp-in relative w-full xl:absolute xl:right-0 xl:top-[214px] xl:w-[350px]" style={d(0.68)}>
           <div className="relative rounded-2xl border border-line bg-card shadow-lift">
             <div className="flex items-start justify-between gap-3 border-b border-line px-4 pb-3 pt-4">
@@ -124,7 +124,7 @@ export function HeroVisual() {
           </div>
         </div>
 
-        {/* 3 — The verdict */}
+        {/* 3; The verdict */}
         <div className="kp-in w-full max-w-[320px] xl:absolute xl:left-[24px] xl:top-[556px] xl:z-10" style={d(1.8)}>
           <div className="kp-float rounded-2xl border border-line bg-card p-4 shadow-lift" style={{ "--fd": "1.2s" } as React.CSSProperties}>
             <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ export function HeroVisual() {
           </div>
         </div>
 
-        {/* 4 — Money moves */}
+        {/* 4; Money moves */}
         <div className="kp-pop w-fit xl:absolute xl:right-[10px] xl:top-[650px] xl:z-20" style={d(2.34)}>
           <div className="flex items-center gap-2.5 rounded-full border border-line bg-ink py-1.5 pl-1.5 pr-4 text-paper shadow-lift">
             <span className="flex size-7 items-center justify-center rounded-full bg-jade-500">

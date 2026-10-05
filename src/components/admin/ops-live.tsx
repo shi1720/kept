@@ -9,7 +9,7 @@ import { BooksBadge, KpiHeader } from "./kpis";
 /**
  * Live ops data. The server renders the first snapshot; after that the console
  * polls /api/ops and merges each response into the previous one with structural
- * sharing — unchanged rows keep their object identity, so AG Grid (keyed by
+ * sharing; unchanged rows keep their object identity, so AG Grid (keyed by
  * `getRowId`) only touches the rows that really changed and flashes those cells.
  */
 

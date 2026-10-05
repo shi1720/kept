@@ -91,7 +91,7 @@ async function dispatch(event: PayPalWebhookEvent) {
           milestoneId: p.milestoneId,
           actorKind: "paypal",
           type: "payment.reversed",
-          message: `PayPal reported ${event.event_type.split(".").pop()?.toLowerCase()} on the escrow payment — flagged for review`,
+          message: `PayPal reported ${event.event_type.split(".").pop()?.toLowerCase()} on the escrow payment; flagged for review`,
           data: { eventId: event.id },
         });
       }
@@ -137,7 +137,7 @@ async function knownOrder(orderId: string) {
 }
 
 function ignoreState(err: unknown) {
-  // Another path (browser capture) already moved the milestone — that's fine.
+  // Another path (browser capture) already moved the milestone; that's fine.
   if (err instanceof Error && /updated by someone else|not funded yet|already funded|funded by another payment/.test(err.message)) return;
   throw err;
 }

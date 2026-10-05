@@ -34,7 +34,7 @@ export function AuthLayout({ title, subtitle, children, showDemo = true }: { tit
             “The deal was made in a DM. <span className="italic text-jade-300">Kept made it a promise.</span>”
           </blockquote>
           <p className="mt-6 max-w-sm text-sm leading-relaxed text-paper/60">
-            Paste the chat, sign the criteria, fund with PayPal. When the work arrives, an AI referee checks it against what you both agreed — and the money moves.
+            Paste the chat, sign the criteria, fund with PayPal. When the work arrives, an AI referee checks it against what you both agreed; and the money moves.
           </p>
         </div>
         <div className="relative grid grid-cols-3 gap-6 border-t border-paper/10 pt-6 text-xs text-paper/60">

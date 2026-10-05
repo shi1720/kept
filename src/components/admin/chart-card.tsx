@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
 
-/** AG Charts renders to canvas in the browser only — load it client-side, with a skeleton in its place. */
+/** AG Charts renders to canvas in the browser only; load it client-side, with a skeleton in its place. */
 function ChartLoading() {
   return (
     <div className="flex h-[196px] items-end gap-3 px-2 pb-6" aria-hidden>

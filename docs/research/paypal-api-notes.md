@@ -542,11 +542,11 @@ async function postbackVerify(raw: string, h: Headers, webhookId: string): Promi
 }
 
 export async function POST(req: Request) {
-  const raw = await req.text();                         // RAW body — do not use req.json() first
+  const raw = await req.text();                         // RAW body ;  do not use req.json() first
   const ok = await selfVerify(raw, req.headers, process.env.PAYPAL_WEBHOOK_ID!);
   if (!ok) return new Response("bad signature", { status: 400 });
   const event = JSON.parse(raw) as { id: string; event_type: string; resource: any; resource_type: string };
-  // idempotency: insert event.id into paypal_events (unique) — if exists, return 200
+  // idempotency: insert event.id into paypal_events (unique) ;  if exists, return 200
   switch (event.event_type) {
     case "PAYMENT.CAPTURE.COMPLETED":   /* escrow = event.resource.custom_id; mark HELD with capture id */ break;
     case "PAYMENT.CAPTURE.REFUNDED":    /* event.resource is a refund; capture id in links rel=up */ break;
@@ -677,7 +677,7 @@ https://www.sandbox.paypal.com/signin/authorize
   &client_id=<CLIENT_ID>
   &response_type=code
   &scope=openid%20email%20profile%20https%3A%2F%2Furi.paypal.com%2Fservices%2Fpaypalattributes
-  &redirect_uri=<urlencoded return URL — must match dashboard>
+  &redirect_uri=<urlencoded return URL ;  must match dashboard>
   &state=<csrf>
   [&nonce=<nonce>] [&fullPage=true]
 ```

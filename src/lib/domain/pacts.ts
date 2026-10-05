@@ -46,6 +46,7 @@ export const pactInput = z.object({
   counterpartyEmail: z.email().nullish(),
   sourceText: z.string().max(40_000).nullish(),
   terms: z.object({
+    reviewGuidance: z.string().max(4000).optional(),
     revisionsIncluded: z.number().int().min(0).max(20),
     reviewWindowHours: z.number().int().min(1).max(720),
     ipTransfer: z.string().max(500),
@@ -150,6 +151,7 @@ export async function createPact(user: User, raw: unknown, via: Pact["createdVia
     reviewWindowHours: input.terms.reviewWindowHours,
     ipTransfer: input.terms.ipTransfer,
     communication: input.terms.communication ?? undefined,
+    reviewGuidance: input.terms.reviewGuidance,
   };
   await db.insert(pacts).values({
     id,
@@ -303,7 +305,7 @@ export async function getPactByInvite(token: string) {
 export async function acceptPact(user: User, token: string): Promise<Pact> {
   const pact = await getPactByInvite(token);
   if (pact.status !== "pending_acceptance") throw invalidState("This invitation is no longer open");
-  if (pact.creatorId === user.id) throw badRequest("You can't countersign your own pact — share the link with the other party");
+  if (pact.creatorId === user.id) throw badRequest("You can't countersign your own pact; share the link with the other party");
   const now = new Date();
   const side = pact.creatorRole === "client" ? "freelancer" : "client";
   await db.transaction(async (tx) => {
@@ -318,7 +320,7 @@ export async function acceptPact(user: User, token: string): Promise<Pact> {
       })
       .where(and(eq(pacts.id, pact.id), eq(pacts.status, "pending_acceptance")))
       .returning();
-    if (!claimed) throw invalidState("This invitation was just accepted or withdrawn — refresh to see the pact");
+    if (!claimed) throw invalidState("This invitation was just accepted or withdrawn; refresh to see the pact");
     await tx
       .update(milestones)
       .set({ status: "awaiting_funding", updatedAt: now })

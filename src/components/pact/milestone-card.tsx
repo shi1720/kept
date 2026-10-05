@@ -100,7 +100,7 @@ export function MilestoneCard({
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-jade-100 bg-jade-50/60 p-5">
             <div>
               <p className="flex items-center gap-2 text-[14px] font-semibold text-jade-700"><Lock className="size-4" /> {formatMoney(m.amountCents)} is secured in escrow</p>
-              <p className="mt-0.5 text-xs text-ink-3">{m.revisionsUsed > 0 ? "A revision was requested — see the activity feed for the client’s note." : "Deliver against the criteria above. Passing work is paid even if the client goes quiet."}</p>
+              <p className="mt-0.5 text-xs text-ink-3">{m.revisionsUsed > 0 ? "A revision was requested; see the activity feed for the client’s note." : "Deliver against the criteria above. Passing work is paid even if the client goes quiet."}</p>
             </div>
             <div className="flex items-center gap-2">
               <SubmitWorkDialog milestoneId={m.id} milestoneTitle={m.title} demo={demo} revision={m.revisionsUsed > 0} />
@@ -110,7 +110,7 @@ export function MilestoneCard({
         )}
         {m.status === "funded" && role === "client" && (
           <Callout icon={<Lock />} tone="jade" title={`${freelancerName} is working on it`}>
-            Your {formatMoney(m.amountCents)} is held in escrow. You’ll review the delivery — with the AI referee’s report — before anything is released.
+            Your {formatMoney(m.amountCents)} is held in escrow. You’ll review the delivery; with the AI referee’s report; before anything is released.
           </Callout>
         )}
 

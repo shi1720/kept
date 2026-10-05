@@ -5,7 +5,7 @@ export function Container({ className, ...props }: React.HTMLAttributes<HTMLDivE
   return <div className={cn("mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8", className)} {...props} />;
 }
 
-/** Editorial section marker: "01 — The problem" with a hairline. */
+/** Editorial section marker: "01; The problem" with a hairline. */
 export function Eyebrow({ index, children, light }: { index?: string; children: React.ReactNode; light?: boolean }) {
   return (
     <div className={cn("flex items-center gap-3 font-mono text-[11.5px] uppercase tracking-[0.16em]", light ? "text-paper/65" : "text-ink-2/80")}>

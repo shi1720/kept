@@ -38,7 +38,7 @@ function PartiesCell(p: ICellRendererParams<EscrowRow>) {
   if (p.node.rowPinned || !p.data) return null;
   return (
     <div className="flex h-full flex-col justify-center text-[12.5px] leading-tight">
-      <span className="truncate text-ink">{p.data.client ?? "—"}</span>
+      <span className="truncate text-ink">{p.data.client ?? "N/A"}</span>
       <span className="truncate text-ink-3">→ {p.data.freelancer ?? "not joined"}</span>
     </div>
   );
@@ -46,12 +46,12 @@ function PartiesCell(p: ICellRendererParams<EscrowRow>) {
 
 function VerdictCell(p: ICellRendererParams<EscrowRow>) {
   if (p.node.rowPinned || !p.data) return null;
-  if (p.data.verdictScore == null) return <span className="text-ink-3">—</span>;
+  if (p.data.verdictScore == null) return <span className="text-ink-3">N/A</span>;
   return <ScoreBar value={p.data.verdictScore} />;
 }
 
 function DaysCell(p: ICellRendererParams<EscrowRow>) {
-  if (p.node.rowPinned || !p.data || p.value == null) return p.node.rowPinned ? null : <span className="text-ink-3">—</span>;
+  if (p.node.rowPinned || !p.data || p.value == null) return p.node.rowPinned ? null : <span className="text-ink-3">N/A</span>;
   const live = HOLDING.has(p.data.status);
   return (
     <span className={cn("num", live ? (p.value > 7 ? "font-medium text-rose-700" : "font-medium text-amber-700") : "text-ink-3")}>

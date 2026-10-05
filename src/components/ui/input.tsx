@@ -32,6 +32,7 @@ export const Input = React.forwardRef<
   React.InputHTMLAttributes<HTMLInputElement>
 >(({ className, ...rest }, ref) => {
   const props = useFieldProps(rest);
+  const ready = React.useSyncExternalStore(() => () => {}, () => true, () => false);
   return (
     <input
       ref={ref}
@@ -40,6 +41,7 @@ export const Input = React.forwardRef<
         className,
       )}
       {...props}
+      disabled={!ready || props.disabled}
     />
   );
 });
@@ -53,6 +55,7 @@ export const Textarea = React.forwardRef<
   }
 >(({ className, autoGrow, ...rest }, ref) => {
   const props = useFieldProps(rest);
+  const ready = React.useSyncExternalStore(() => () => {}, () => true, () => false);
   const inner = React.useRef<HTMLTextAreaElement | null>(null);
   React.useImperativeHandle(ref, () => inner.current!, []);
   React.useLayoutEffect(() => {
@@ -76,6 +79,7 @@ export const Textarea = React.forwardRef<
         className,
       )}
       {...props}
+      disabled={!ready || props.disabled}
     />
   );
 });

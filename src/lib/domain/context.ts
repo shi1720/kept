@@ -60,7 +60,7 @@ export async function loadUser(userId: string | null | undefined, dbx: DbOrTx = 
 
 /**
  * Compare-and-set a milestone's status. Returns the updated row, or throws if
- * another request already moved it — this is what makes approve, auto-release
+ * another request already moved it; this is what makes approve, auto-release
  * and webhook handlers safe to race each other.
  */
 export async function casMilestone(
@@ -74,6 +74,6 @@ export async function casMilestone(
     .set({ ...patch, updatedAt: new Date() })
     .where(and(eq(milestones.id, milestoneId), inArray(milestones.status, from)))
     .returning();
-  if (!updated) throw invalidState("This milestone was updated by someone else — refresh to see its latest state");
+  if (!updated) throw invalidState("This milestone was updated by someone else; refresh to see its latest state");
   return updated;
 }

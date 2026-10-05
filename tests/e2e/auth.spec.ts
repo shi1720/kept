@@ -28,6 +28,7 @@ async function signUp(page: Page, name: string, email: string, password: string)
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
   await page.waitForURL("**/app");
+  await page.getByRole("button", {name:"Skip guide"}).click();
 }
 
 async function signIn(page: Page, email: string, password: string) {
@@ -75,6 +76,7 @@ test("forgot password: emailed link sets a new password once", async ({ page }) 
 
   await page.goto("/login");
   await page.getByRole("link", { name: "Forgot your password?" }).click();
+  await page.waitForURL("**/forgot-password");
   await page.getByLabel("Email").fill(email);
   await page.getByRole("button", { name: /Email me a reset link/ }).click();
   await expect(page.getByText(/If an account exists for/)).toBeVisible();
@@ -107,6 +109,7 @@ test("changing the password signs out the other browser", async ({ page, browser
   await laptop.waitForURL("**/app");
 
   await page.goto("/app/settings");
+  await page.getByRole("tab", {name:"Security",exact:true}).click();
   await page.getByLabel("Current password").fill("first-password-1");
   await page.getByLabel("New password", { exact: true }).fill("second-password-2");
   await page.getByLabel("Confirm", { exact: true }).fill("second-password-2");

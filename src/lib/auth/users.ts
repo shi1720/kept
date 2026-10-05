@@ -52,7 +52,7 @@ export async function createUser(input: {
 }): Promise<User> {
   const email = input.email.toLowerCase();
   const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  if (existing) throw new AppError("conflict", "An account with this email already exists — sign in instead");
+  if (existing) throw new AppError("conflict", "An account with this email already exists; sign in instead");
   const id = newId("usr");
   const [user] = await db
     .insert(users)

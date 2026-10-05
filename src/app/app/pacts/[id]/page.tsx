@@ -12,7 +12,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { getCurrentUser, requireUser } from "@/lib/auth/session";
+import { getCurrentUser, requirePageUser } from "@/lib/auth/session";
 import { loadPact } from "@/lib/domain/context";
 import { getPactDetail, type PublicUser } from "@/lib/domain/queries";
 import { env } from "@/lib/env";
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 async function load(id: string) {
-  const user = await requireUser();
+  const user = await requirePageUser();
   try {
     return { user, detail: await getPactDetail(user, id) };
   } catch (err) {
@@ -95,7 +95,7 @@ export default async function PactPage({
       <Link href="/app" className="flex w-fit items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink"><ArrowLeft className="size-3.5" /> All pacts</Link>
       {returning && <ReturnCapture milestoneId={returning.id} orderId={sp.token!} pactId={pact.id} />}
       {sp.paypal === "cancel" && (
-        <p className="rounded-2xl border border-line bg-paper-2 px-5 py-3 text-[13px] text-ink-2">PayPal checkout was cancelled — nothing was charged.</p>
+        <p className="rounded-2xl border border-line bg-paper-2 px-5 py-3 text-[13px] text-ink-2">PayPal checkout was cancelled; nothing was charged.</p>
       )}
 
       {/* Contract header */}
@@ -199,6 +199,7 @@ export default async function PactPage({
               <Term label="Revisions included" value={`${pact.terms.revisionsIncluded}`} />
               <Term label="Client review window" value={`${pact.terms.reviewWindowHours} hours, then auto-resolve`} />
               <Term label="Ownership" value={pact.terms.ipTransfer} />
+              {pact.terms.reviewGuidance && <Term label="Creative review guidance" value={pact.terms.reviewGuidance} />}
               {pact.terms.communication && <Term label="Communication" value={pact.terms.communication} />}
               <Term label="Disputes" value="AI mediation, then human arbitration if either party rejects" />
             </CardContent>

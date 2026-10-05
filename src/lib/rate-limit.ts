@@ -22,7 +22,7 @@ export function rateLimit(key: string, limit: number, windowMs: number) {
   b.count += 1;
   if (b.count > limit) {
     const mins = Math.ceil((b.resetAt - now) / 60_000);
-    throw new AppError("rate_limited", `Slow down a little — try again in ${mins} minute${mins === 1 ? "" : "s"}`);
+    throw new AppError("rate_limited", `Slow down a little; try again in ${mins} minute${mins === 1 ? "" : "s"}`);
   }
 }
 

@@ -9,7 +9,7 @@ import { PactsGrid } from "@/components/grid/pacts-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireUser } from "@/lib/auth/session";
+import { requirePageUser } from "@/lib/auth/session";
 import { demoCounterpart } from "@/lib/demo";
 import { cn } from "@/lib/cn";
 import { getDashboard } from "@/lib/domain/queries";
@@ -27,14 +27,14 @@ const TONE: Record<string, string> = {
 };
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ password?: string }> }) {
-  const user = await requireUser();
+  const user = await requirePageUser();
   const justReset = (await searchParams).password === "reset";
   const d = await getDashboard(user);
   const firstName = user.name.split(" ")[0];
   const isFreelancerish = d.stats.earnedCents + d.stats.earningPendingCents > 0 || d.pacts.some((p) => p.role === "freelancer");
 
   const stats = [
-    { label: "Held in escrow", value: formatMoney(d.stats.heldCents), icon: Lock, tone: "text-amber-700 bg-amber-50", hint: "Secured with PayPal, waiting on work" },
+    { label: "Held in escrow", value: formatMoney(d.stats.heldCents), icon: Lock, tone: "text-amber-700 bg-amber-50", hint: "Awaiting delivery or approval" },
     isFreelancerish
       ? {
           label: "Paid out to you",
@@ -43,7 +43,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           tone: "text-jade-700 bg-jade-50",
           hint: d.stats.earningPendingCents ? `+ ${formatMoney(d.stats.earningPendingCents)} released, not yet delivered` : "Delivered by PayPal Payouts",
         }
-      : { label: "Released to freelancers", value: formatMoney(d.stats.paidCents), icon: Banknote, tone: "text-jade-700 bg-jade-50", hint: "Only for work that passed" },
+      : { label: "Released to freelancers", value: formatMoney(d.stats.paidCents), icon: Banknote, tone: "text-jade-700 bg-jade-50", hint: "Approved milestone payments" },
     { label: "Needs your attention", value: String(d.actions.length), icon: Hourglass, tone: "text-sky-600 bg-sky-50", hint: d.actions.length ? "See the queue below" : "Nothing waiting on you" },
     { label: "Milestones kept", value: String(d.stats.milestonesKept), icon: Sparkles, tone: "text-ember-700 bg-ember-50", hint: `${d.stats.completed} pact${d.stats.completed === 1 ? "" : "s"} completed · ${d.stats.active} active` },
   ];
@@ -60,10 +60,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             : "This server runs the built-in PayPal simulator (no sandbox keys set), so approval is one click.", href: byTitle("Holiday Blend packaging") ? `/app/pacts/${byTitle("Holiday Blend packaging")!.id}` : "/app", as: "Maya" },
         { title: "Deliver the landing page", detail: "Submit work → try the honest, the half-finished and the sneaky (prompt-injection) samples.", href: byTitle("Pre-order landing") ? `/app/pacts/${byTitle("Pre-order landing")!.id}` : "/app", as: "Ana" },
         { title: "Settle a dispute with AI mediation", detail: "Accept the 65/35 proposal as both people → PayPal Payout + partial refund.", href: byTitle("Instagram") ? `/app/pacts/${byTitle("Instagram")!.id}` : "/app", as: "either" },
-        { title: "Go silent as the client", detail: "On the photo-retouching pact (a PASS), “skip ahead 48h” — the freelancer is paid automatically.", href: byTitle("Menu photo") ? `/app/pacts/${byTitle("Menu photo")!.id}` : "/app", as: "either" },
+        { title: "Go silent as the client", detail: "On the photo-retouching pact (a PASS), “skip ahead 48h”; the freelancer is paid automatically.", href: byTitle("Menu photo") ? `/app/pacts/${byTitle("Menu photo")!.id}` : "/app", as: "either" },
         { title: "Open the ops console", detail: "AG Grid escrow book, double-entry ledger, PayPal activity, AI audit, webhooks.", href: "/admin", as: "either" },
         { title: "Let an AI agent hire", detail: "Create an API key and connect Claude to Kept's MCP server.", href: "/app/developers", as: "either" },
-        { title: "See a public track record", detail: "Ana's shareable reputation page — verified by escrow, not self-reported.", href: ade ? `/u/${ade.handle}` : "/app", as: "either" },
+        { title: "See a public track record", detail: "Ana's shareable reputation page; verified by escrow, not self-reported.", href: ade ? `/u/${ade.handle}` : "/app", as: "either" },
       ]
     : null;
 
@@ -92,7 +92,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
       {guide && <DemoGuide steps={guide} sandbox={sandbox} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="dashboard-stats grid grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Card key={s.label} className="p-5">
             <div className="flex items-center justify-between">
@@ -107,13 +107,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
         <Card className="min-w-0">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Needs your attention</CardTitle>
-            {d.actions.length > 0 && <Badge tone="ember">{d.actions.length}</Badge>}
+            {d.actions.length > 0 && <Badge tone="neutral">{d.actions.length}</Badge>}
           </CardHeader>
-          <CardContent className="flex flex-col gap-2.5">
+          <CardContent className="dashboard-actions flex flex-col gap-3">
             {d.actions.length === 0 && (
               <p className="rounded-xl border border-dashed border-line-2 px-4 py-8 text-center text-sm text-ink-3">Nothing is waiting on you. Every promise is on track.</p>
             )}
@@ -136,11 +136,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             ))}
           </CardContent>
         </Card>
-        <Card className="max-h-[420px] overflow-hidden">
+        <Card className="max-h-[340px] overflow-hidden">
           <CardHeader>
             <CardTitle>Recent activity</CardTitle>
           </CardHeader>
-          <CardContent tabIndex={0} role="region" aria-label="Recent activity" className="max-h-[360px] overflow-y-auto pb-10 outline-none focus-visible:ring-2 focus-visible:ring-jade-300 [mask-image:linear-gradient(to_bottom,black_calc(100%-36px),transparent)]">
+          <CardContent tabIndex={0} role="region" aria-label="Recent activity" className="max-h-[280px] overflow-y-auto pb-10 outline-none focus-visible:ring-2 focus-visible:ring-jade-300 [mask-image:linear-gradient(to_bottom,black_calc(100%-36px),transparent)]">
             <Timeline events={d.events.slice(0, 10)} titles={d.pactTitles} compact />
           </CardContent>
         </Card>
@@ -149,7 +149,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[15px] font-semibold">All pacts</h2>
-          <span className="hidden text-xs text-ink-3 sm:inline">Sort, filter and search · AG Grid</span>
+          <span className="hidden text-xs text-ink-3 sm:inline">Your agreements, in one place</span>
         </div>
         <PactsGrid rows={d.pacts} />
       </section>

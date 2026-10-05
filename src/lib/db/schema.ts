@@ -94,6 +94,7 @@ export interface PactTerms {
   reviewWindowHours: number;
   ipTransfer: string;
   communication?: string;
+  reviewGuidance?: string;
   extra?: string[];
 }
 
@@ -331,6 +332,7 @@ export const disputes = sqliteTable(
       .notNull()
       .default("open"),
     ruling: json<Ruling>("ruling"),
+    revision: integer("revision").notNull().default(0),
     clientAcceptedAt: ts("client_accepted_at"),
     freelancerAcceptedAt: ts("freelancer_accepted_at"),
     rejectedById: text("rejected_by_id"),

@@ -61,11 +61,11 @@ export function buildMcpServer(user: User): McpServer {
     async ({ description, role, budget, counterparty_email }) =>
       safely(async () => {
         rateLimit(`draft:${user.id}`, 30, 3_600_000);
-        const { output, provider, model } = await draftPact({ sourceText: description, creatorRole: role, hints: budget ? { amount: budget } : undefined });
+        const { output, provider, model } = await draftPact({ userId: user.id, sourceText: description, creatorRole: role, hints: budget ? { amount: budget } : undefined });
         const input = draftToInput(output, { creatorRole: role, sourceText: description, counterpartyEmail: counterparty_email ?? null });
         const pact = await createPact(user, input, "mcp");
         const lines = input.milestones.map(
-          (m, i) => `${i + 1}. ${m.title} — $${m.amount}\n${m.criteria.map((c) => `   • ${c.text}${c.check.type !== "none" ? ` [auto-check: ${c.check.type}]` : ""}`).join("\n")}`,
+          (m, i) => `${i + 1}. ${m.title}; $${m.amount}\n${m.criteria.map((c) => `   • ${c.text}${c.check.type !== "none" ? ` [auto-check: ${c.check.type}]` : ""}`).join("\n")}`,
         );
         return ok(
           `Drafted pact ${pact.id}: “${pact.title}” (clarity of the original brief: ${output.clarityScore}/100, compiled by ${provider}/${model}).\n\n${lines.join("\n")}\n\n${
@@ -96,7 +96,7 @@ export function buildMcpServer(user: User): McpServer {
     {
       title: "Countersign a pact",
       description:
-        "Countersign a pact you were invited to (pass the invite URL or its token). Use this when you are the counterparty — e.g. an agent taking on work. The pact becomes active and the client can fund it.",
+        "Countersign a pact you were invited to (pass the invite URL or its token). Use this when you are the counterparty; e.g. an agent taking on work. The pact becomes active and the client can fund it.",
       inputSchema: { invite: z.string().describe("Invite URL (…/invite/<token>) or the bare token") },
     },
     async ({ invite }) =>
@@ -116,7 +116,7 @@ export function buildMcpServer(user: User): McpServer {
         if (!pacts.length) return ok("You have no pacts yet.");
         return ok(
           pacts
-            .map((p) => `${p.id} · ${p.title} · ${p.status} · you are the ${p.role}\n${p.milestones.map((m) => `   ${m.id}: ${m.title} — ${formatMoney(m.amountCents)} — ${MILESTONE_STATUS_LABEL[m.status]}`).join("\n")}`)
+            .map((p) => `${p.id} · ${p.title} · ${p.status} · you are the ${p.role}\n${p.milestones.map((m) => `   ${m.id}: ${m.title}; ${formatMoney(m.amountCents)}; ${MILESTONE_STATUS_LABEL[m.status]}`).join("\n")}`)
             .join("\n\n"),
           { pacts: pacts.map((p) => ({ id: p.id, title: p.title, status: p.status, role: p.role, milestones: p.milestones.map((m) => ({ id: m.id, title: m.title, status: m.status, amount_cents: m.amountCents })) })) },
         );
@@ -130,11 +130,11 @@ export function buildMcpServer(user: User): McpServer {
       safely(async () => {
         const d = await getPactDetail(user, pact_id);
         const text = [
-          `${d.pact.title} — ${d.pact.status}. You are the ${d.role}.`,
+          `${d.pact.title}; ${d.pact.status}. You are the ${d.role}.`,
           `Escrow: ${formatMoney(d.totals.heldCents)} held · ${formatMoney(d.totals.releasedCents)} released · ${formatMoney(d.totals.refundedCents)} refunded`,
           ...d.milestones.map((m) => {
             const v = m.verdicts[0];
-            return `\n${m.id}: ${m.title} — ${formatMoney(m.amountCents)} — ${MILESTONE_STATUS_LABEL[m.status]}\n${m.criteria.map((c) => `   • ${c.text}`).join("\n")}${v ? `\n   Referee: ${v.overall.toUpperCase()} ${v.score}/100 — ${v.summary}` : ""}`;
+            return `\n${m.id}: ${m.title}; ${formatMoney(m.amountCents)}; ${MILESTONE_STATUS_LABEL[m.status]}\n${m.criteria.map((c) => `   • ${c.text}`).join("\n")}${v ? `\n   Referee: ${v.overall.toUpperCase()} ${v.score}/100; ${v.summary}` : ""}`;
           }),
         ].join("\n");
         return ok(text, { pact_id, status: d.pact.status, totals: d.totals, url: pactUrl(pact_id) });
@@ -217,7 +217,7 @@ export function buildMcpServer(user: User): McpServer {
         if (!v) return ok("No verdict yet.");
         const byId = new Map(criteria.map((c) => [c.id, c.text]));
         return ok(
-          `${v.overall.toUpperCase()} ${v.score}/100 — ${v.summary}\n${v.criteriaResults.map((r) => `• [${r.result}] ${byId.get(r.criterionId)} — ${r.evidence}`).join("\n")}`,
+          `${v.overall.toUpperCase()} ${v.score}/100; ${v.summary}\n${v.criteriaResults.map((r) => `• [${r.result}] ${byId.get(r.criterionId)}; ${r.evidence}`).join("\n")}`,
           { overall: v.overall, score: v.score, recommended_release_pct: v.recommendedReleasePct, criteria: v.criteriaResults },
         );
       }),
@@ -262,7 +262,7 @@ export function buildMcpServer(user: User): McpServer {
         const d = await activeDispute(milestone_id);
         if (!d) return ok("There is no open dispute on this milestone.");
         const after = await respondToRuling(user, d.id, accept);
-        return ok(after.status === "resolved" ? `Settled at ${after.finalReleasePct}% via PayPal.` : accept ? "Accepted — waiting for the other party." : "Rejected — escalated to a human arbitrator.");
+        return ok(after.status === "resolved" ? `Settled at ${after.finalReleasePct}% via PayPal.` : accept ? "Accepted; waiting for the other party." : "Rejected; escalated to a human arbitrator.");
       }),
   );
 

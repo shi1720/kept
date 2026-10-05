@@ -74,7 +74,7 @@ function LatencyCell(p: ICellRendererParams<VerdictRow>) {
 
 function SplitCell(p: ICellRendererParams<DisputeRow>) {
   const v = p.value as number | null;
-  if (v == null) return <span className="text-ink-3">—</span>;
+  if (v == null) return <span className="text-ink-3">N/A</span>;
   return (
     <div className="flex h-full items-center gap-2" title={`${v}% to freelancer · ${100 - v}% back to client`}>
       <div className="flex h-1.5 w-16 overflow-hidden rounded-full bg-sky-100">

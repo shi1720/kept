@@ -18,7 +18,8 @@ export function canAutoRelease(v: Verdict): boolean {
     v.overall === "pass" &&
     !v.injectionDetected &&
     v.provider !== "offline" &&
-    v.criteriaResults.every((r) => r.result === "met")
+    v.criteriaResults.length > 0 &&
+    v.criteriaResults.every((r) => r.result === "met" && r.confidence >= 0.8 && Boolean(r.evidence.trim()))
   );
 }
 
@@ -106,7 +107,7 @@ export async function fastForwardReview(user: User, milestoneId: string) {
     actorId: user.id,
     actorKind: "system",
     type: "demo.fast_forward",
-    message: `⏩ Demo: skipped ahead ${pact.terms.reviewWindowHours} hours — the client never responded`,
+    message: `⏩ Demo: skipped ahead ${pact.terms.reviewWindowHours} hours; the client never responded`,
   });
   return sweep();
 }

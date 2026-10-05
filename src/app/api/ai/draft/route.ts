@@ -21,6 +21,7 @@ export const POST = handler(async (req) => {
   const input = body.parse(await readJson(req));
   const started = Date.now();
   const result = await draftPact({
+    userId: user.id,
     sourceText: input.sourceText,
     creatorRole: input.creatorRole,
     hints: input.amount ? { amount: input.amount } : undefined,

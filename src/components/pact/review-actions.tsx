@@ -77,7 +77,7 @@ export function ReviewActions({
           <Button variant="outline" size="lg" disabled={!canRevise}><Repeat2 /> Request revision {canRevise ? `(${revisionsLeft} left)` : "(none left)"}</Button>
         </DialogTrigger>
         <DialogContent>
-          <DialogHeader title="Request a revision" description="Be specific — the freelancer sees this note, and the referee re-checks the next version against the same criteria." />
+          <DialogHeader title="Request a revision" description="Be specific; the freelancer sees this note, and the referee re-checks the next version against the same criteria." />
           <Textarea rows={4} value={revNote} onChange={(e) => setRevNote(e.target.value)} placeholder="e.g. Please attach the SVG and PNG exports of the final logo." />
           <div className="mt-4 flex justify-end">
             <Button loading={busy === "rev"} disabled={revNote.trim().length < 5} onClick={async () => (await run("rev", `/api/milestones/${milestoneId}/revision`, { note: revNote }, "Revision requested.")) && setOpenRev(false)}>
@@ -95,7 +95,7 @@ export function ReviewActions({
           <DialogHeader title="Raise an issue" description="Funds stay frozen in escrow. The AI mediator reads the contract, the referee's findings and both sides' statements, then proposes a fair split you can both accept." />
           <Textarea rows={4} value={issue} onChange={(e) => setIssue(e.target.value)} placeholder="What's wrong with the delivery, in terms of the criteria you both signed?" />
           <div className="mt-4 flex justify-end">
-            <Button variant="ember" loading={busy === "issue"} disabled={issue.trim().length < 10} onClick={async () => (await run("issue", `/api/milestones/${milestoneId}/dispute`, { reason: issue }, "Mediation opened — the AI mediator has proposed a settlement.")) && setOpenIssue(false)}>
+            <Button variant="ember" loading={busy === "issue"} disabled={issue.trim().length < 10} onClick={async () => (await run("issue", `/api/milestones/${milestoneId}/dispute`, { reason: issue }, "Mediation opened; the AI mediator has proposed a settlement.")) && setOpenIssue(false)}>
               Open mediation
             </Button>
           </div>
@@ -108,8 +108,8 @@ export function ReviewActions({
 export function FastForwardButton({ milestoneId, hours }: { milestoneId: string; hours: number }) {
   const { busy, run } = useAction();
   return (
-    <Button variant="outline" size="sm" className="border-dashed border-ember-100 text-ember-700" loading={busy === "ff"} onClick={() => run("ff", `/api/milestones/${milestoneId}/fast-forward`, {}, `Skipped ahead ${hours}h — the sweeper ran.`)}>
-      <FastForward /> Skip ahead {hours}h — the client goes silent
+    <Button variant="outline" size="sm" className="border-dashed border-ember-100 text-ember-700" loading={busy === "ff"} onClick={() => run("ff", `/api/milestones/${milestoneId}/fast-forward`, {}, `Skipped ahead ${hours}h; the sweeper ran.`)}>
+      <FastForward /> Skip ahead {hours}h; the client goes silent
     </Button>
   );
 }

@@ -98,7 +98,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
         minWidth: 200,
         cellRenderer: TitleCell,
         filter: "agTextColumnFilter",
-        tooltipValueGetter: (p) => (p.data ? `${p.data.title} — ${p.data.invited ? "invited by" : "with"} ${p.data.counterparty}` : undefined),
+        tooltipValueGetter: (p) => (p.data ? `${p.data.title}; ${p.data.invited ? "invited by" : "with"} ${p.data.counterparty}` : undefined),
         getQuickFilterText: (p) => `${p.data.title} ${p.data.counterparty} ${p.data.role} ${PACT_STATUS_LABEL[p.data.status]}`,
       },
       {
@@ -126,7 +126,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
         headerName: "Current milestone",
         width: 176,
         minWidth: 150,
-        cellRenderer: ({ value }: ICellRendererParams<Row>) => (value ? centered(<MilestoneStatusBadge status={value} />) : <span className="text-ink-3">—</span>),
+        cellRenderer: ({ value }: ICellRendererParams<Row>) => (value ? centered(<MilestoneStatusBadge status={value} />) : <span className="text-ink-3">N/A</span>),
       },
       { colId: "progress", headerName: "Progress", width: 116, minWidth: 110, cellRenderer: ProgressCell, sortable: false, valueGetter: (p) => (p.data && p.data.total ? p.data.done / p.data.total : 0) },
       // `type: "money"` brings the right-aligned header + cell classes; extra classes keep `ag-right-aligned-cell`.
@@ -139,7 +139,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
         filter: false,
         width: 112,
         minWidth: 100,
-        cellRenderer: ({ value }: ICellRendererParams<Row>) => (value > 0 ? <span className="font-medium text-amber-700">{formatMoney(value)}</span> : <span className="text-ink-3">—</span>),
+        cellRenderer: ({ value }: ICellRendererParams<Row>) => (value > 0 ? <span className="font-medium text-amber-700">{formatMoney(value)}</span> : <span className="text-ink-3">N/A</span>),
       },
       {
         colId: "updatedAt",
@@ -151,7 +151,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
         minWidth: 118,
         sort: "desc",
         valueGetter: (p) => (p.data ? Date.parse(p.data.updatedAt) : null),
-        valueFormatter: (p) => (typeof p.value === "number" ? SHORT_DATE.format(p.value) : "—"),
+        valueFormatter: (p) => (typeof p.value === "number" ? SHORT_DATE.format(p.value) : "N/A"),
         tooltipValueGetter: (p) => (typeof p.value === "number" ? new Date(p.value).toLocaleString("en-US") : undefined),
       },
     ],
@@ -251,7 +251,7 @@ export function PactsGrid({ rows }: { rows: Row[] }) {
           rowClass="cursor-pointer"
           tooltipShowDelay={400}
           animateRows
-          overlayNoRowsTemplate='<span style="font-size:13px;color:#6f6a60">No pacts yet — start one from a chat or a description.</span>'
+          overlayNoRowsTemplate='<span style="font-size:13px;color:#6f6a60">No pacts yet; start one from a chat or a description.</span>'
         />
         {!ready && <GridSkeleton rows={Math.max(2, Math.min(rows.length, 8))} rowHeight={ROW_H} />}
       </div>

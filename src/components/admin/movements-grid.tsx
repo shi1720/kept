@@ -65,8 +65,8 @@ function IdsCell(p: ICellRendererParams<MovementRow>) {
   const [a, b] = TYPE_META[p.data.type].ids;
   return (
     <div className="flex h-full min-w-0 flex-col justify-center gap-0.5 font-mono text-[11px] leading-tight">
-      <span className="truncate text-ink" title={`${a}: ${p.data.primaryId ?? "—"}`}>{p.data.primaryId ?? "—"}</span>
-      <span className="truncate text-ink-3" title={`${b}: ${p.data.secondaryId ?? "—"}`}>{p.data.secondaryId ?? "—"}</span>
+      <span className="truncate text-ink" title={`${a}: ${p.data.primaryId ?? "N/A"}`}>{p.data.primaryId ?? "N/A"}</span>
+      <span className="truncate text-ink-3" title={`${b}: ${p.data.secondaryId ?? "N/A"}`}>{p.data.secondaryId ?? "N/A"}</span>
     </div>
   );
 }
@@ -147,7 +147,7 @@ export function MovementsGrid({ rows, paypalEnv }: { rows: MovementRow[]; paypal
         width: 170,
         headerTooltip: "Chargeback shield: disputes the payer opened with PayPal. Kept answers them with the pact, the evidence and the referee's verdict.",
       },
-      { field: "counterparty", headerName: "Payer / receiver", width: 210, cellClass: "text-ink-2", valueFormatter: (p) => (p.value ? String(p.value) : p.node?.rowPinned ? "" : "—") },
+      { field: "counterparty", headerName: "Payer / receiver", width: 210, cellClass: "text-ink-2", valueFormatter: (p) => (p.value ? String(p.value) : p.node?.rowPinned ? "" : "N/A") },
       { colId: "mode", headerName: "Rail", width: 110, valueGetter: (p) => (p.data?.simulated ? "Simulator" : paypalEnv), cellRenderer: ModeCell },
       { field: "detail", headerName: "Detail", flex: 1, minWidth: 220, cellClass: "text-ink-3", tooltip: (p) => p.value ?? undefined },
     ],

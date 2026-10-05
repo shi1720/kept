@@ -27,7 +27,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "How is this legal and compliant?",
     a: (
       <>
-        This hackathon MVP runs on the PayPal sandbox and holds funds on the platform’s own PayPal account. For production, the path is PayPal’s
+        This test release runs on the PayPal sandbox and holds funds on the platform’s own PayPal account. For production, the path is PayPal’s
         multiparty delayed-disbursement program for platforms, where PayPal holds the funds until release and Kept never touches them. Kept stays the
         referee, not the bank.
       </>

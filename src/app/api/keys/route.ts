@@ -26,7 +26,7 @@ export const POST = handler(async (req) => {
   const user = await requireSessionUser();
   const { name } = body.parse(await readJson(req).catch(() => ({})));
   const active = await db.select({ id: apiKeys.id }).from(apiKeys).where(and(eq(apiKeys.userId, user.id), isNull(apiKeys.revokedAt)));
-  if (active.length >= 10) throw new AppError("rate_limited", "You can have at most 10 active API keys — revoke one first");
+  if (active.length >= 10) throw new AppError("rate_limited", "You can have at most 10 active API keys; revoke one first");
   const secret = `kept_sk_${randomBytes(24).toString("base64url")}`;
   await db.insert(apiKeys).values({ id: newId("key"), userId: user.id, name, prefix: secret.slice(0, 14), keyHash: hashApiKey(secret) });
   return { key: secret };

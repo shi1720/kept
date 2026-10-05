@@ -45,6 +45,7 @@ export default defineConfig({
           RATE_LIMIT_DISABLED: "true",
           EMAIL_OUTBOX_DIR: E2E_OUTBOX,
           RESEND_API_KEY: "",
+          SMTP_PASSWORD: "",
         },
       },
 });

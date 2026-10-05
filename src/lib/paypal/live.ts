@@ -67,7 +67,7 @@ export class LivePayPalGateway implements PayPalGateway {
               referenceId: input.milestoneId,
               customId: input.milestoneId,
               invoiceId: `${input.milestoneId}-${input.requestId.slice(-8)}`,
-              description: truncate(`Escrow: ${input.pactTitle} — ${input.milestoneTitle}`, 127),
+              description: truncate(`Escrow: ${input.pactTitle}; ${input.milestoneTitle}`, 127),
               softDescriptor: "KEPT ESCROW",
               amount: {
                 currencyCode: currency,

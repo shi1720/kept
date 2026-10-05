@@ -14,9 +14,9 @@ import type {
 /**
  * A faithful, in-process stand-in for the PayPal APIs used by Kept.
  *
- * It mirrors PayPal's behaviour where it matters for correctness — idempotent
+ * It mirrors PayPal's behaviour where it matters for correctness; idempotent
  * request ids, ORDER_ALREADY_CAPTURED, refund ceilings, duplicate payout batch
- * ids — so the escrow state machine is exercised the same way in tests and in
+ * ids; so the escrow state machine is exercised the same way in tests and in
  * keyless local runs as it is against the real sandbox.
  */
 interface SimOrder {

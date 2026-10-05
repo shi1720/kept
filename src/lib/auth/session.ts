@@ -8,7 +8,7 @@ import { ensureMigrated } from "@/lib/db/migrate";
 import { env, isProduction } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 
-export const SESSION_COOKIE = "kept_session";
+export const SESSION_COOKIE = "__session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14;
 
 const secretKey = () => new TextEncoder().encode(env.sessionSecret);
@@ -106,5 +106,15 @@ export async function requireSessionUser(): Promise<User> {
 export async function requireAdmin(): Promise<User> {
   const user = await requireUser();
   if (user.role !== "admin") throw new AppError("forbidden", "Admins only");
+  return user;
+}
+
+/** Server pages redirect cleanly when another device revoked their session. */
+export async function requirePageUser(): Promise<User> {
+  const user = await getCurrentUser();
+  if (!user) {
+    const { redirect } = await import("next/navigation");
+    return redirect("/login");
+  }
   return user;
 }

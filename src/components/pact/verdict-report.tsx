@@ -48,7 +48,7 @@ export function CriterionRow({ criterion, result, index }: { criterion: Criterio
           )}
         </div>
         {result && (
-          <div className="mt-1.5 space-y-1">
+          <details className="mt-2 space-y-2"><summary className="cursor-pointer text-xs font-medium text-jade-700">View evidence and reasoning</summary>
             {result.machineCheck && (
               <p className={cn("text-xs", result.machineCheck.passed ? "text-jade-700" : "text-rose-700")}>
                 <span className="font-medium">Machine check {result.machineCheck.passed ? "passed" : "failed"}:</span> {result.machineCheck.detail}
@@ -60,7 +60,7 @@ export function CriterionRow({ criterion, result, index }: { criterion: Criterio
             <p className="text-xs leading-relaxed text-ink-3">
               {result.reasoning} <span className="num whitespace-nowrap text-ink-3">· confidence {Math.round(result.confidence * 100)}%</span>
             </p>
-          </div>
+          </details>
         )}
       </div>
       {r && <span className={cn("hidden shrink-0 text-xs font-medium sm:block", r.cls)}>{r.label}</span>}
@@ -106,14 +106,14 @@ export function VerdictReport({
           </div>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2">{verdict.summary}</p>
           <p className="mt-1.5 text-[11px] text-ink-3">
-            {verdict.provider === "kept-demo-seed" ? "Seeded example — submit work to run the live referee" : `${verdict.model} via ${verdict.provider}`} · {(verdict.latencyMs / 1000).toFixed(1)}s · recommends releasing {verdict.recommendedReleasePct}%
+            {verdict.provider === "kept-demo-seed" ? "Seeded example; submit work to run the live referee" : `${verdict.model} via ${verdict.provider}`} · {(verdict.latencyMs / 1000).toFixed(1)}s · recommends releasing {verdict.recommendedReleasePct}%
           </p>
         </div>
       </div>
       {verdict.injectionDetected && (
         <div className="flex gap-3 border-b border-rose-100 bg-rose-50 px-5 py-3 text-[13px] text-rose-700">
           <ShieldAlert className="mt-0.5 size-4 shrink-0" />
-          <span><b>Manipulation attempt detected.</b> The deliverable contains text trying to instruct the referee. It was ignored, and this milestone will not auto-release — the client must decide.</span>
+          <span><b>Manipulation attempt detected.</b> The deliverable contains text trying to instruct the referee. It was ignored, and this milestone will not auto-release; the client must decide.</span>
         </div>
       )}
       <ul className="divide-y divide-line px-5">
@@ -136,7 +136,7 @@ export function VerdictReport({
             {verdict.evidence.map((f, i) => (
               <li key={i} className="flex gap-2 text-xs">
                 <span className={cn("mt-1 size-1.5 shrink-0 rounded-full", f.ok === false ? "bg-rose-500" : "bg-jade-500")} />
-                <span className="min-w-0"><span className="font-medium text-ink-2">[{f.probe}] {f.label}</span> <span className="text-ink-3">— {f.detail}</span></span>
+                <span className="min-w-0"><span className="font-medium text-ink-2">[{f.probe}] {f.label}</span> <span className="text-ink-3">;  {f.detail}</span></span>
               </li>
             ))}
           </ul>

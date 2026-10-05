@@ -7,7 +7,7 @@ export interface DoctorCheck {
   detail: string;
 }
 
-/** Live integration self-test. Reports outcomes only — never secrets. */
+/** Live integration self-test. Reports outcomes only; never secrets. */
 export async function runDoctor(): Promise<{ checks: DoctorCheck[]; at: string }> {
   const checks: DoctorCheck[] = [];
   const push = (name: string, status: DoctorCheck["status"], detail: string) => checks.push({ name, status, detail });
@@ -21,7 +21,7 @@ export async function runDoctor(): Promise<{ checks: DoctorCheck[]; at: string }
   }
 
   if (!paypalConfigured()) {
-    push("paypal", "skipped", "No credentials — running on the PayPal simulator");
+    push("paypal", "skipped", "No credentials; running on the PayPal simulator");
   } else {
     try {
       const { getAccessToken } = await import("@/lib/paypal/http");
@@ -58,7 +58,7 @@ export async function runDoctor(): Promise<{ checks: DoctorCheck[]; at: string }
   }
 
   const ai = aiStatus();
-  if (ai.mode === "offline") push("ai", "skipped", "No AI key — offline heuristic referee");
+  if (ai.mode === "offline") push("ai", "skipped", "No AI key; offline heuristic referee");
   else {
     try {
       const { draftPact } = await import("@/lib/ai/drafter");

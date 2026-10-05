@@ -64,7 +64,7 @@ export class PayPalApiError extends AppError {
   ) {
     const b = body as PayPalErrorBody;
     const issue = b?.details?.[0]?.issue;
-    super("payment_failed", `PayPal ${b?.name ?? httpStatus}${issue ? `: ${issue}` : ""} — ${b?.message ?? "request failed"}`, {
+    super("payment_failed", `PayPal ${b?.name ?? httpStatus}${issue ? `: ${issue}` : ""}; ${b?.message ?? "request failed"}`, {
       body,
       debugId,
     });

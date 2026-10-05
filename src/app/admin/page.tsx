@@ -44,7 +44,7 @@ export default async function OpsConsolePage({ searchParams }: { searchParams: P
             <Sparkles className="mt-0.5 size-4 shrink-0" />
             <p className="leading-relaxed">
               <b className="font-semibold">You’re viewing the ops console for your demo world.</b> Kept’s operators see every workspace here; you see only the pacts, money and AI
-              decisions in the sandbox created for you — and you can act as the human arbitrator on its disputes.
+              decisions in the sandbox created for you; and you can act as the human arbitrator on its disputes.
             </p>
           </div>
         )}

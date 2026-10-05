@@ -6,7 +6,7 @@
  *
  * The agent discovers Kept's tools over MCP, drafts an escrow pact with checkable
  * criteria, signs it, and creates the PayPal order whose approval link it hands
- * back to you — the human who actually pays. It never moves money on its own.
+ * back to you ;  the human who actually pays. It never moves money on its own.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";

@@ -90,7 +90,7 @@ export function WebhooksGrid({ rows, scoped }: { rows: WebhookRow[]; scoped: boo
       searchPlaceholder="Search event types, resource ids…"
       emptyText={
         scoped
-          ? "No PayPal webhooks reference your demo world yet. The seeded history ran on the in-process simulator — fund a milestone through the PayPal sandbox and its CHECKOUT.ORDER.APPROVED / PAYMENT.CAPTURE.COMPLETED events will land here."
+          ? "No PayPal webhooks reference your demo world yet. The seeded history ran on the in-process simulator; fund a milestone through the PayPal sandbox and its CHECKOUT.ORDER.APPROVED / PAYMENT.CAPTURE.COMPLETED events will land here."
           : "No PayPal webhooks received yet. Point your PayPal app's webhook at /api/webhooks/paypal."
       }
       height={460}

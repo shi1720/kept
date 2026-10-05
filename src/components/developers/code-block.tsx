@@ -11,7 +11,7 @@ export async function copyText(text: string, label = "Copied to clipboard") {
     toast.success(label);
     return true;
   } catch {
-    toast.error("Couldn't access the clipboard — select and copy manually");
+    toast.error("Couldn't access the clipboard; select and copy manually");
     return false;
   }
 }

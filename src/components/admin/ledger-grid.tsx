@@ -350,7 +350,7 @@ export function LedgerPanel({ rows, balances, showWorkspace }: { rows: LedgerRow
           <FlaskConical className="size-4 shrink-0 text-sky-600" />
           <span>
             <b className="font-semibold text-ink">{synthetic.length.toLocaleString("en-US")} synthetic lines</b> ({(synthetic.length / 2).toLocaleString("en-US")} balanced journals) generated
-            in your browser — <b className="font-semibold text-ink">not real money</b>, never sent to the server.
+            in your browser; <b className="font-semibold text-ink">not real money</b>, never sent to the server.
           </span>
           {timing && (
             <span className="num ml-auto text-ink-3">

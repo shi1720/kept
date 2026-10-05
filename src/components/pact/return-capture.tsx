@@ -20,7 +20,7 @@ export function ReturnCapture({ milestoneId, orderId, pactId }: { milestoneId: s
     api(`/api/milestones/${milestoneId}/capture`, { body: { orderId } })
       .then(() => {
         setState("done");
-        toast.success("Payment approved — the money is now held in escrow.");
+        toast.success("Payment approved; the money is now held in escrow.");
       })
       .catch(() => setState("error"))
       .finally(() => {

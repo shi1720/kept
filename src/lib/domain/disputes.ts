@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { proposeRuling } from "@/lib/ai/mediator";
 import { db } from "@/lib/db/client";
 import { disputes, type Dispute, type User } from "@/lib/db/schema";
@@ -52,34 +52,35 @@ export async function openDispute(user: User | null, milestoneId: string, reason
       type: "dispute.opened",
       message: user
         ? `${user.name} raised an issue: “${reason.trim().slice(0, 200)}”. Funds stay frozen in escrow during mediation.`
-        : `Review window ended on a failing verdict — mediation opened automatically. Funds stay in escrow.`,
+        : `Review window ended on a failing verdict; mediation opened automatically. Funds stay in escrow.`,
     });
     await notify(tx, [pact.clientId, pact.freelancerId].filter((x) => x !== user?.id), {
       pactId: pact.id,
       title: "Mediation opened",
-      body: `An issue was raised on “${milestone.title}”. Add your side of the story — the AI mediator will propose a fair split.`,
+      body: `An issue was raised on “${milestone.title}”. Add your side of the story; the AI mediator will propose a fair split.`,
     });
   });
-  await mediate(id);
+  await mediate(id, user?.id);
   return loadDispute(id);
 }
 
 /** (Re)run the AI mediator with everything known so far. */
-export async function mediate(disputeId: string) {
+export async function mediate(disputeId: string, actorId?: string) {
   const dispute = await loadDispute(disputeId);
-  if (dispute.status === "resolved") return dispute;
+  if (dispute.status === "resolved" || dispute.status === "escalated") return dispute;
   const { milestone, pact, criteria } = await loadMilestone(dispute.milestoneId);
   const verdict = await latestVerdict(milestone.id);
-  const ruling = await proposeRuling({ pact, milestone, criteria, verdict, dispute });
+  const ruling = await proposeRuling({ pact, milestone, criteria, verdict, dispute, actorId });
   await db
     .update(disputes)
     .set({
       ruling,
-      status: dispute.status === "escalated" ? "escalated" : "ruling_proposed",
+      revision: dispute.revision + 1,
+      status: "ruling_proposed",
       clientAcceptedAt: null,
       freelancerAcceptedAt: null,
     })
-    .where(eq(disputes.id, disputeId));
+    .where(and(eq(disputes.id, disputeId), eq(disputes.revision, dispute.revision), inArray(disputes.status, ["open", "ruling_proposed"])));
   await recordEvent(db, {
     pactId: pact.id,
     milestoneId: milestone.id,
@@ -102,8 +103,8 @@ export async function addStatement(user: User, disputeId: string, statement: str
   if (statement.trim().length < 10) throw badRequest("Your statement is too short");
   await db
     .update(disputes)
-    .set(role === "client" ? { clientStatement: statement.trim() } : { freelancerStatement: statement.trim() })
-    .where(eq(disputes.id, disputeId));
+    .set({...(role === "client" ? { clientStatement: statement.trim() } : { freelancerStatement: statement.trim() }), ruling: null, status: "open", clientAcceptedAt: null, freelancerAcceptedAt: null, revision: sql`${disputes.revision} + 1`})
+    .where(and(eq(disputes.id, disputeId), inArray(disputes.status, ["open", "ruling_proposed"])));
   await recordEvent(db, {
     pactId: pact.id,
     milestoneId: milestone.id,
@@ -112,18 +113,21 @@ export async function addStatement(user: User, disputeId: string, statement: str
     type: "dispute.statement",
     message: `${user.name} (${role}) added their side of the story`,
   });
-  return mediate(disputeId);
+  return mediate(disputeId, user.id);
 }
 
-export async function respondToRuling(user: User, disputeId: string, accept: boolean) {
+export async function respondToRuling(user: User, disputeId: string, accept: boolean, expectedRevision?: number) {
   const dispute = await loadDispute(disputeId);
   const { pact, milestone } = await loadMilestone(dispute.milestoneId);
   const role = roleOf(user, pact);
   if (!role) throw forbidden();
   if (dispute.status !== "ruling_proposed" || !dispute.ruling) throw invalidState("There is no proposal to respond to");
 
+  if (expectedRevision !== undefined && expectedRevision !== dispute.revision) throw invalidState("The proposal changed. Review the latest version before responding.");
+  const currentProposal = and(eq(disputes.id, disputeId), eq(disputes.revision, dispute.revision), eq(disputes.status, "ruling_proposed"));
+
   if (!accept) {
-    await db.update(disputes).set({ status: "escalated", rejectedById: user.id }).where(eq(disputes.id, disputeId));
+    await db.update(disputes).set({ status: "escalated", rejectedById: user.id, revision: dispute.revision + 1 }).where(currentProposal);
     await recordEvent(db, {
       pactId: pact.id,
       milestoneId: milestone.id,
@@ -137,7 +141,8 @@ export async function respondToRuling(user: User, disputeId: string, accept: boo
 
   const now = new Date();
   const patch = role === "client" ? { clientAcceptedAt: now } : { freelancerAcceptedAt: now };
-  const [updated] = await db.update(disputes).set(patch).where(eq(disputes.id, disputeId)).returning();
+  const [updated] = await db.update(disputes).set(patch).where(currentProposal).returning();
+  if (!updated) throw invalidState("The proposal changed. Refresh before responding.");
   await recordEvent(db, {
     pactId: pact.id,
     milestoneId: milestone.id,
@@ -147,33 +152,37 @@ export async function respondToRuling(user: User, disputeId: string, accept: boo
     message: `${user.name} accepted the ${dispute.ruling.releasePct}/${100 - dispute.ruling.releasePct} proposal`,
   });
   if (updated.clientAcceptedAt && updated.freelancerAcceptedAt) {
-    await resolveDispute(disputeId, dispute.ruling.releasePct, { actorId: null, how: "both parties accepted the AI mediator's proposal" });
+    await resolveDispute(disputeId, dispute.ruling.releasePct, { actorId: null, how: "both parties accepted the AI mediator's proposal", revision: dispute.revision });
   } else {
     const other = role === "client" ? pact.freelancerId : pact.clientId;
     await notify(db, [other], {
       pactId: pact.id,
       title: "Settlement accepted by the other party",
-      body: `${user.name} accepted releasing ${dispute.ruling.releasePct}% — accept to settle instantly via PayPal.`,
+      body: `${user.name} accepted releasing ${dispute.ruling.releasePct}%; accept to settle instantly via PayPal.`,
     });
   }
   return loadDispute(disputeId);
 }
 
-export async function resolveDispute(disputeId: string, releasePct: number, opts: { actorId: string | null; how: string }) {
+export async function resolveDispute(disputeId: string, releasePct: number, opts: { actorId: string | null; how: string; revision?: number }) {
   const dispute = await loadDispute(disputeId);
   if (dispute.status === "resolved") throw invalidState("Already resolved");
   const [claimed] = await db
     .update(disputes)
     .set({ status: "resolved", finalReleasePct: releasePct, resolvedAt: new Date() })
-    .where(and(eq(disputes.id, disputeId), inArray(disputes.status, ["open", "ruling_proposed", "escalated"])))
+    .where(and(eq(disputes.id, disputeId), inArray(disputes.status, ["open", "ruling_proposed", "escalated"]), opts.revision !== undefined ? and(eq(disputes.revision, opts.revision), eq(disputes.status, "ruling_proposed"), isNotNull(disputes.clientAcceptedAt), isNotNull(disputes.freelancerAcceptedAt)) : undefined))
     .returning();
   if (!claimed) throw invalidState("Already resolved");
-  await settleMilestone(dispute.milestoneId, releasePct, {
+  try { await settleMilestone(dispute.milestoneId, releasePct, {
     from: ["disputed"],
     actorId: opts.actorId,
     actorKind: opts.actorId ? "user" : "system",
     reason: opts.how,
-  });
+  }); } catch (error) {
+    const { milestone } = await loadMilestone(dispute.milestoneId);
+    if (milestone.status === "disputed") await db.update(disputes).set({status: dispute.status, finalReleasePct: null, resolvedAt: null}).where(and(eq(disputes.id, disputeId), eq(disputes.status, "resolved")));
+    throw error;
+  }
   const { pact } = await loadMilestone(dispute.milestoneId);
   await refreshPactStatus(pact.id);
 }

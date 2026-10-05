@@ -113,7 +113,7 @@ export function PayoutForm({ initialEmail }: { initialEmail: string | null }) {
     start(async () => {
       try {
         await api("/api/me", { method: "PATCH", body: { paypalEmail: trimmed || null } });
-        toast.success(trimmed ? "Payout email saved — any waiting payouts were retried" : "Payout email removed");
+        toast.success(trimmed ? "Payout email saved; any waiting payouts were retried" : "Payout email removed");
         router.refresh();
       } catch {
         /* toast shown by api() */
@@ -149,7 +149,7 @@ export function VerifyWithPayPal({ enabled, verified }: { enabled: boolean; veri
       <p className="max-w-md text-[12.5px] leading-relaxed text-ink-3">
         {verified
           ? "Linked through Log in with PayPal. Re-link if you want payouts to go to a different PayPal account."
-          : "Sign in with PayPal once and we’ll use the verified email and Payer ID from your PayPal account — no typos, no unclaimed payouts."}
+          : "Sign in with PayPal once and we’ll use the verified email and Payer ID from your PayPal account; no typos, no unclaimed payouts."}
       </p>
       <Button asChild variant={verified ? "outline" : "jade"} size="sm">
         <a href="/api/auth/paypal/start?link=1">

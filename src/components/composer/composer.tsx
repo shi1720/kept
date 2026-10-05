@@ -120,7 +120,7 @@ function ClarityGauge({ score }: { score: number }) {
         <div className={cn("h-full rounded-full transition-[width] duration-1000", bar)} style={{ width: `${score}%` }} />
       </div>
       <p className="mt-2 text-xs leading-relaxed text-ink-3">
-        {score < 45 ? "Dangerously vague — this is how disputes start." : score < 75 ? "Typical DM: workable, but full of gaps." : "Already fairly precise."}
+        {score < 45 ? "Dangerously vague; this is how disputes start." : score < 75 ? "Typical DM: workable, but full of gaps." : "Already fairly precise."}
       </p>
     </div>
   );
@@ -262,7 +262,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
       if (andSend) {
         const r = await api<{ inviteUrl: string }>(`/api/pacts/${id}/send`, { body: {} });
         await navigator.clipboard?.writeText(r.inviteUrl).catch(() => {});
-        toast.success("Signed & sent — invite link copied to your clipboard.");
+        toast.success("Signed & sent; invite link copied to your clipboard.");
       } else toast.success("Draft saved.");
       if (storageKey) clearDraft(storageKey);
       setSource("");
@@ -297,7 +297,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
           <Badge tone="ember"><Sparkles /> Contract compiler</Badge>
           <h1 className="display mt-3 text-[46px]">Where was the deal made?</h1>
           <p className="mt-2 text-[15px] leading-relaxed text-ink-3">
-            Paste the DM, email or Discord thread — or just describe the job. Kept’s AI turns it into milestones with acceptance criteria a neutral referee can check, flags vague terms before they become disputes, and warns you about scam patterns.
+            Paste the DM, email or Discord thread; or just describe the job. Kept’s AI turns it into milestones with acceptance criteria a neutral referee can check, flags vague terms before they become disputes, and warns you about scam patterns.
           </p>
         </div>
         <div className="inline-flex w-fit rounded-full border border-line bg-paper-2 p-1" role="group" aria-label="Your side of the deal">
@@ -509,6 +509,9 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
               <Field label="Review window (hours)" hint="After this, passing work auto-releases.">
                 <Input type="number" min={1} max={720} value={pact.terms.reviewWindowHours} onChange={(e) => setPact({ ...pact, terms: { ...pact.terms, reviewWindowHours: Number(e.target.value) } })} />
               </Field>
+              <Field label="Creative review guidance" hint="Agree on the audience, style references, examples, and what is out of scope. Both parties see this before signing." className="sm:col-span-3">
+                <Textarea rows={3} maxLength={4000} placeholder="Example: warm editorial illustration for coffee lovers. Match the attached palette, not the exact composition. Personal taste alone is not a failure." value={pact.terms.reviewGuidance ?? ""} onChange={e => setPact({...pact, terms: {...pact.terms, reviewGuidance: e.target.value}})} />
+              </Field>
               <Field label="Ownership / IP" className="sm:col-span-3">
                 <Textarea autoGrow rows={1} value={pact.terms.ipTransfer} onChange={(e) => setPact({ ...pact, terms: { ...pact.terms, ipTransfer: e.target.value } })} />
               </Field>
@@ -553,7 +556,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
                 {highRisk && (
                   <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-rose-100 bg-card p-3 text-[12.5px] font-medium text-rose-700">
                     <input type="checkbox" checked={ackRisk} onChange={(e) => setAckRisk(e.target.checked)} className="mt-0.5 accent-rose-600" />
-                    I’ve read these warnings. Keep every payment inside Kept’s PayPal escrow — never Friends & Family, gift cards or “refund the difference”.
+                    I’ve read these warnings. Keep every payment inside Kept’s PayPal escrow; never Friends & Family, gift cards or “refund the difference”.
                   </label>
                 )}
               </CardContent>
@@ -579,7 +582,7 @@ export function Composer({ initial, editId, editingSent, defaultRole }: { initia
 
           {ai && (
             <p className="flex items-center gap-1.5 px-1 text-[11.5px] text-ink-3">
-              <Bot className="size-3.5" /> {ai.provider === "example" ? "Pre-compiled example — add an AI key to compile live" : <>Compiled by {ai.provider === "offline" ? "the offline heuristic" : ai.model} in {(ai.latencyMs / 1000).toFixed(1)}s</>}
+              <Bot className="size-3.5" /> {ai.provider === "example" ? "Pre-compiled example; add an AI key to compile live" : <>Compiled by {ai.provider === "offline" ? "the offline heuristic" : ai.model} in {(ai.latencyMs / 1000).toFixed(1)}s</>}
             </p>
           )}
         </aside>

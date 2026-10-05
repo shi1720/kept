@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 /**
  * JSON feed behind the ops console's live refresh. Same scoping as /admin:
  * admins see every workspace, a demo visitor only their own sandbox world.
- * Browser sessions only — this is a console feed, not part of the public API.
+ * Browser sessions only; this is a console feed, not part of the public API.
  */
 export const GET = handler(async () => {
   const actor = await getActor();

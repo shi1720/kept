@@ -4,7 +4,7 @@ import type { DraftOutput } from "./schemas";
 /**
  * Pre-compiled drafts for the composer's example chips, shown only when no AI provider is
  * configured (keyless local runs). They are labelled as pre-compiled in the UI; with a key,
- * every compile — including these examples — runs live.
+ * every compile; including these examples; runs live.
  */
 const n = { value: null, values: null, width: null, height: null } as const;
 
@@ -48,7 +48,7 @@ const DRAFTS: DraftOutput[] = [
       communication: "Feedback within 2 days of each delivery so the reopening date holds.",
     },
     ambiguities: [
-      { quote: "something modern but warm", issue: "Style words with no reference — the most common source of logo disputes", suggestion: "Wheat or concha motif, bakery pink as a primary colour, shown in 3 distinct directions" },
+      { quote: "something modern but warm", issue: "Style words with no reference; the most common source of logo disputes", suggestion: "Wheat or concha motif, bakery pink as a primary colour, shown in 3 distinct directions" },
       { quote: "a few revisions included", issue: "Revision count is open-ended", suggestion: "2 rounds of revisions on the chosen concept" },
       { quote: "final files for print + social", issue: "Formats and sizes undefined", suggestion: "SVG + PNG ≥ 2000px, plus a 1080×1080 social version" },
       { quote: "before our reopening on the 20th", issue: "Deadline relative to an unstated month, with no buffer for feedback", suggestion: "Concepts in 6 days, final files 5 days after the concept is chosen" },
@@ -65,7 +65,7 @@ const DRAFTS: DraftOutput[] = [
     freelancerName: "Sam",
     milestones: [
       {
-        title: "Post 1 — Choosing your first e-bike",
+        title: "Post 1; Choosing your first e-bike",
         description: "A 1,200–1,500 word buyer's guide.",
         amount: 300,
         dueInDays: 7,
@@ -78,7 +78,7 @@ const DRAFTS: DraftOutput[] = [
         ],
       },
       {
-        title: "Posts 2 & 3 — Maintenance basics and winter commuting",
+        title: "Posts 2 & 3; Maintenance basics and winter commuting",
         description: "Two posts, 1,200–1,500 words each.",
         amount: 600,
         dueInDays: 7,
@@ -160,7 +160,7 @@ const DRAFTS: DraftOutput[] = [
     milestones: [
       {
         title: "Company website",
-        description: "A four-page company website. The page list below is Kept's suggestion — confirm it with the client before funding.",
+        description: "A four-page company website. The page list below is Kept's suggestion; confirm it with the client before funding.",
         amount: 2500,
         dueInDays: 21,
         criteria: [
@@ -182,9 +182,9 @@ const DRAFTS: DraftOutput[] = [
       { quote: "do a free test design", issue: "Unpaid work requested up front", suggestion: "Any design work is a paid, escrowed milestone" },
     ],
     riskFlags: [
-      { severity: "high", signal: "Overpayment + refund the difference", explanation: "A cheque for $4,000 against a $2,500 job, with the difference “sent back” — the cheque bounces after you've paid. A classic fraud pattern." },
+      { severity: "high", signal: "Overpayment + refund the difference", explanation: "A cheque for $4,000 against a $2,500 job, with the difference “sent back”; the cheque bounces after you've paid. A classic fraud pattern." },
       { severity: "high", signal: "Gift card payments", explanation: "Gift cards are untraceable and irreversible; legitimate clients don't pay or get refunded in gift cards." },
-      { severity: "high", signal: "Friends & Family requested", explanation: "PayPal Friends & Family payments carry no purchase or seller protection — exactly what a scammer wants." },
+      { severity: "high", signal: "Friends & Family requested", explanation: "PayPal Friends & Family payments carry no purchase or seller protection; exactly what a scammer wants." },
       { severity: "medium", signal: "Unpaid test work", explanation: "“Free test designs” are a common way to extract work without paying." },
       { severity: "medium", signal: "Move to Telegram", explanation: "Moving off-platform removes any record and protection." },
     ],

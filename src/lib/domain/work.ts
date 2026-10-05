@@ -121,7 +121,7 @@ export async function runReview(milestoneId: string) {
 
   const started = Date.now();
   const pack = await gatherEvidence(arts, criteria);
-  const result = await runReferee({ pact, milestone, criteria, pack, submissionNote: submission.note });
+  const result = await runReferee({ pact, milestone, criteria, pack, submissionNote: submission.note, userId: submission.createdById });
   const latencyMs = Date.now() - started;
 
   const verdictId = newId("vrd");
@@ -151,13 +151,13 @@ export async function runReview(milestoneId: string) {
       milestoneId,
       actorKind: "ai",
       type: "review.completed",
-      message: `AI referee: ${result.overall.toUpperCase()} — ${met}/${result.criteriaResults.length} criteria met, score ${result.score}/100${result.injectionDetected ? " · ⚠ manipulation attempt detected" : ""}`,
+      message: `AI referee: ${result.overall.toUpperCase()}; ${met}/${result.criteriaResults.length} criteria met, score ${result.score}/100${result.injectionDetected ? " · ⚠ manipulation attempt detected" : ""}`,
       data: { verdictId, provider: result.provider, model: result.model, degraded: result.degraded, latencyMs },
     });
     await notify(tx, [pact.clientId], {
       pactId: pact.id,
       title: "Work ready for your review",
-      body: `“${milestone.title}” scored ${result.score}/100 with the AI referee. You have ${pact.terms.reviewWindowHours}h to approve, request a revision or raise an issue — after that, passing work is released automatically.`,
+      body: `“${milestone.title}” scored ${result.score}/100 with the AI referee. You have ${pact.terms.reviewWindowHours}h to approve, request a revision or raise an issue; after that, passing work is released automatically.`,
     });
     await notify(tx, [pact.freelancerId], {
       pactId: pact.id,
@@ -186,7 +186,7 @@ export async function requestRevision(user: User, milestoneId: string, note: str
   assertParty(user, pact, "client");
   assertTransition(milestone.status, "request_revision");
   if (milestone.revisionsUsed >= pact.terms.revisionsIncluded) {
-    throw invalidState(`All ${pact.terms.revisionsIncluded} included revisions have been used — approve, or raise an issue for mediation`);
+    throw invalidState(`All ${pact.terms.revisionsIncluded} included revisions have been used; approve, or raise an issue for mediation`);
   }
   if (note.trim().length < 5) throw badRequest("Tell the freelancer what to change");
   await db.transaction(async (tx) => {

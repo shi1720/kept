@@ -331,7 +331,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await stampPact(ms[0].pactId, new Date(Date.now() - 26 * 86_400_000));
   }
 
-  /* -- A: brand identity — M1 released, M2 awaiting Maya's review ------ */
+  /* -- A: brand identity; M1 released, M2 awaiting Maya's review ------ */
   {
     setEventClock(timeline(14, 20, 14));
     const { pact, ms } = await seal(client, freelancer, brandPact());
@@ -339,8 +339,8 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await fundSim(client, m1.id);
     await db.update(milestones).set({ status: "in_review", submittedAt: new Date(Date.now() - 4 * 86400000) }).where(eq(milestones.id, m1.id));
     const { criteria: c1 } = await loadMilestone(m1.id);
-    const s1 = await addSubmission(m1.id, "Three directions attached — my favourite is B.", [
-      { kind: "text", name: "concepts-board.md", content: "Concept A — Lantern Glow: a hand-drawn lantern whose flame is a coffee bean. Rationale: warmth, craft, a nod to slow mornings.\n\nConcept B — The Roaster's Mark: monogram L inside a stamped circle, inspired by roaster tins. Rationale: heritage and trust.\n\nConcept C — Night Shift: geometric lantern with long shadows. Rationale: modern, distinctive on shelves." },
+    const s1 = await addSubmission(m1.id, "Three directions attached; my favourite is B.", [
+      { kind: "text", name: "concepts-board.md", content: "Concept A; Lantern Glow: a hand-drawn lantern whose flame is a coffee bean. Rationale: warmth, craft, a nod to slow mornings.\n\nConcept B; The Roaster's Mark: monogram L inside a stamped circle, inspired by roaster tins. Rationale: heritage and trust.\n\nConcept C; Night Shift: geometric lantern with long shadows. Rationale: modern, distinctive on shelves." },
     ]);
     await db.insert(verdicts).values(scored({
       id: newId("vrd"), milestoneId: m1.id, submissionId: s1, provider: "kept-demo-seed", model: "seeded example verdict",
@@ -366,7 +366,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await db.insert(verdicts).values(scored({
       id: newId("vrd"), milestoneId: m2.id, submissionId: s2, provider: "kept-demo-seed", model: "seeded example verdict",
       overall: "partial", score: 75, recommendedReleasePct: 85,
-      summary: "The brand guide is thorough — HEX palette, typography and clear-space rules are all specified and single-colour use is shown. However, the SVG and PNG logo files themselves were not attached to this submission.",
+      summary: "The brand guide is thorough; HEX palette, typography and clear-space rules are all specified and single-colour use is shown. However, the SVG and PNG logo files themselves were not attached to this submission.",
       notesForClient: "Everything in the guide checks out. Ask Ana to attach the SVG/PNG files before approving, or approve if you received them by email.",
       notesForFreelancer: "Attach the logo exports (SVG + PNG) to the submission so the file-format criterion can be verified.",
       criteriaResults: v(c2.map((c) => c.id), [
@@ -378,11 +378,11 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       evidence: [{ probe: "text", label: "brand-guide.md", detail: "Inline text · 112 words", ok: true }],
       latencyMs: 11200,
     }));
-    await recordEvent(db, { pactId: pact.id, milestoneId: m2.id, actorKind: "ai", type: "review.completed", message: "AI referee: PARTIAL — 3/4 criteria met, score 75/100" });
+    await recordEvent(db, { pactId: pact.id, milestoneId: m2.id, actorKind: "ai", type: "review.completed", message: "AI referee: PARTIAL; 3/4 criteria met, score 75/100" });
     await stampPact(pact.id, new Date(Date.now() - 20 * 3_600_000));
   }
 
-  /* -- B: landing page — funded, waiting for Ana to deliver ------------ */
+  /* -- B: landing page; funded, waiting for Ana to deliver ------------ */
   {
     setEventClock(timeline(3, 5, 4));
     const { pact, ms } = await seal(freelancer, client, landingPact());
@@ -390,7 +390,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await stampPact(pact.id, new Date(Date.now() - 5 * 3_600_000));
   }
 
-  /* -- C: captions — in mediation with an AI proposal ------------------- */
+  /* -- C: captions; in mediation with an AI proposal ------------------- */
   {
     setEventClock(timeline(6, 2, 7));
     const { pact, ms } = await seal(client, freelancer, captionsPact());
@@ -420,7 +420,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       openedById: client.id,
       reason: "We agreed on six captions and only got four. One of them is barely a sentence.",
       clientStatement: "We agreed on six captions and only got four. One of them is barely a sentence. Launch week starts Monday.",
-      freelancerStatement: "I sent 4 so Maya could approve the direction before I wrote the rest — I said so in our chat. Happy to finish the last two.",
+      freelancerStatement: "I sent 4 so Maya could approve the direction before I wrote the rest; I said so in our chat. Happy to finish the last two.",
       status: "ruling_proposed",
       ruling: {
         releasePct: 65,
@@ -432,7 +432,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
           { point: "Sending a partial set for direction approval was never agreed in the pact", favors: "client" },
         ],
         messageToParties:
-          "Maya, Ana — the work delivered is good but incomplete. We propose releasing 65% ($156) to Ana and refunding 35% ($84) to Maya. If you both accept, PayPal settles it in seconds.",
+          "Maya, Ana; the work delivered is good but incomplete. We propose releasing 65% ($156) to Ana and refunding 35% ($84) to Maya. If you both accept, PayPal settles it in seconds.",
         provider: "kept-demo-seed",
         model: "seeded example ruling",
       },
@@ -442,7 +442,7 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     await stampPact(pact.id, new Date(Date.now() - 2 * 3_600_000));
   }
 
-  /* -- E: photo retouching — PASS verdict, waiting on Maya (anti-ghosting demo) */
+  /* -- E: photo retouching; PASS verdict, waiting on Maya (anti-ghosting demo) */
   {
     setEventClock(timeline(4, 30, 6));
     const { pact, ms } = await seal(client, freelancer, {
@@ -472,8 +472,8 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
     const m = ms[0];
     await fundSim(client, m.id);
     const { criteria: ec } = await loadMilestone(m.id);
-    const notes = Array.from({ length: 12 }, (_, i) => `${i + 1}. ${["Flat white", "Holiday Blend pour-over", "Cardamom bun", "Iced oat latte", "Espresso tonic", "Ginger loaf", "Cortado", "Chai", "Mocha", "Almond croissant", "Cold brew", "Gift box"][i]} — warmed white balance (+300K), lifted shadows, removed counter glare.`).join("\n");
-    const sub = await addSubmission(m.id, "All 12 are in the album — notes below.", [
+    const notes = Array.from({ length: 12 }, (_, i) => `${i + 1}. ${["Flat white", "Holiday Blend pour-over", "Cardamom bun", "Iced oat latte", "Espresso tonic", "Ginger loaf", "Cortado", "Chai", "Mocha", "Almond croissant", "Cold brew", "Gift box"][i]}; warmed white balance (+300K), lifted shadows, removed counter glare.`).join("\n");
+    const sub = await addSubmission(m.id, "All 12 are in the album; notes below.", [
       { kind: "text", name: "retouching-notes.md", content: `Album: lantern-menu-photos (12 images, 2400×1600 JPG)\n\n${notes}` },
     ]);
     await db.insert(verdicts).values(scored({
@@ -491,11 +491,11 @@ async function seedWorkspace(): Promise<{ client: User; freelancer: User; worksp
       latencyMs: 7600,
     }));
     await db.update(milestones).set({ status: "in_review", reviewDeadlineAt: new Date(Date.now() + 30 * 3_600_000) }).where(eq(milestones.id, m.id));
-    await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorKind: "ai", type: "review.completed", message: "AI referee: PASS — 3/3 criteria met, score 100/100" });
+    await recordEvent(db, { pactId: pact.id, milestoneId: m.id, actorKind: "ai", type: "review.completed", message: "AI referee: PASS; 3/3 criteria met, score 100/100" });
     await stampPact(pact.id, new Date(Date.now() - 18 * 3_600_000));
   }
 
-  /* -- D: packaging — sent by Maya, waiting for Ana's signature --------- */
+  /* -- D: packaging; sent by Maya, waiting for Ana's signature --------- */
   {
     setEventClock(timeline(0.1, 0.5, 2));
     const pact = await createPact(client, {

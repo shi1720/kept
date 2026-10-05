@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!profile) return { title: "Profile not found" };
   const { user, stats } = profile;
   const kept = stats.milestonesKept;
-  const description = `${user.name}${user.headline ? ` — ${user.headline}` : ""}. ${stats.pactsCompleted} pact${stats.pactsCompleted === 1 ? "" : "s"} completed and ${kept} milestone${kept === 1 ? "" : "s"} kept through Kept escrow on PayPal.`;
+  const description = `${user.name}${user.headline ? `; ${user.headline}` : ""}. ${stats.pactsCompleted} pact${stats.pactsCompleted === 1 ? "" : "s"} completed and ${kept} milestone${kept === 1 ? "" : "s"} kept through Kept escrow on PayPal.`;
   return {
     title: `${user.name} · Verified track record`,
     description,
@@ -62,8 +62,8 @@ export default async function PublicProfilePage({ params }: Props) {
               .filter(Boolean)
               .join(" · ") || "Every milestone paid in full", icon: CheckCircle2 },
           { label: "Released via Kept", value: money(stats.releasedCents), hint: "Paid out by PayPal from escrow", icon: ShieldCheck },
-          { label: "On-time delivery", value: stats.onTimeRate === null ? "—" : `${stats.onTimeRate}%`, hint: stats.onTimeSample ? `Across ${stats.onTimeSample} delivered milestone${stats.onTimeSample === 1 ? "" : "s"}` : "No deliveries yet", icon: Clock3 },
-          { label: "AI referee score", value: stats.avgScore === null ? "—" : `${stats.avgScore}`, suffix: stats.avgScore === null ? undefined : "/100", hint: stats.scoredCount ? `Average of ${stats.scoredCount} reviewed deliver${stats.scoredCount === 1 ? "y" : "ies"}` : "No reviews yet", icon: Sparkles },
+          { label: "On-time delivery", value: stats.onTimeRate === null ? "N/A" : `${stats.onTimeRate}%`, hint: stats.onTimeSample ? `Across ${stats.onTimeSample} delivered milestone${stats.onTimeSample === 1 ? "" : "s"}` : "No deliveries yet", icon: Clock3 },
+          { label: "AI referee score", value: stats.avgScore === null ? "N/A" : `${stats.avgScore}`, suffix: stats.avgScore === null ? undefined : "/100", hint: stats.scoredCount ? `Average of ${stats.scoredCount} reviewed deliver${stats.scoredCount === 1 ? "y" : "ies"}` : "No reviews yet", icon: Sparkles },
         ]
       : [
           { label: "Pacts completed", value: String(stats.pactsCompleted), hint: stats.pactsActive ? `${stats.pactsActive} in progress` : "All settled", icon: CheckCircle2 },
@@ -152,7 +152,7 @@ export default async function PublicProfilePage({ params }: Props) {
               {record.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-line-2 bg-paper/60 px-5 py-10 text-center">
                   <p className="display text-[26px]">No completed pacts yet</p>
-                  <p className="mt-1 text-[13px] text-ink-3">When {first} finishes work through Kept, it shows up here — verified, not self-reported.</p>
+                  <p className="mt-1 text-[13px] text-ink-3">When {first} finishes work through Kept, it shows up here; verified, not self-reported.</p>
                 </div>
               ) : (
                 <ul className="divide-y divide-line">

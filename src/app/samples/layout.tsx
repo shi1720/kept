@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 /**
  * Sample deliverables for the demo. These are stand-alone "client sites" the
- * freelancer delivers by URL — deliberately outside the Kept app shell, and
+ * freelancer delivers by URL; deliberately outside the Kept app shell, and
  * fully server-rendered so Kept's evidence engine sees all content in the
  * initial HTML.
  */

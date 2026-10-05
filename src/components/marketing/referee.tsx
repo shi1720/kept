@@ -164,7 +164,7 @@ export function Referee() {
                   Code measures. <span className="italic text-jade-600">The model judges.</span>
                 </>
               }
-              lede="Kept’s referee (Claude) never grades on vibes. It reads an evidence pack that code has already measured, then rules criterion by criterion against exactly what both people signed."
+              lede="Kept’s referee reviews against the agreed brief. It reads an evidence pack that code has already measured, then rules criterion by criterion against exactly what both people signed."
             />
             <dl className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-1">
               {POINTS.map((p) => (

@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!pact) return { title: "Invitation not found", robots };
   return {
     title: `Review & countersign: ${pact.title}`,
-    description: "You've been invited to a Kept pact — escrow on PayPal with an AI referee that checks the work against criteria you both sign.",
+    description: "You've been invited to a Kept pact; escrow on PayPal with an AI referee that checks the work against criteria you both sign.",
     robots,
   };
 }
@@ -102,7 +102,7 @@ export default async function InvitePage({ params }: Props) {
       )}
 
       <footer className="border-t border-line py-6 text-center text-[12px] text-ink-3">
-        Kept holds funds with PayPal. Nothing is charged by signing — the client funds each milestone separately.
+        Kept holds funds with PayPal. Nothing is charged by signing; the client funds each milestone separately.
       </footer>
     </div>
   );
@@ -147,12 +147,12 @@ function ClosedInvite({ pact, isParty }: { pact: Pact; isParty: boolean }) {
 function protections(side: Side, reviewHours: number, counterpart: string) {
   return side === "freelancer"
     ? [
-        { icon: Lock, title: "The money is secured before you start", body: `${counterpart} funds each milestone into PayPal escrow before you begin. You’ll see it held — no more working on a promise.` },
+        { icon: Lock, title: "The money is secured before you start", body: `${counterpart} funds each milestone into PayPal escrow before you begin. You’ll see it held; no more working on a promise.` },
         { icon: Timer, title: "Ghosting can’t block your payment", body: `Once you deliver, ${counterpart} has ${reviewHours} hours to respond. If they go quiet and the AI referee passed your work, the money is released automatically.` },
-        { icon: Gavel, title: "Judged on what you both signed", body: "The referee checks your work against these exact criteria — not shifting tastes. Disagreements go to a neutral AI mediator, then human arbitration." },
+        { icon: Gavel, title: "Judged on what you both signed", body: "The referee checks your work against these exact criteria; not shifting tastes. Disagreements go to a neutral AI mediator, then human arbitration." },
       ]
     : [
-        { icon: ShieldCheck, title: "Pay only for work that passes", body: `Your money waits in PayPal escrow. It’s released to ${counterpart} when the work meets the criteria below and you approve — not before.` },
+        { icon: ShieldCheck, title: "Pay only for work that passes", body: `Your money waits in PayPal escrow. It’s released to ${counterpart} when the work meets the criteria below and you approve; not before.` },
         { icon: Sparkles, title: "Evidence, not vibes", body: "Kept probes every delivery (links, word counts, files) and an AI referee reports criterion by criterion before you decide." },
         { icon: RefreshCcw, title: "A fair way out", body: "If the work falls short, request a revision or raise a dispute. Mediation can refund all or part of the milestone straight back to your PayPal." },
       ];
@@ -276,6 +276,7 @@ function OpenInvite({
               <Term label="Revisions included" value={`${pact.terms.revisionsIncluded} round${pact.terms.revisionsIncluded === 1 ? "" : "s"}`} />
               <Term label="Client review window" value={`${pact.terms.reviewWindowHours} hours after each delivery, then auto-resolves`} />
               <Term label="Ownership" value={pact.terms.ipTransfer} />
+              {pact.terms.reviewGuidance && <Term label="Creative review guidance" value={pact.terms.reviewGuidance} />}
               <Term label="Disputes" value="AI mediation first, human arbitration if either side rejects" />
               {pact.terms.communication && <Term label="Communication" value={pact.terms.communication} />}
               {pact.terms.extra?.map((x, i) => <Term key={i} label="Also agreed" value={x} />)}
@@ -328,7 +329,7 @@ function OpenInvite({
             </Card>
           ) : (
             <div className="flex items-center gap-2.5 rounded-2xl border border-jade-100 bg-jade-50/70 px-5 py-3.5 text-[13px] text-jade-700">
-              <ShieldCheck className="size-4 shrink-0" /> No risk flags — Kept found no off-platform payment, gift-card or other scam patterns in this pact.
+              <ShieldCheck className="size-4 shrink-0" /> No risk flags; Kept found no off-platform payment, gift-card or other scam patterns in this pact.
             </div>
           )}
         </div>
@@ -360,7 +361,7 @@ function OpenInvite({
               {isCreator ? (
                 <div className="space-y-3">
                   <p className="text-[13.5px] leading-relaxed text-ink-2">
-                    This is the page {pact.counterpartyName ? <b className="text-ink">{pact.counterpartyName}</b> : "the other side"} sees. Share the link — once they countersign, milestones open for funding.
+                    This is the page {pact.counterpartyName ? <b className="text-ink">{pact.counterpartyName}</b> : "the other side"} sees. Share the link; once they countersign, milestones open for funding.
                   </p>
                   <CopyInvite url={inviteUrl} />
                   <Button asChild variant="outline" className="w-full"><Link href={`/app/pacts/${pact.id}`}>Open the pact <ArrowRight /></Link></Button>
@@ -368,7 +369,7 @@ function OpenInvite({
               ) : viewer ? (
                 <div className="space-y-3 border-t border-line pt-4">
                   <p className="text-[12.5px] text-ink-3">
-                    Signing as <b className="text-ink">{viewer.name}</b>. Nothing is charged now{side === "client" ? " — you fund each milestone when you’re ready" : ""}.
+                    Signing as <b className="text-ink">{viewer.name}</b>. Nothing is charged now{side === "client" ? "; you fund each milestone when you’re ready" : ""}.
                   </p>
                   <CountersignButton token={token} role={side} />
                 </div>
@@ -392,7 +393,7 @@ function OpenInvite({
               <li>Both sides sign these criteria.</li>
               <li>The client funds each milestone into PayPal escrow.</li>
               <li>The freelancer delivers; an AI referee checks it against the criteria.</li>
-              <li>Money is released — or fairly split — in minutes.</li>
+              <li>Money is released; or fairly split; in minutes.</li>
             </ol>
           </div>
         </aside>

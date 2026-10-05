@@ -19,7 +19,7 @@ export const MCP_TOOLS: McpToolDoc[] = [
   {
     name: "accept_invite",
     title: "Countersign a pact",
-    does: "Countersigns a pact you were invited to, from the invite URL or token. Lets an agent take on work — agent-to-agent pacts included.",
+    does: "Countersigns a pact you were invited to, from the invite URL or token. Lets an agent take on work; agent-to-agent pacts included.",
     money: "none",
   },
   { name: "list_pacts", title: "List my pacts", does: "Pacts you are party to, with each milestone's status.", money: "read" },

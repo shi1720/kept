@@ -5,7 +5,7 @@ import { MCP_TOOLS, REST_GROUPS, type MoneyEffect, type RestEndpoint } from "@/c
 import { AgentTranscript } from "@/components/developers/transcript";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { requireUser } from "@/lib/auth/session";
+import { requirePageUser } from "@/lib/auth/session";
 import { cn } from "@/lib/cn";
 import { env } from "@/lib/env";
 
@@ -44,7 +44,7 @@ function SectionHeading({ eyebrow, title, children }: { eyebrow: string; title: 
 }
 
 export default async function DevelopersPage() {
-  await requireUser();
+  await requirePageUser();
   const appUrl = env.appUrl;
 
   return (
@@ -110,7 +110,7 @@ export default async function DevelopersPage() {
       {/* MCP tools */}
       <section>
         <SectionHeading eyebrow="Reference" title="MCP tools">
-          Exposed by <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">kept-escrow</code> v1.0. Tools act with the permissions of the key’s owner — an agent can only
+          Exposed by <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">kept-escrow</code> v1.0. Tools act with the permissions of the key’s owner; an agent can only
           do what you could do in the app.
         </SectionHeading>
         <Card className="overflow-hidden">
@@ -152,7 +152,7 @@ export default async function DevelopersPage() {
       <section>
         <SectionHeading eyebrow="Reference" title="REST API">
           JSON in, JSON out, at <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">{appUrl}</code>. Authenticate with{" "}
-          <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">Authorization: Bearer kept_sk_…</code> — keys resolve to your account on every endpoint. Errors come back as{" "}
+          <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">Authorization: Bearer kept_sk_…</code>; keys resolve to your account on every endpoint. Errors come back as{" "}
           <code className="rounded bg-paper-2 px-1 font-mono text-[12px] text-ink-2">{"{ error: { code, message } }"}</code> with a matching HTTP status.{" "}
           The full spec is at{" "}
           <a href="/openapi.yaml" className="font-medium text-jade-700 underline underline-offset-2">/openapi.yaml</a> (OpenAPI 3.1): import it into

@@ -71,7 +71,7 @@ export function DisputePanel({
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <Bot className="size-4 text-sky-600" />
             <span className="text-[13.5px] font-semibold">AI mediator’s proposal</span>
-            <span className="basis-full pl-6 text-[11px] text-ink-3 sm:basis-auto sm:pl-0">{ruling.provider === "kept-demo-seed" ? "seeded example — add a statement to run the live mediator" : ruling.model}</span>
+            <span className="basis-full pl-6 text-[11px] text-ink-3 sm:basis-auto sm:pl-0">{ruling.provider === "kept-demo-seed" ? "seeded example; add a statement to run the live mediator" : ruling.model}</span>
           </div>
           <div className="mt-4">
             <div className="flex h-11 overflow-hidden rounded-xl text-[13px] font-medium">
@@ -85,7 +85,7 @@ export function DisputePanel({
           </div>
           <p className="mt-4 text-[13.5px] leading-relaxed text-ink-2">{ruling.rationale}</p>
           {ruling.findings.length > 0 && (
-            <ul className="mt-3 space-y-1.5">
+            <details className="mt-4"><summary className="cursor-pointer text-xs font-medium text-jade-700">Why this split? View the findings</summary><ul className="mt-3 space-y-1.5">
               {ruling.findings.map((f, i) => (
                 <li key={i} className="flex items-start gap-2 text-[13px]">
                   <Badge tone={f.favors === "client" ? "ember" : f.favors === "freelancer" ? "jade" : "neutral"} className="mt-0.5 shrink-0 py-0 text-[10.5px]">
@@ -94,7 +94,7 @@ export function DisputePanel({
                   <span className="text-ink-2">{f.point}</span>
                 </li>
               ))}
-            </ul>
+            </ul></details>
           )}
           <p className="mt-4 rounded-xl bg-paper px-4 py-3 text-[13px] italic leading-relaxed text-ink-2">{ruling.messageToParties}</p>
 
@@ -104,15 +104,15 @@ export function DisputePanel({
                 <Badge tone="jade"><Check /> You accepted · waiting for the other party</Badge>
               ) : (
                 <>
-                  <Button variant="jade" size="lg" loading={busy === "accept"} onClick={() => act("accept", `/api/disputes/${dispute.id}/respond`, { accept: true }, otherAccepted ? "Settled! PayPal is moving the money now." : "Accepted — waiting for the other party.")}>
+                  <Button variant="jade" size="lg" loading={busy === "accept"} onClick={() => act("accept", `/api/disputes/${dispute.id}/respond`, { accept: true, revision: dispute.revision }, otherAccepted ? "Settled! PayPal is moving the money now." : "Accepted; waiting for the other party.")}>
                     <Scale /> Accept {pct}/{100 - pct} split
                   </Button>
-                  <Button variant="outline" size="lg" loading={busy === "reject"} onClick={() => act("reject", `/api/disputes/${dispute.id}/respond`, { accept: false }, "Escalated to a human arbitrator.")}>
+                  <Button variant="outline" size="lg" loading={busy === "reject"} onClick={() => act("reject", `/api/disputes/${dispute.id}/respond`, { accept: false, revision: dispute.revision }, "Escalated to a human arbitrator.")}>
                     Reject & escalate
                   </Button>
                 </>
               )}
-              {otherAccepted && !myAccepted && <span className="text-xs text-jade-700">The other party already accepted — your acceptance settles it instantly.</span>}
+              {otherAccepted && !myAccepted && <span className="text-xs text-jade-700">The other party already accepted; your acceptance settles it instantly.</span>}
             </div>
           )}
         </div>
@@ -120,7 +120,7 @@ export function DisputePanel({
 
       {role && dispute.status === "escalated" && (
         <p className="border-t border-line bg-paper/50 px-5 py-4 text-[13px] text-ink-3">
-          A human arbitrator is reviewing the contract, the evidence and both statements above. Statements are closed; you’ll be notified of the decision.
+          This case is awaiting manual review by a workspace administrator. Funds remain frozen. No human decision has been made yet.
         </p>
       )}
       {role && dispute.status !== "resolved" && dispute.status !== "escalated" && (

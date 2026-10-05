@@ -82,7 +82,7 @@ function ApiKeys({ onCreated, freshKey }: { onCreated: (k: string) => void; fres
       const res = await api<{ key: string }>("/api/keys", { body: { name: name.trim() || "My agent" } });
       onCreated(res.key);
       setName("");
-      toast.success("API key created — copy it now");
+      toast.success("API key created; copy it now");
       await load();
     } catch {
       /* toast already shown */
@@ -133,7 +133,7 @@ function ApiKeys({ onCreated, freshKey }: { onCreated: (k: string) => void; fres
         {freshKey && (
           <div className="rounded-xl border border-jade-100 bg-jade-50 p-3.5 animate-fade-up">
             <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-jade-700">
-              <ShieldCheck className="size-3.5" /> Copy your new key now — it won’t be shown again
+              <ShieldCheck className="size-3.5" /> Copy your new key now; it won’t be shown again
             </p>
             <div className="mt-2 flex items-center gap-2 rounded-lg border border-jade-100 bg-card py-1 pl-3 pr-1">
               <code className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-ink">{freshKey}</code>
@@ -244,7 +244,7 @@ KEPT_URL=${appUrl} \
       code: agent,
       note: <>Ships with the repo. It never moves money on its own: funding always ends at a PayPal approval link for a human.</>,
     },
-    { key: "rest", label: "REST", icon: <Terminal />, title: "curl · REST", code: rest, note: <>The same key works on every REST endpoint below — auth resolves Bearer keys exactly like a session.</> },
+    { key: "rest", label: "REST", icon: <Terminal />, title: "curl · REST", code: rest, note: <>The same key works on every REST endpoint below; auth resolves Bearer keys exactly like a session.</> },
   ];
 
   return (

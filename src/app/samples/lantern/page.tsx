@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { HolidayBag, LanternHeader, LanternMark, PREORDER_HREF, TASTING_NOTES } from "../_lantern/brand";
 
 export const metadata: Metadata = {
-  title: { absolute: "Holiday Blend — Lantern Coffee Roasters" },
+  title: { absolute: "Holiday Blend; Lantern Coffee Roasters" },
   description: "Pre-order Lantern's Holiday Blend: a single-farm Colombian coffee from the Alvarado family in Huila. $22 per 12oz bag, ships December 1.",
   robots: { index: false, follow: false },
 };

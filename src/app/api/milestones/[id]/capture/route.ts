@@ -5,7 +5,7 @@ import { handler, readJson } from "@/lib/http";
 
 const body = z.object({ orderId: z.string().min(5) });
 
-/** PayPal Checkout step 2 — called by the PayPal button's onApprove callback. */
+/** PayPal Checkout step 2; called by the PayPal button's onApprove callback. */
 export const POST = handler<{ id: string }>(async (req) => {
   const user = await requireUser();
   const { orderId } = body.parse(await readJson(req));

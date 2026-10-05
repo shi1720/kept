@@ -266,6 +266,23 @@ describe("escrow lifecycle", () => {
     expect(d.status).toBe("ruling_proposed");
   });
 
+  it("invalidates acceptances when statements change and rejects stale proposal responses", async () => {
+    const { addStatement, resolveDispute } = await import("@/lib/domain/disputes");
+    const { milestoneId } = await activePact();
+    await fund(milestoneId);
+    await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "post", content: longText }] });
+    await runReview(milestoneId);
+    const d = await openDispute(client, milestoneId, "The tone differs from the agreed reference");
+    await respondToRuling(client, d.id, true, d.revision);
+    const revised = await addStatement(freelancer, d.id, "The final paragraph follows the client's new direction.");
+    expect(revised.revision).toBeGreaterThan(d.revision);
+    expect(revised.clientAcceptedAt).toBeNull();
+    await expect(respondToRuling(freelancer, d.id, true, d.revision)).rejects.toThrow(/changed/);
+    await respondToRuling(client, d.id, false, revised.revision);
+    await expect(resolveDispute(d.id, 50, {actorId:null,how:"stale acceptance",revision:revised.revision})).rejects.toThrow();
+    expect((await loadMilestone(milestoneId)).milestone.status).toBe("disputed");
+  });
+
   it("keeps an escalated dispute with the arbitrator: no new statements re-run the mediator", async () => {
     const { addStatement } = await import("@/lib/domain/disputes");
     const { milestoneId } = await activePact();

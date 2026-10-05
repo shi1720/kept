@@ -31,7 +31,7 @@ export function EmailVerification({ email, verified, compact }: { email: string;
         setSent(true);
         if (res.alreadyVerified) toast.success("Your email is already verified");
         else if (res.emailConfigured) toast.success(`Verification link sent to ${email}`);
-        else toast.info("Email isn't configured on this deployment — the verification link was written to the server log.");
+        else toast.info("Email isn't configured on this deployment; the verification link was written to the server log.");
       } catch {
         /* toast shown by api() */
       }

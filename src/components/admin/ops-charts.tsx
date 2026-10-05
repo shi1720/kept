@@ -9,7 +9,7 @@ import { formatMoney } from "@/lib/money";
  * AG Charts (Community) views that sit above the console grids. They're pure
  * functions of the rows the grid currently displays, so every grid filter, chip
  * and quick-search is reflected in the chart immediately.
- * Loaded with `next/dynamic` (client only) — see `ChartSlot`.
+ * Loaded with `next/dynamic` (client only); see `ChartSlot`.
  */
 
 ModuleRegistry.registerModules([AllCommunityModule]);

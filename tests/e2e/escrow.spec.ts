@@ -11,10 +11,13 @@ async function startDemo(page: Page, as: "client" | "freelancer") {
   expect(res.ok()).toBeTruthy();
   await page.goto("/app");
   await expect(page.getByRole("heading", { name: /Good (morning|afternoon|evening)/ })).toBeVisible();
+  await page.getByRole("button", {name:"Skip guide"}).click();
 }
 
 async function switchPersona(page: Page, to: "Ana" | "Maya") {
   await page.getByRole("button", { name: new RegExp(`Switch to ${to}`) }).click();
+  const guide = page.getByRole("button", {name:"Skip guide"});
+  await guide.waitFor({state:"visible",timeout:2000}).then(()=>guide.click()).catch(()=>{});
   await expect(page.getByText(new RegExp(`you are ${to === "Ana" ? "Ana Reyes" : "Maya Chen"}`))).toBeVisible();
 }
 

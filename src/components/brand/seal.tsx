@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 
-/** The wax seal shown on signed pacts — the visual signature of "a promise, kept". */
+/** The wax seal shown on signed pacts; the visual signature of "a promise, kept". */
 export function Seal({ size = 72, label = "SEALED", className, tone = "ember" }: { size?: number; label?: string; className?: string; tone?: "ember" | "jade" }) {
   const fill = tone === "ember" ? "#c2410c" : "#0f6b57";
   const dark = tone === "ember" ? "#9a330a" : "#0b5646";

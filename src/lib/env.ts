@@ -42,8 +42,9 @@ export const env = {
   ai: {
     anthropicKey: str("ANTHROPIC_API_KEY"),
     anthropicModel: str("ANTHROPIC_MODEL", "claude-opus-5-5"),
+    vertexProject: str("GOOGLE_CLOUD_PROJECT_FOR_AI"),
     geminiKey: str("GEMINI_API_KEY") || str("GOOGLE_API_KEY"),
-    geminiModel: str("GEMINI_MODEL", "gemini-2.5-flash"),
+    geminiModel: str("GEMINI_MODEL", "gemini-3.1-pro-preview"),
     /** Force a provider: "anthropic" | "gemini" | "offline". Defaults to the first configured. */
     provider: str("AI_PROVIDER"),
     /** Reasoning effort for money-moving judgments (referee, mediator): low | medium | high. */
@@ -63,6 +64,10 @@ export const env = {
   email: {
     /** Resend (https://resend.com, free tier) API key. Without it, emails are logged instead of sent. */
     resendKey: str("RESEND_API_KEY"),
+    smtpHost: str("SMTP_HOST"),
+    smtpPort: int("SMTP_PORT", 587),
+    smtpUser: str("SMTP_USER"),
+    smtpPassword: str("SMTP_PASSWORD"),
     from: str("EMAIL_FROM", "Kept <onboarding@resend.dev>"),
     /** Tests/local dev only: also write every email as a JSON file into this folder. */
     outboxDir: str("EMAIL_OUTBOX_DIR"),
@@ -81,7 +86,7 @@ if (
   throw new Error("SESSION_SECRET must be set in production");
 }
 
-export const emailConfigured = () => Boolean(env.email.resendKey);
+export const emailConfigured = () => Boolean(env.email.resendKey || (env.email.smtpHost && env.email.smtpUser && env.email.smtpPassword));
 
 export const paypalConfigured = () => Boolean(env.paypal.clientId && env.paypal.clientSecret);
 

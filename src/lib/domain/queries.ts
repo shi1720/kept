@@ -220,7 +220,7 @@ export async function getDashboard(user: User) {
         ? (names.get(p.creatorId) ?? "the other party")
         : (names.get((p.role === "client" ? p.freelancerId : p.clientId) ?? "") ??
           (p.creatorId === user.id ? (p.counterpartyName ?? p.counterpartyEmail) : names.get(p.creatorId)) ??
-          "—"),
+          "N/A"),
       creatorId: p.creatorId,
       amountCents: p.milestones.reduce((s, m) => s + m.amountCents, 0),
       heldCents: p.milestones.filter((m) => ["funded", "submitted", "in_review", "disputed"].includes(m.status)).reduce((s, m) => s + m.amountCents, 0),

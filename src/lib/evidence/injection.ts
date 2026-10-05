@@ -1,8 +1,8 @@
 /**
  * Deterministic prompt-injection detector. Deliverables are untrusted input
  * that ends up in front of the referee model, so anything that looks like an
- * attempt to instruct the referee is flagged — independently of whether the
- * model itself noticed — and surfaced to both parties.
+ * attempt to instruct the referee is flagged; independently of whether the
+ * model itself noticed; and surfaced to both parties.
  */
 const PATTERNS: RegExp[] = [
   /ignore (all |any )?(the )?(previous|prior|above|earlier) (instructions|rules|criteria)/i,

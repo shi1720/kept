@@ -1,10 +1,10 @@
-# Kept — architecture & design notes
+# Kept ;  architecture & design notes
 
 This document explains how Kept moves money safely and how the AI is kept honest. For setup see the [README](../README.md).
 
 ## 1. The escrow state machine
 
-Every milestone moves through an explicit state machine ([`src/lib/domain/state.ts`](../src/lib/domain/state.ts)). Each money-moving action is a transition, and each transition is applied with a **compare-and-set** update (`UPDATE milestones SET status = … WHERE id = … AND status IN (…)`, see `casMilestone` in [`context.ts`](../src/lib/domain/context.ts)). If two actors race — the client clicking *Approve*, the sweeper auto-releasing, a webhook retry — exactly one wins and the others fail cleanly.
+Every milestone moves through an explicit state machine ([`src/lib/domain/state.ts`](../src/lib/domain/state.ts)). Each money-moving action is a transition, and each transition is applied with a **compare-and-set** update (`UPDATE milestones SET status = … WHERE id = … AND status IN (…)`, see `casMilestone` in [`context.ts`](../src/lib/domain/context.ts)). If two actors race ;  the client clicking *Approve*, the sweeper auto-releasing, a webhook retry ;  exactly one wins and the others fail cleanly.
 
 ```mermaid
 stateDiagram-v2
@@ -34,7 +34,7 @@ stateDiagram-v2
 |---|---|---|
 | Fund | `POST /v2/checkout/orders` (Server SDK `OrdersController.createOrder`) | `PayPal-Request-Id`; unique `invoice_id`; `custom_id` = milestone id |
 | Capture | `POST /v2/checkout/orders/{id}/capture` | `PayPal-Request-Id`; `ORDER_ALREADY_CAPTURED` → read the order instead; amount and `custom_id` verified before booking |
-| Release | `POST /v1/payments/payouts` | `sender_batch_id = kept-<milestone>` — PayPal rejects duplicates for 30 days |
+| Release | `POST /v1/payments/payouts` | `sender_batch_id = kept-<milestone>` ;  PayPal rejects duplicates for 30 days |
 | Refund / split | `POST /v2/payments/captures/{id}/refund` (Server SDK `PaymentsController.refundCapturedPayment`) | `PayPal-Request-Id = kept-refund-<refund row>` |
 | Reconcile | `GET /v1/payments/payouts/{batch}` | sweeper refreshes in-flight items |
 | Webhooks | `POST /v1/notifications/verify-webhook-signature` | event id stored with a unique index; unverified deliveries get a 401 and are not recorded; a redelivery of an event whose first attempt failed is processed again |
@@ -61,7 +61,7 @@ Invariant checked in the ops console: **−escrow_liability = Σ amount of miles
 
 Pricing gross-up ([`fees.ts`](../src/lib/domain/fees.ts)): `total = ceil((milestone + kept_fee + 0.49) / (1 − 0.0349))`, so after PayPal's standard US rate escrow still holds the full milestone and the freelancer receives 100%.
 
-## 4. The AI layer — "code measures, the model judges"
+## 4. The AI layer ;  "code measures, the model judges"
 
 ```mermaid
 flowchart LR
@@ -74,14 +74,14 @@ flowchart LR
   X --> V[(Verdict)]
 ```
 
-- **Contract compiler** ([`drafter.ts`](../src/lib/ai/drafter.ts)) — converts a DM/description into a `PactInput`: milestones, criteria with optional machine checks, terms, ambiguities, risk flags, clarity score. Output is validated with Zod and normalised (clamped numbers, currency) before anyone sees it.
-- **Referee** ([`referee.ts`](../src/lib/ai/referee.ts)) — receives the contract, verified probe facts, machine-check outcomes, extracted text and images. Deliverables are wrapped in `<deliverable>` tags and declared untrusted. `reconcile()` then:
+- **Contract compiler** ([`drafter.ts`](../src/lib/ai/drafter.ts)) ;  converts a DM/description into a `PactInput`: milestones, criteria with optional machine checks, terms, ambiguities, risk flags, clarity score. Output is validated with Zod and normalised (clamped numbers, currency) before anyone sees it.
+- **Referee** ([`referee.ts`](../src/lib/ai/referee.ts)) ;  receives the contract, verified probe facts, machine-check outcomes, extracted text and images. Deliverables are wrapped in `<deliverable>` tags and declared untrusted. `reconcile()` then:
   - downgrades any "met" whose machine check failed;
   - computes the score from per-criterion results (met = 1, partial = 0.5, cannot-verify = 0.75, not met = 0);
   - sets `pass` only when everything material is met;
   - marks injection if either the model *or* the deterministic scanner found it.
-- **Mediator** ([`mediator.ts`](../src/lib/ai/mediator.ts)) — proposes a release percentage with findings and a message to both parties. It is only a proposal: both must accept, otherwise a human arbitrates.
-- **Providers** ([`provider.ts`](../src/lib/ai/provider.ts)) — Claude via the Anthropic SDK (`messages.parse` with Zod structured outputs, server-side refusal fallback, prompt caching on the system prompt), Gemini via `@google/genai` with JSON schema, and a deterministic offline implementation for every task. Providers are tried in order; a degraded result is labelled in the UI and the audit log.
+- **Mediator** ([`mediator.ts`](../src/lib/ai/mediator.ts)) ;  proposes a release percentage with findings and a message to both parties. It is only a proposal: both must accept, otherwise a human arbitrates.
+- **Providers** ([`provider.ts`](../src/lib/ai/provider.ts)) ;  Claude via the Anthropic SDK (`messages.parse` with Zod structured outputs, server-side refusal fallback, prompt caching on the system prompt), Gemini via `@google/genai` with JSON schema, and a deterministic offline implementation for every task. Providers are tried in order; a degraded result is labelled in the UI and the audit log.
 
 ## 5. Background work
 

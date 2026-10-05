@@ -79,7 +79,7 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
   // approval link plus the button, a retry…). The uncaptured order simply expires at PayPal.
   if (milestone.status !== "awaiting_funding" && opts.source === "checkout") {
     await db.update(payments).set({ status: "failed" }).where(and(eq(payments.id, payment.id), eq(payments.status, "created")));
-    throw invalidState("This milestone is already funded — the extra PayPal order was not captured, so you were not charged twice");
+    throw invalidState("This milestone is already funded; the extra PayPal order was not captured, so you were not charged twice");
   }
   const capture =
     opts.source === "checkout"
@@ -91,7 +91,7 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
       await db.update(payments).set({ status: "failed", raw: capture.raw }).where(eq(payments.id, payment.id));
       await recordEvent(db, { pactId: pact.id, milestoneId: milestone.id, actorKind: "paypal", type: "payment.failed", message: "PayPal declined the payment. No money moved." });
     }
-    throw new AppError("payment_failed", `PayPal payment is ${capture.status.toLowerCase()} — the milestone is not funded yet`);
+    throw new AppError("payment_failed", `PayPal payment is ${capture.status.toLowerCase()}; the milestone is not funded yet`);
   }
   // The money has already moved at PayPal: a capture that doesn't match this order's milestone or
   // amount is refunded in full and recorded, never kept and never silently dropped.
@@ -107,14 +107,14 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
       type: "payment.mismatch_refunded",
       message: `A PayPal payment was refunded in full because ${mismatch}`,
     });
-    throw new AppError("payment_failed", `The PayPal payment was refunded because ${mismatch} — please fund the milestone again`);
+    throw new AppError("payment_failed", `The PayPal payment was refunded because ${mismatch}; please fund the milestone again`);
   }
 
   // A capture that completed at PayPal for a milestone that's no longer awaiting funding
   // (e.g. a webhook for a second approved order) is refunded in full, never silently kept.
   if (milestone.status !== "awaiting_funding") {
     await refundDuplicateCapture(payment.id, capture.captureId, capture.raw);
-    throw invalidState("This milestone was already funded — the duplicate PayPal payment was refunded automatically");
+    throw invalidState("This milestone was already funded; the duplicate PayPal payment was refunded automatically");
   }
 
   let result;
@@ -123,7 +123,7 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
   } catch (err) {
     if (err instanceof AppError && err.code === "invalid_state") {
       await refundDuplicateCapture(payment.id, capture.captureId, capture.raw);
-      throw invalidState("This milestone was funded by another payment at the same moment — this one was refunded automatically");
+      throw invalidState("This milestone was funded by another payment at the same moment; this one was refunded automatically");
     }
     throw err;
   }
@@ -188,7 +188,7 @@ export async function captureFunding(orderId: string, opts: { user?: User; sourc
     });
     await notify(tx, [pact.freelancerId], {
       pactId: pact.id,
-      title: "Milestone funded — start work",
+      title: "Milestone funded; start work",
       body: `${formatMoney(payment.milestoneCents, pact.currency)} for “${milestone.title}” is secured in escrow.`,
     });
     return { milestone: funded, payment: updated, alreadyCaptured: false };
@@ -219,7 +219,7 @@ async function refundUnusableCapture(
     captureId,
     amountCents: why.amountCents,
     currency: pact.currency,
-    note: "Payment could not fund the milestone — refunded in full",
+    note: "Payment could not fund the milestone; refunded in full",
     requestId: `kept-dup-refund-${payment.id}`,
   });
   await db

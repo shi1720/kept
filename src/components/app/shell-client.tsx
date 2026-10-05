@@ -33,13 +33,14 @@ export function PersonaSwitch({ current, other, otherRole }: { current: string; 
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
-    <div className="flex items-center gap-3 rounded-full border border-ember-100 bg-ember-50 py-1 pl-3 pr-1 text-[13px] text-ember-700">
+    <div className="flex items-center gap-3 rounded-full border border-line bg-paper-2 p-1 md:pl-3 text-[13px] text-ink-2">
       <span className="hidden md:inline">
         Demo · you are <b>{current}</b>
       </span>
       <Button
         size="sm"
-        variant="ember"
+        variant="jade"
+        aria-label={`Switch to ${other.split(" ")[0]}`}
         loading={pending}
         onClick={() =>
           start(async () => {
@@ -50,7 +51,7 @@ export function PersonaSwitch({ current, other, otherRole }: { current: string; 
           })
         }
       >
-        <Repeat2 /> Switch to {other.split(" ")[0]}
+        <Repeat2 /> <span className="hidden sm:inline">Switch to </span>{other.split(" ")[0]}
       </Button>
     </div>
   );
@@ -87,7 +88,7 @@ export function NotificationBell() {
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content align="end" sideOffset={8} className="z-50 w-[360px] overflow-hidden rounded-2xl border border-line bg-card shadow-lift">
+        <DropdownMenu.Content align="end" sideOffset={8} className="z-50 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-line bg-card shadow-lift">
           <div className="border-b border-line px-4 py-3 text-sm font-semibold">Notifications</div>
           <div className="max-h-[420px] overflow-y-auto">
             {data.items.length === 0 && <p className="px-4 py-8 text-center text-sm text-ink-3">You’re all caught up.</p>}
