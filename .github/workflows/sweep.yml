@@ -1,0 +1,28 @@
+# Runs Kept's sweeper (auto-release, mediation on timeout, payout/refund retries, PayPal reconciliation)
+# on a schedule, so deadlines are honoured even while a free host is asleep.
+# Configure once: Settings → Secrets and variables → Actions → add KEPT_URL and CRON_SECRET.
+name: sweep
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      KEPT_URL: ${{ secrets.KEPT_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Call /api/cron/sweep
+        run: |
+          if [ -z "$KEPT_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "KEPT_URL / CRON_SECRET not configured; nothing to sweep."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 240 --retry 2 --retry-delay 30 \
+            -X POST -H "Authorization: Bearer $CRON_SECRET" "${KEPT_URL%/}/api/cron/sweep"

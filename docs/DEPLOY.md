@@ -41,7 +41,7 @@ turso db tokens create kept       # DATABASE_AUTH_TOKEN
 
 | Variable | Value |
 |---|---|
-| `APP_URL` | leave blank for the first deploy, then set it to the `https://kept-xxxx.onrender.com` URL Render gives you and redeploy |
+| `APP_URL` | optional on Render: Kept falls back to the `RENDER_EXTERNAL_URL` Render provides. Set it only if you add a custom domain |
 | `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` | from step 1 |
 | `PAYPAL_DEMO_PAYOUT_EMAIL` | the sandbox personal account email |
 | `ANTHROPIC_API_KEY` *or* `GEMINI_API_KEY` | from step 2 |
@@ -50,13 +50,13 @@ turso db tokens create kept       # DATABASE_AUTH_TOKEN
 
 `SESSION_SECRET` and `CRON_SECRET` are generated automatically.
 
-4. Deploy. When it's live, set `APP_URL` and redeploy (it's used for PayPal return URLs, invite links and the MCP snippet).
+4. Deploy. The public URL is used for PayPal return URLs, invite links and the MCP snippet.
 
 ## 5. PayPal webhooks (2 min)
 
 1. Back in your PayPal app → **Webhooks** → *Add Webhook*.
 2. URL: `https://<your-app>.onrender.com/api/webhooks/paypal`, events: **All events** (or at least `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.*`, `PAYMENT.PAYOUTS-ITEM.*`, `PAYMENT.PAYOUTSBATCH.*`, `CUSTOMER.DISPUTE.*`).
-3. Copy the **Webhook ID** into Render as `PAYPAL_WEBHOOK_ID` and redeploy. Without it webhooks are stored but never trusted (the app still works — capture and payouts are confirmed synchronously).
+3. Copy the **Webhook ID** into Render as `PAYPAL_WEBHOOK_ID` and redeploy. Kept verifies every delivery with PayPal and rejects (401) anything it can't verify, so without the ID webhooks are ignored. The app still works, because captures and payouts are also confirmed synchronously and the sweeper reconciles statuses.
 
 ## 6. Log in with PayPal (optional, 2 min)
 
@@ -83,6 +83,15 @@ Open `https://<your-app>.onrender.com/api/doctor`. You should see:
 ```
 
 Then click **Try as Maya** on the landing page and walk the tour. In the PayPal popup either log in with the sandbox personal account, or choose **Debit or Credit Card** and use `4012 0000 3333 0026` (any future expiry, any CVV).
+
+## Scheduled sweeper
+
+The server runs the sweeper (auto-release, mediation on timeout, payout and refund retries, PayPal reconciliation) every minute while it's awake. A free Render instance sleeps when idle, so the repo also ships a GitHub Actions schedule, [`.github/workflows/sweep.yml`](../.github/workflows/sweep.yml), that calls `/api/cron/sweep` every 15 minutes. To turn it on, open the GitHub repo → **Settings → Secrets and variables → Actions** and add:
+
+- `KEPT_URL`: your Render URL
+- `CRON_SECRET`: the value Render generated (Render → your service → **Environment**)
+
+Until both are set, the workflow does nothing.
 
 ## Keep it warm for judging
 
