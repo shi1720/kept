@@ -320,6 +320,14 @@ export async function gatherEvidence(artifacts: Artifact[], criteria: Criterion[
     }),
   );
 
+  // The same hidden sentence is seen both by the hidden-text pass and the page text; count it once.
+  const seen = new Set<string>();
+  pack.injection = pack.injection.filter((f) => {
+    const key = f.snippet.toLowerCase().replace(/[^a-z]/g, "").slice(0, 80);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   pack.totalWords = pack.documents.filter((d) => d.kind !== "repository").reduce((s, d) => s + d.words, 0);
   pack.checks = criteria.map((c) => evaluateCheck(c, pack)).filter((x): x is MachineCheckOutcome => x !== null);
   if (pack.injection.length) {
