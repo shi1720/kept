@@ -12,7 +12,7 @@ Kept turns freelance conversations into milestone agreements, helps both sides r
 2. Follow the first-visit guide. Switch personas in the header to see both sides.
 3. Open a pact to inspect the signed terms, milestones, and evidence.
 4. As Ana, submit work on the landing-page pact. The sample picker includes complete, incomplete, and hidden-instruction examples.
-5. As Maya, review the criterion-level findings, approve, request a revision, or raise an issue.
+5. As Maya, review the criterion-level findings, approve, request a revision, or raise an issue. Vague revision feedback is clarified privately before you confirm the exact instruction sent to Ana. Extra work stays outside included revisions.
 6. Add both parties' statements in mediation. Both must accept the current proposal before it can settle.
 7. Open **Settings > AI providers** for the five-request allowance and personal provider settings.
 

@@ -13,7 +13,7 @@ export interface GuideStep {
 }
 
 /** Demo-only guided tour so a first-time visitor (or judge) sees every key flow in minutes. */
-export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep[]; currentPersona: "Maya" | "Ana"; sandbox: boolean }) {
+export function DemoGuide({ steps, currentPersona }: { steps: GuideStep[]; currentPersona: "Maya" | "Ana"; sandbox: boolean }) {
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -31,7 +31,7 @@ export function DemoGuide({ steps, currentPersona, sandbox }: { steps: GuideStep
         <span className="rounded-xl bg-jade-600 p-2 text-white"><Compass className="size-4" /></span>
         <div className="min-w-0 flex-1">
           <p className="text-[14px] font-semibold">Explore the demo</p>
-          <p className="text-xs text-ink-3">Nine things to try. {sandbox ? "PayPal sandbox connected." : "Simulator mode."}</p>
+          <p className="text-xs text-ink-3">Try the full flow, from agreement to payment.</p>
         </div>
         <button onClick={() => setOpen(!open)} className="rounded-full p-1.5 text-ink-3 hover:bg-paper-2" aria-label={open ? "Collapse tour" : "Expand tour"}>
           <ChevronDown className={cn("size-4 transition-transform", open ? "rotate-180" : "")} />

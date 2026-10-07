@@ -8,6 +8,7 @@ import { captureFunding, createFundingOrder } from "@/lib/domain/funding";
 import { acceptPact, createPact, draftToInput, listPactsForUser, sendPact } from "@/lib/domain/pacts";
 import { getPactDetail } from "@/lib/domain/queries";
 import { MILESTONE_STATUS_LABEL } from "@/lib/domain/state";
+import {assessFeedback,feedbackInput} from "@/lib/ai/feedback";
 import { approveMilestone, requestRevision, runReview, submitWork } from "@/lib/domain/work";
 import { env } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
@@ -233,12 +234,14 @@ export function buildMcpServer(user: User): McpServer {
       }),
   );
 
+  server.registerTool("check_revision_feedback",{title:"Clarify client feedback",description:"Check feedback against signed scope before requesting a revision. Answer clarification questions in your own words and check again. Returns a confirmation token for clear requests.",inputSchema:feedbackInput.shape},async(input)=>safely(async()=>ok(JSON.stringify(await assessFeedback(user,input)))));
+
   server.registerTool(
     "request_revision",
-    { title: "Request a revision", description: "As the client, send the work back with notes (counts against included revisions).", inputSchema: { milestone_id: z.string(), note: z.string().min(5) } },
-    async ({ milestone_id, note }) =>
+    { title: "Request a revision", description: "As the client, send the work back with notes (counts against included revisions).", inputSchema: { milestone_id: z.string(), note: z.string().min(5), feedback_token:z.string() } },
+    async ({ milestone_id, note, feedback_token }) =>
       safely(async () => {
-        await requestRevision(user, milestone_id, note);
+        await requestRevision(user, milestone_id, note, feedback_token);
         return ok("Revision requested.");
       }),
   );

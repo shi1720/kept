@@ -1,6 +1,13 @@
 "use client";
 
-import { BookOpen, BrainCircuit, Gavel, Landmark, Vault, Webhook } from "lucide-react";
+import {
+  BookOpen,
+  BrainCircuit,
+  Gavel,
+  Landmark,
+  Vault,
+  Webhook,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
@@ -13,20 +20,71 @@ import { useOpsLive } from "./ops-live";
 import type { OpsTab } from "./tab-keys";
 import { WebhooksGrid } from "./webhooks-grid";
 
-export function OpsTabs({ initialTab, paypalEnv, showWorkspace }: { initialTab: OpsTab; paypalEnv: string; showWorkspace: boolean }) {
+export function OpsTabs({
+  initialTab,
+  paypalEnv,
+  showWorkspace,
+}: {
+  initialTab: OpsTab;
+  paypalEnv: string;
+  showWorkspace: boolean;
+}) {
   const { data } = useOpsLive();
   const [tab, setTab] = useState<OpsTab>(initialTab);
   const queue = data.disputes.filter((d) => d.status !== "resolved").length;
-  const webhookIssues = data.webhooks.filter((w) => w.error || !w.verified).length;
-  const rulings = useMemo(() => data.disputes.filter((d) => d.proposedPct != null), [data.disputes]);
+  const webhookIssues = data.webhooks.filter(
+    (w) => w.error || !w.verified,
+  ).length;
+  const rulings = useMemo(
+    () => data.disputes.filter((d) => d.proposedPct != null),
+    [data.disputes],
+  );
 
-  const tabs: { key: OpsTab; label: string; icon: React.ReactNode; count: number; alert?: boolean }[] = [
-    { key: "escrow", label: "Escrow book", icon: <Vault />, count: data.escrow.length },
-    { key: "ledger", label: "Ledger", icon: <BookOpen />, count: data.ledger.length },
-    { key: "paypal", label: "PayPal activity", icon: <Landmark />, count: data.movements.length },
-    { key: "ai", label: "AI decisions", icon: <BrainCircuit />, count: data.verdicts.length + rulings.length },
-    { key: "disputes", label: "Disputes", icon: <Gavel />, count: queue, alert: queue > 0 },
-    { key: "webhooks", label: "Webhooks", icon: <Webhook />, count: data.webhooks.length, alert: webhookIssues > 0 },
+  const tabs: {
+    key: OpsTab;
+    label: string;
+    icon: React.ReactNode;
+    count: number;
+    alert?: boolean;
+  }[] = [
+    {
+      key: "escrow",
+      label: "Escrow book",
+      icon: <Vault />,
+      count: data.escrow.length,
+    },
+    {
+      key: "ledger",
+      label: "Ledger",
+      icon: <BookOpen />,
+      count: data.ledger.length,
+    },
+    {
+      key: "paypal",
+      label: "PayPal activity",
+      icon: <Landmark />,
+      count: data.movements.length,
+    },
+    {
+      key: "ai",
+      label: "AI decisions",
+      icon: <BrainCircuit />,
+      count: data.verdicts.length + rulings.length,
+    },
+    {
+      key: "disputes",
+      label: "Disputes",
+      icon: <Gavel />,
+      count: queue,
+      alert: queue > 0,
+    },
+    {
+      key: "webhooks",
+      label: "Webhooks",
+      icon: <Webhook />,
+      count: data.webhooks.length,
+      alert: webhookIssues > 0,
+    },
   ];
 
   const change = (v: string) => {
@@ -41,21 +99,33 @@ export function OpsTabs({ initialTab, paypalEnv, showWorkspace }: { initialTab: 
   };
 
   return (
-    <Tabs value={tab} onValueChange={change} className="flex min-w-0 flex-col gap-5">
+    <Tabs
+      value={tab}
+      onValueChange={change}
+      className="flex min-w-0 flex-col gap-5"
+    >
       <div className="-mx-1 overflow-x-auto px-1 pb-1">
-        <TabsList className="w-max">
+        <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl sm:flex sm:flex-wrap sm:justify-start">
           {tabs.map((t) => (
-            <TabsTrigger key={t.key} value={t.key} className="group">
+            <TabsTrigger
+              key={t.key}
+              value={t.key}
+              className="group justify-start px-2 sm:px-3"
+            >
               {t.icon}
               {t.label}
-              <span
-                className={cn(
-                  "num ml-0.5 rounded-full px-1.5 text-[11px] font-semibold",
-                  t.alert ? "bg-rose-600 text-white" : "bg-paper-2 text-ink-3 group-data-[state=active]:bg-ink group-data-[state=active]:text-paper",
-                )}
-              >
-                {t.count}
-              </span>
+              {t.alert && (
+                <span
+                  className={cn(
+                    "num ml-0.5 rounded-full px-1.5 text-[11px] font-semibold",
+                    t.alert
+                      ? "bg-rose-600 text-white"
+                      : "bg-paper-2 text-ink-3 group-data-[state=active]:bg-ink group-data-[state=active]:text-paper",
+                  )}
+                >
+                  {t.key === "webhooks" ? webhookIssues : t.count}
+                </span>
+              )}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -64,7 +134,11 @@ export function OpsTabs({ initialTab, paypalEnv, showWorkspace }: { initialTab: 
         <EscrowGrid rows={data.escrow} showWorkspace={showWorkspace} />
       </TabsContent>
       <TabsContent value="ledger" className="outline-none">
-        <LedgerPanel rows={data.ledger} balances={data.balances} showWorkspace={showWorkspace} />
+        <LedgerPanel
+          rows={data.ledger}
+          balances={data.balances}
+          showWorkspace={showWorkspace}
+        />
       </TabsContent>
       <TabsContent value="paypal" className="outline-none">
         <MovementsGrid rows={data.movements} paypalEnv={paypalEnv} />

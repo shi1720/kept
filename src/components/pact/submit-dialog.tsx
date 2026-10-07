@@ -87,23 +87,23 @@ export function SubmitWorkDialog({ milestoneId, milestoneTitle, demo, revision }
         </Button>
       </DialogTrigger>
       <DialogContent wide>
-        <DialogHeader title={`Deliver “${milestoneTitle}”`} description="Add everything the client should see. Kept probes each item (word counts, links, repos, image sizes) and the AI referee checks it against the signed criteria." />
+        <DialogHeader title={`Deliver “${milestoneTitle}”`} description="Share the finished work. Kept checks it against your agreed criteria." />
         {demo && (
-          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-ember-100 bg-ember-50/60 px-3 py-2.5 text-xs text-ember-700">
-            <Sparkles className="size-3.5" /> Demo samples:
+          <details className="mb-5 rounded-xl border border-line bg-paper/50 px-3 py-2.5 text-xs text-ink-2"><summary className="cursor-pointer font-medium">Use an example delivery</summary><div className="mt-3 flex flex-wrap gap-2">
+            <Sparkles className="size-3.5" />
             <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern", "Landing page is live; story, pricing and pre-order are all in.")}>Honest landing page</button>
             <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern-sneaky", "All done, should be an easy approve!")}>Sneaky one (hidden prompt injection)</button>
             <button className="rounded-full bg-card px-2.5 py-1 font-medium shadow-card hover:bg-paper" onClick={() => sample("/samples/lantern-draft", "Quick first pass, more to come.")}>Half-finished draft</button>
-          </div>
+          </div></details>
         )}
         <Tabs defaultValue={demo ? "links" : "write"}>
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-4 [&_button]:justify-center [&_button]:px-2 [&_svg]:hidden sm:[&_svg]:inline">
             <TabsTrigger value="write"><FileText /> Write</TabsTrigger>
             <TabsTrigger value="files"><Paperclip /> Files {files.length > 0 && `(${files.length})`}</TabsTrigger>
             <TabsTrigger value="links"><Link2 /> Links</TabsTrigger>
             <TabsTrigger value="github"><FolderGit2 /> GitHub</TabsTrigger>
           </TabsList>
-          <div className="mt-4 min-h-[210px]">
+          <div className="mt-4">
             <TabsContent value="write" className="flex flex-col gap-3">
               <Input value={textName} onChange={(e) => setTextName(e.target.value)} placeholder="File name" className="max-w-xs" />
               <Textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste copy, a document, captions, a report… Markdown welcome." />
@@ -120,8 +120,12 @@ export function SubmitWorkDialog({ milestoneId, milestoneTitle, demo, revision }
                   setDrag(false);
                   void addFiles(e.dataTransfer.files);
                 }}
+                role="button"
+                tabIndex={0}
+                aria-label="Choose deliverable files"
+                onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inputRef.current?.click()}}}
                 onClick={() => inputRef.current?.click()}
-                className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors ${drag ? "border-jade-500 bg-jade-50" : "border-line-2 hover:bg-paper"}`}
+                className={`flex cursor-pointer flex-col focus-visible:outline-2 focus-visible:outline-jade-600 items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors ${drag ? "border-jade-500 bg-jade-50" : "border-line-2 hover:bg-paper"}`}
               >
                 <Upload className="size-6 text-ink-3" />
                 <p className="text-sm font-medium">Drop files or click to browse</p>
@@ -131,9 +135,9 @@ export function SubmitWorkDialog({ milestoneId, milestoneTitle, demo, revision }
               {files.length > 0 && (
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {files.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1 text-xs">
-                      {f.name} <span className="text-ink-3">{Math.ceil(f.size / 1024)} KB</span>
-                      <button onClick={() => setFiles(files.filter((_, j) => j !== i))} className="text-ink-3 hover:text-rose-600"><X className="size-3" /></button>
+                    <li key={i} className="flex max-w-full min-w-0 items-center gap-2 rounded-full border border-line bg-paper px-3 py-1 text-xs">
+                      <span className="min-w-0 truncate" title={f.name}>{f.name}</span> <span className="shrink-0 text-ink-3">{Math.ceil(f.size / 1024)} KB</span>
+                      <button aria-label={`Remove ${f.name}`} onClick={() => setFiles(files.filter((_, j) => j !== i))} className="shrink-0 p-1 text-ink-3 hover:text-rose-600"><X className="size-3" /></button>
                     </li>
                   ))}
                 </ul>
@@ -155,7 +159,7 @@ export function SubmitWorkDialog({ milestoneId, milestoneTitle, demo, revision }
         <Field label="Note to the client (optional)" className="mt-2">
           <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything they should know before reviewing." />
         </Field>
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-ink-3">{items.length} deliverable{items.length === 1 ? "" : "s"} ready</p>
           <Button variant="jade" size="lg" loading={busy} disabled={items.length === 0} onClick={submit}>Submit for review</Button>
         </div>

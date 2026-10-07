@@ -49,42 +49,31 @@ export function MilestoneCard({
   const latest = m.submissions[0];
   const clientName = detail.client?.name ?? pact.counterpartyName ?? "Client";
   const freelancerName = detail.freelancer?.name ?? pact.counterpartyName ?? "Freelancer";
+  const revisionNote = m.revisionNote;
   const revisionsLeft = pact.terms.revisionsIncluded - m.revisionsUsed;
   const showVerdict = verdict && ["in_review", "disputed", "released", "settled", "refunded", "funded"].includes(m.status);
 
   return (
     <section id={m.id} className="scroll-mt-24 overflow-hidden rounded-2xl border border-line bg-card shadow-card">
       <header className="flex flex-wrap items-start gap-4 border-b border-line px-6 py-5">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-paper-2 text-[13px] font-semibold text-ink-2">{index + 1}</span>
-        <div className="min-w-0 flex-1">
+        <span className="hidden size-8 shrink-0 sm:flex items-center justify-center rounded-full bg-paper-2 text-[13px] font-semibold text-ink-2">{index + 1}</span>
+        <div className="min-w-0 basis-full sm:basis-0 sm:flex-1">
           <h3 className="text-[16px] font-semibold tracking-tight">{m.title}</h3>
-          {m.description && <p className="mt-0.5 text-[13px] leading-relaxed text-ink-3">{m.description}</p>}
+
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-3">
             {m.dueAt && <span className="flex items-center gap-1"><CalendarDays className="size-3.5" /> Due {m.dueAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>}
             {m.revisionsUsed > 0 && <span>{m.revisionsUsed} revision{m.revisionsUsed === 1 ? "" : "s"} used</span>}
             {m.fundedAt && <span className="flex items-center gap-1"><Lock className="size-3.5" /> Funded {ago(m.fundedAt)}</span>}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:flex-col sm:items-end">
           <span className="num text-[20px] font-semibold tracking-tight">{formatMoney(m.amountCents, pact.currency)}</span>
           <MilestoneStatusBadge status={m.status} />
         </div>
       </header>
 
       <div className="flex flex-col gap-5 px-6 py-5">
-        {showVerdict ? (
-          <VerdictReport verdict={verdict} criteria={m.criteria} viewerRole={role} resolved={["released", "settled", "refunded"].includes(m.status)} />
-        ) : (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">Acceptance criteria</p>
-            <ul className="divide-y divide-line">
-              {m.criteria.map((c, i) => (
-                <CriterionRow key={c.id} criterion={c} index={i} />
-              ))}
-            </ul>
-          </div>
-        )}
-
+        {m.status==='funded' && m.revisionsUsed>0 && typeof revisionNote==='string' && <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-[#003087]">Client revision request</p><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{revisionNote}</p><p className="mt-3 text-xs text-ink-3">The signed criteria, deadline and payment stay unchanged.</p></div>}
         {/* Funding */}
         {m.status === "awaiting_funding" && role === "client" && (
           <FundPanel milestoneId={m.id} paypal={paypal} quote={quoteFunding(m.amountCents, { ...fees, processingBps: 349, processingFixedCents: 49 })} />
@@ -100,9 +89,9 @@ export function MilestoneCard({
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-jade-100 bg-jade-50/60 p-5">
             <div>
               <p className="flex items-center gap-2 text-[14px] font-semibold text-jade-700"><Lock className="size-4" /> {formatMoney(m.amountCents)} is secured in escrow</p>
-              <p className="mt-0.5 text-xs text-ink-3">{m.revisionsUsed > 0 ? "A revision was requested; see the activity feed for the client’s note." : "Deliver against the criteria above. Passing work is paid even if the client goes quiet."}</p>
+              <p className="mt-0.5 text-xs text-ink-3">{m.revisionsUsed > 0 ? "Apply the client’s request, then submit the revised work." : "Your next step: upload the agreed deliverables for review."}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <SubmitWorkDialog milestoneId={m.id} milestoneTitle={m.title} demo={demo} revision={m.revisionsUsed > 0} />
               <RefundButton milestoneId={m.id} amountCents={m.amountCents} />
             </div>
@@ -128,7 +117,7 @@ export function MilestoneCard({
               )}
             </p>
             {role === "client" ? (
-              <ReviewActions milestoneId={m.id} amountCents={m.amountCents} freelancerName={freelancerName} payoutReady={detail.freelancer?.payoutReady ?? false} revisionsLeft={revisionsLeft} canRevise={revisionsLeft > 0} />
+              <ReviewActions criteria={m.criteria} milestoneId={m.id} amountCents={m.amountCents} freelancerName={freelancerName} payoutReady={detail.freelancer?.payoutReady ?? false} revisionsLeft={revisionsLeft} canRevise={revisionsLeft > 0} />
             ) : (
               <p className="text-[13px] text-ink-3">Waiting for {clientName} to review. You can’t be ghosted: passing work is released when the window closes.</p>
             )}
@@ -170,6 +159,21 @@ export function MilestoneCard({
           </details>
         )}
 
+        {m.description&&<details open={pact.status==='draft'||pact.status==='pending_acceptance'}><summary className="cursor-pointer text-sm font-medium">{pact.status==='draft'||pact.status==='pending_acceptance'?'Milestone brief':'Signed milestone brief'}</summary><p className="mt-3 whitespace-pre-wrap text-sm text-ink-2">{m.description}</p></details>}
+        {showVerdict ? (
+          <VerdictReport verdict={verdict} criteria={m.criteria} viewerRole={role} resolved={["released", "settled", "refunded"].includes(m.status)} />
+        ) : (
+          <details open={pact.status==='draft'||pact.status==='pending_acceptance'}>
+            <summary className="cursor-pointer text-sm font-medium">Agreed acceptance criteria</summary>
+            <ul className="divide-y divide-line">
+              {m.criteria.map((c, i) => (
+                <CriterionRow key={c.id} criterion={c} index={i} />
+              ))}
+            </ul>
+          </details>
+        )}
+
+
         {/* Deliveries */}
         {latest && (
           <div>
@@ -186,9 +190,9 @@ export function MilestoneCard({
 
         {m.payment?.paypalDispute && <PayPalDisputeBanner info={m.payment.paypalDispute} />}
         {demo && (m.status === "in_review" || (m.status === "funded" && m.payment?.paypalCaptureId && !m.payment.paypalDispute)) && (
-          <details className="group rounded-xl border border-dashed border-ember-100 bg-ember-50/40 px-4 py-2.5">
-            <summary className="cursor-pointer list-none text-xs font-medium text-ember-700">
-              Demo controls <span className="font-normal text-ink-3">· simulate time passing or a PayPal dispute</span>
+          <details className="group rounded-xl border border-line bg-paper/50 px-4 py-2.5">
+            <summary className="cursor-pointer list-none text-xs font-medium text-ink-3">
+              Demo controls
             </summary>
             <div className="mt-2.5 flex flex-wrap gap-2 pb-1">
               {m.status === "in_review" && <FastForwardButton milestoneId={m.id} hours={pact.terms.reviewWindowHours} />}
@@ -198,6 +202,7 @@ export function MilestoneCard({
         )}
 
         {m.payment && (
+          <details><summary className="cursor-pointer text-xs font-medium text-ink-3">Payment details · {m.payment.simulated?"simulated":paypal.mode==="sandbox"?"PayPal sandbox":"PayPal"}</summary>
           <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-ink-3">
             <Badge tone="neutral" className="py-0 text-[10px]">PayPal</Badge>
             Order <span className="font-mono">{m.payment.paypalOrderId}</span>
@@ -210,7 +215,7 @@ export function MilestoneCard({
             )}
             {m.payment.payerEmail && <>· paid by {m.payment.payerEmail}</>}
             {m.payment.simulated && <>· simulated</>}
-          </p>
+          </p></details>
         )}
       </div>
     </section>

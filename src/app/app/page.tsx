@@ -68,7 +68,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     : null;
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-up">
+    <div className="flex flex-col gap-6 animate-fade-up">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-ink-3">{user.headline ?? "Your pacts"}</p>
@@ -76,7 +76,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <Greeting name={firstName} />
           </h1>
         </div>
-        <Button asChild variant="jade" size="lg">
+        <Button asChild variant="jade" size="lg" className="bg-[#174f3e] hover:bg-[#002568]">
           <Link href="/app/pacts/new">
             New pact <ArrowRight />
           </Link>
@@ -90,7 +90,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       )}
       {!user.demoWorkspace && !user.emailVerifiedAt && <VerifyEmailBanner email={user.email} />}
 
-      {guide && <DemoGuide steps={guide} sandbox={sandbox} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}
 
       <div className="dashboard-stats grid grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
@@ -102,15 +101,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               </span>
             </div>
             <div className="num mt-3 text-[28px] font-semibold tracking-tight">{s.value}</div>
-            <div className="mt-1 text-xs text-ink-3">{s.hint}</div>
+            {s.label === "Paid out to you" && d.stats.earningPendingCents > 0 && <div className="mt-1 text-xs text-ink-3">{s.hint}</div>}
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_290px]">
         <Card className="min-w-0">
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Needs your attention</CardTitle>
+            <CardTitle>Your next steps</CardTitle>
             {d.actions.length > 0 && <Badge tone="neutral">{d.actions.length}</Badge>}
           </CardHeader>
           <CardContent className="dashboard-actions flex flex-col gap-3">
@@ -126,10 +125,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <div className="min-w-0 flex-1">
                   <p className="text-[13.5px] font-medium">{a.label}</p>
                   <p className="truncate text-xs text-ink-3">
-                    {a.pactTitle} · {a.detail}
+                    {a.pactTitle}
                   </p>
+                  <p className="mt-1 text-[11px] text-ink-3">{a.milestoneTitle??a.detail}{a.dueAt?` · Due ${a.dueAt.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`:""}</p>
                 </div>
-                <span className="flex items-center gap-1 text-[13px] font-medium text-jade-700">
+                <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#eff4ff] px-3 py-2 text-xs font-semibold text-[#003087]">
                   {a.cta} <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>
@@ -141,10 +141,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <CardTitle>Recent activity</CardTitle>
           </CardHeader>
           <CardContent tabIndex={0} role="region" aria-label="Recent activity" className="max-h-[280px] overflow-y-auto pb-10 outline-none focus-visible:ring-2 focus-visible:ring-jade-300 [mask-image:linear-gradient(to_bottom,black_calc(100%-36px),transparent)]">
-            <Timeline events={d.events.slice(0, 10)} titles={d.pactTitles} compact />
+            <Timeline events={d.events.slice(0, 4)} titles={d.pactTitles} compact />
           </CardContent>
         </Card>
       </div>
+
 
       <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between">
@@ -153,6 +154,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
         <PactsGrid rows={d.pacts} />
       </section>
+      {guide && <DemoGuide steps={guide} sandbox={sandbox} currentPersona={user.name.startsWith("Ana") ? "Ana" : "Maya"} />}
     </div>
   );
 }

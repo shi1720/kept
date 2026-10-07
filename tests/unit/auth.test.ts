@@ -34,8 +34,8 @@ beforeAll(async () => {
 });
 
 /** The token from the newest email sent to `to`. */
-function lastLink(to: string, route: "verify-email" | "reset-password"): string {
-  const files = readdirSync(outbox).sort();
+function lastLink(to: string, route: "verify-email" | "reset-password", exclude: string[] = []): string {
+  const files = readdirSync(outbox).filter(f=>!exclude.includes(f)).sort();
   for (const f of files.reverse()) {
     const mail = JSON.parse(readFileSync(path.join(outbox, f), "utf8")) as { to: string; action?: { url: string } };
     if (mail.to === to && mail.action?.url.includes(`/${route}?token=`)) return new URL(mail.action.url).searchParams.get("token")!;
@@ -64,8 +64,9 @@ describe("email verification", () => {
     const u = await app.users.createUser({ name: "Late Larry", email: "larry@kept.test", password: "password123" });
     await app.account.sendVerificationEmail(u);
     const first = lastLink("larry@kept.test", "verify-email");
+    const previousFiles=readdirSync(outbox);
     await app.account.sendVerificationEmail(u);
-    const second = lastLink("larry@kept.test", "verify-email");
+    const second = lastLink("larry@kept.test", "verify-email", previousFiles);
     expect(second).not.toBe(first);
     await expect(app.account.verifyEmail(first)).rejects.toThrow();
 

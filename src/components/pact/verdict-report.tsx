@@ -48,7 +48,7 @@ export function CriterionRow({ criterion, result, index }: { criterion: Criterio
           )}
         </div>
         {result && (
-          <details className="mt-2 space-y-2"><summary className="cursor-pointer text-xs font-medium text-jade-700">View evidence and reasoning</summary>
+          <details open={result.result!=="met"} className="mt-2 space-y-2"><summary className="cursor-pointer text-xs font-medium text-jade-700">View evidence and reasoning</summary>
             {result.machineCheck && (
               <p className={cn("text-xs", result.machineCheck.passed ? "text-jade-700" : "text-rose-700")}>
                 <span className="font-medium">Machine check {result.machineCheck.passed ? "passed" : "failed"}:</span> {result.machineCheck.detail}
@@ -96,18 +96,18 @@ export function VerdictReport({
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-card">
       <div className="flex flex-wrap items-center gap-5 border-b border-line bg-gradient-to-r from-sky-50/60 via-card to-card p-5">
-        <ScoreRing score={verdict.score} overall={verdict.overall} />
+        <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-[#003087]"><Bot className="size-6"/></div>
         {/* Wraps under the score ring on narrow screens instead of squeezing into a sliver beside it. */}
         <div className="min-w-0 flex-1 basis-[260px]">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-1.5 text-[13px] font-semibold"><Bot className="size-4 text-sky-600" /> AI Referee verdict</span>
+            <span className="flex items-center gap-1.5 text-[13px] font-semibold"><Bot className="size-4 text-sky-600" /> Delivery review</span>
             <Badge tone={overallTone}>{verdict.overall.toUpperCase()}</Badge>
             <span className="text-xs text-ink-3">{tally(verdict.criteriaResults)}</span>
           </div>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2">{verdict.summary}</p>
-          <p className="mt-1.5 text-[11px] text-ink-3">
-            {verdict.provider === "kept-demo-seed" ? "Seeded example; submit work to run the live referee" : `${verdict.model} via ${verdict.provider}`} · {(verdict.latencyMs / 1000).toFixed(1)}s · recommends releasing {verdict.recommendedReleasePct}%
-          </p>
+          <details className="mt-2 text-[11px] text-ink-3"><summary className="cursor-pointer">Review details · score {verdict.score}/100</summary><p>
+            {verdict.provider === "kept-demo-seed" ? "Seeded example; submit work to run the live referee" : `${verdict.model} via ${verdict.provider}`} · {(verdict.latencyMs / 1000).toFixed(1)}s · advisory only
+          </p></details>
         </div>
       </div>
       {verdict.injectionDetected && (
@@ -117,14 +117,14 @@ export function VerdictReport({
         </div>
       )}
       <ul className="divide-y divide-line px-5">
-        {criteria.map((c, i) => (
-          <CriterionRow key={c.id} criterion={c} result={byId.get(c.id)} index={i} />
+        {[...criteria].sort((a,b)=>Number(byId.get(a.id)?.result==="met")-Number(byId.get(b.id)?.result==="met")).map((c) => (
+          <CriterionRow key={c.id} criterion={c} result={byId.get(c.id)} index={criteria.indexOf(c)} />
         ))}
       </ul>
       {notes && (
         <div className="mx-5 mb-5 flex gap-2.5 rounded-xl bg-paper px-4 py-3 text-[13px] leading-relaxed text-ink-2">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
-          <span className="whitespace-pre-line"><b className="text-ink">{viewerRole === "freelancer" ? "To get to 100%: " : "Before you approve: "}</b>{notes}</span>
+          <span className="whitespace-pre-line"><b className="text-ink">{viewerRole === "freelancer" ? "What needs attention: " : "Before you approve: "}</b>{notes}</span>
         </div>
       )}
       {verdict.evidence.length > 0 && (

@@ -1,3 +1,4 @@
+import {verifyFeedbackToken} from "@/lib/ai/feedback";
 import { createHash } from "node:crypto";
 import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -191,7 +192,7 @@ export async function approveMilestone(user: User, milestoneId: string) {
   });
 }
 
-export async function requestRevision(user: User, milestoneId: string, note: string) {
+export async function requestRevision(user: User, milestoneId: string, note: string, feedbackToken = "") {
   const { milestone, pact } = await loadMilestone(milestoneId);
   assertParty(user, pact, "client");
   assertTransition(milestone.status, "request_revision");
@@ -199,7 +200,13 @@ export async function requestRevision(user: User, milestoneId: string, note: str
     throw invalidState(`All ${pact.terms.revisionsIncluded} included revisions have been used; approve, or raise an issue for mediation`);
   }
   if (note.trim().length < 5) throw badRequest("Tell the freelancer what to change");
+  const reviewed = await latestVerdict(milestoneId);
+  if (!reviewed) throw invalidState("Wait for the delivery review.");
+  verifyFeedbackToken(feedbackToken,user.id,milestoneId,reviewed.id,note);
   await db.transaction(async (tx) => {
+    const currentVerdict = await latestVerdict(milestoneId, tx);
+    if (!currentVerdict) throw invalidState("Wait for the delivery review.");
+    verifyFeedbackToken(feedbackToken,user.id,milestoneId,currentVerdict.id,note);
     await casMilestone(tx, milestoneId, ["in_review"], {
       status: "funded",
       revisionsUsed: milestone.revisionsUsed + 1,

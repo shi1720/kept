@@ -49,10 +49,10 @@ export function DisputePanel({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-rose-100 bg-card">
-      <div className="flex items-center gap-2.5 border-b border-rose-100 bg-rose-50/70 px-5 py-3">
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-rose-100 bg-rose-50/70 px-5 py-3">
         <Gavel className="size-4 text-rose-600" />
         <span className="text-[13.5px] font-semibold text-rose-700">{dispute.status === "resolved" ? (dispute.clientAcceptedAt && dispute.freelancerAcceptedAt && dispute.finalReleasePct === ruling?.releasePct ? "Mediation agreement · accepted by both parties" : "Mediation record") : `In mediation · ${formatMoney(amountCents)} frozen in escrow`}</span>
-        {dispute.status === "escalated" && <Badge tone="rose" className="ml-auto">Escalated to a human arbitrator</Badge>}
+        {dispute.status === "escalated" && <Badge tone="rose" className="max-w-full whitespace-normal">Escalated to a human arbitrator</Badge>}
       </div>
 
       <div className="grid gap-px bg-line sm:grid-cols-2">
@@ -77,13 +77,12 @@ export function DisputePanel({
             <span className="basis-full pl-6 text-[11px] text-ink-3 sm:basis-auto sm:pl-0">{ruling.provider === "kept-demo-seed" ? "seeded example; add a statement to run the live mediator" : ruling.model}</span>
           </div>
           <div className="mt-4">
-            <div className="flex h-11 overflow-hidden rounded-xl text-[13px] font-medium">
-              <div className="flex items-center justify-center bg-jade-600 text-white transition-all" style={{ width: `${Math.max(pct, 8)}%` }}>{pct}%</div>
-              <div className="flex flex-1 items-center justify-center bg-ember-100 text-ember-700">{100 - pct}%</div>
+            <div aria-label={`${pct}% payout, ${100-pct}% refund`} className="flex h-3 overflow-hidden rounded-full bg-ember-100">
+              <div className="h-full bg-jade-600 transition-all" style={{width:`${pct}%`}} />
             </div>
-            <div className="mt-2 flex justify-between text-xs">
-              <span className="text-jade-700"><b className="num">{formatMoney(toFreelancer)}</b> proposed payout to {freelancerName}</span>
-              <span className="text-ember-700"><b className="num">{formatMoney(toClient)}</b> proposed refund to {clientName}</span>
+            <div className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
+              <span className="text-jade-700"><b className="num block text-sm">{formatMoney(toFreelancer)} · {pct}%</b>Proposed payout to {freelancerName}</span>
+              <span className="text-ember-700"><b className="num block text-sm">{formatMoney(toClient)} · {100-pct}%</b>Proposed refund to {clientName}</span>
             </div>
           </div>
           <p className="mt-4 text-[13.5px] leading-relaxed text-ink-2">{ruling.rationale}</p>
@@ -104,7 +103,7 @@ export function DisputePanel({
           {dispute.status === "ruling_proposed" && role && (
             <div className="mt-5 flex flex-wrap items-center gap-3">
               {myAccepted ? (
-                <Badge tone="jade"><Check /> You accepted · waiting for the other party</Badge>
+                <Badge tone="jade" className="max-w-full whitespace-normal"><Check className="shrink-0"/> You accepted · waiting for the other party</Badge>
               ) : (
                 <>
                   <Button variant="jade" size="lg" loading={busy === "accept"} onClick={() => act("accept", `/api/disputes/${dispute.id}/respond`, { accept: true, revision: dispute.revision }, otherAccepted ? "Settled! PayPal is moving the money now." : "Accepted; waiting for the other party.")}>

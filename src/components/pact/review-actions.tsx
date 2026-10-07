@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FastForward, Gavel, Repeat2, Undo2 } from "lucide-react";
+import { CheckCircle2, FastForward, Gavel, Undo2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/input";
 import { api } from "@/lib/client-api";
+import {FeedbackDialog} from "./feedback-dialog";
 import { formatMoney } from "@/lib/money";
 
 function useAction() {
@@ -35,7 +36,7 @@ export function ReviewActions({
   freelancerName,
   payoutReady,
   revisionsLeft,
-  canRevise,
+  criteria,
 }: {
   milestoneId: string;
   amountCents: number;
@@ -43,11 +44,10 @@ export function ReviewActions({
   payoutReady: boolean;
   revisionsLeft: number;
   canRevise: boolean;
+  criteria:{id:string;text:string}[];
 }) {
   const { busy, run } = useAction();
-  const [revNote, setRevNote] = useState("");
   const [issue, setIssue] = useState("");
-  const [openRev, setOpenRev] = useState(false);
   const [openIssue, setOpenIssue] = useState(false);
   const [openApprove, setOpenApprove] = useState(false);
 
@@ -72,20 +72,7 @@ export function ReviewActions({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={openRev} onOpenChange={setOpenRev}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="lg" disabled={!canRevise}><Repeat2 /> Request revision {canRevise ? `(${revisionsLeft} left)` : "(none left)"}</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader title="Request a revision" description="Be specific; the freelancer sees this note, and the referee re-checks the next version against the same criteria." />
-          <Textarea rows={4} value={revNote} onChange={(e) => setRevNote(e.target.value)} placeholder="e.g. Please attach the SVG and PNG exports of the final logo." />
-          <div className="mt-4 flex justify-end">
-            <Button loading={busy === "rev"} disabled={revNote.trim().length < 5} onClick={async () => (await run("rev", `/api/milestones/${milestoneId}/revision`, { note: revNote }, "Revision requested.")) && setOpenRev(false)}>
-              Send request
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FeedbackDialog milestoneId={milestoneId} criteria={criteria} revisionsLeft={revisionsLeft}/>
 
       <Dialog open={openIssue} onOpenChange={setOpenIssue}>
         <DialogTrigger asChild>

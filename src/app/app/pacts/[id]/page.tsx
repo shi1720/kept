@@ -1,4 +1,4 @@
-import { AlertOctagon, ArrowLeft, Bot, FileSignature, ScrollText, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertOctagon, ArrowLeft, Bot, FileSignature, ScrollText, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -83,6 +83,7 @@ export default async function PactPage({
   // "Kept" only when every milestone was paid in full; a split or refund is a fair settlement, not a kept promise.
   const keptInFull = pact.status === "completed" && milestones.every((m) => m.status === "released" || m.status === "cancelled");
   const done = milestones.filter((m) => ["released", "settled", "refunded", "cancelled"].includes(m.status)).length;
+  const current = milestones.find(m => ["funded","submitted","in_review","disputed"].includes(m.status)) ?? milestones.find(m => !["released","settled","refunded","cancelled"].includes(m.status));
   const inviteUrl = `${env.appUrl}/invite/${pact.inviteToken}`;
   // Returned from a PayPal approval link (redirect flow): capture that order.
   const returning =
@@ -98,6 +99,9 @@ export default async function PactPage({
         <p className="rounded-2xl border border-line bg-paper-2 px-5 py-3 text-[13px] text-ink-2">PayPal checkout was cancelled; nothing was charged.</p>
       )}
 
+      {sealed && <div><div className="flex flex-wrap items-center gap-2"><PactStatusBadge status={pact.status}/><span className="text-xs text-ink-3">{role === 'freelancer' ? `Working with ${detail.client?.name}` : `Working with ${detail.freelancer?.name}`}</span></div><h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{pact.title}</h1></div>}
+      <details open={!sealed} className="rounded-2xl border border-line bg-card">
+      <summary className="cursor-pointer px-5 py-4 text-sm font-medium">{sealed ? 'Signed agreement' : 'Agreement details'} <span className="ml-2 text-xs font-normal text-ink-3">Scope, terms and payment totals</span></summary>
       {/* Contract header */}
       <div className="relative overflow-hidden rounded-3xl border border-line bg-card shadow-card">
         <div className="grain absolute inset-0 opacity-40" />
@@ -108,7 +112,7 @@ export default async function PactPage({
               {pact.createdVia === "mcp" && <Badge tone="sky"><Bot /> Drafted by an AI agent</Badge>}
               <span className="font-mono text-[11px] text-ink-3">{pact.id}</span>
             </div>
-            <h1 className="display mt-3 text-[38px] sm:text-[46px]">{pact.title}</h1>
+            <h2 className="display mt-3 text-[38px] sm:text-[46px]">{pact.title}</h2>
             {pact.summary && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink-2">{pact.summary}</p>}
             <div className="mt-6 flex flex-wrap items-center gap-x-10 gap-y-4">
               <Party user={detail.client} fallback={pact.creatorRole === "freelancer" ? pact.counterpartyName : null} role="Client" signedAt={pact.clientSignedAt} />
@@ -142,6 +146,8 @@ export default async function PactPage({
           ))}
         </div>
       </div>
+
+      </details>
 
       {/* Draft / signature banner */}
       {(pact.status === "draft" || pact.status === "pending_acceptance") && (
@@ -181,18 +187,18 @@ export default async function PactPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col gap-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold">Milestones</h2>
+            <h2 className="text-[15px] font-semibold">{current ? "Current milestone" : "Completed work"}</h2>
             <div className="flex w-48 items-center gap-2 text-xs text-ink-3">
               <Progress value={milestones.length ? (done / milestones.length) * 100 : 0} />
               <span className="num shrink-0">{done}/{milestones.length}</span>
             </div>
           </div>
-          {milestones.map((m, i) => (
-            <MilestoneCard key={m.id} m={m} index={i} detail={detail} paypal={paypal} fees={env.fees} demo={demo} />
-          ))}
+          {current && <MilestoneCard key={current.id} m={current} index={milestones.indexOf(current)} detail={detail} paypal={paypal} fees={env.fees} demo={demo}/>}
+          {milestones.filter(m=>m.id!==current?.id).map(m=><details open={!current} key={m.id} className="rounded-2xl border border-line bg-card"><summary className="cursor-pointer p-5 text-sm font-medium">{m.title}<span className="ml-2 text-xs font-normal text-ink-3">{formatMoney(m.amountCents)} · {m.status.replaceAll('_',' ')}</span></summary><MilestoneCard m={m} index={milestones.indexOf(m)} detail={detail} paypal={paypal} fees={env.fees} demo={demo}/></details>)}
         </div>
 
         <aside className="flex flex-col gap-5">
+          <details open={!sealed} className="rounded-2xl border border-line bg-card"><summary className="cursor-pointer px-5 py-4 text-sm font-medium">Terms & original brief</summary>
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><ScrollText className="size-4 text-ink-3" /> Terms</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-[13px]">
@@ -239,6 +245,7 @@ export default async function PactPage({
             </Card>
           )}
 
+          </details>
           <Card>
             <CardHeader><CardTitle>Activity</CardTitle></CardHeader>
             <CardContent tabIndex={0} role="region" aria-label="Pact activity" className="max-h-[560px] overflow-y-auto pb-10 outline-none focus-visible:ring-2 focus-visible:ring-jade-300 [mask-image:linear-gradient(to_bottom,black_calc(100%-36px),transparent)]">
@@ -246,10 +253,6 @@ export default async function PactPage({
             </CardContent>
           </Card>
 
-          <div className="flex items-start gap-2 px-1 text-[11.5px] leading-relaxed text-ink-3">
-            <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-jade-600" />
-            Payments, payouts and refunds run on PayPal ({gateway.mode}). Every money movement is double-entry booked and listed above.
-          </div>
           {isCreator && ["draft", "pending_acceptance"].includes(pact.status) && <CancelPactButton pactId={pact.id} />}
           {role && pact.status === "active" && milestones.every((m) => ["awaiting_funding", "cancelled"].includes(m.status)) && <CancelPactButton pactId={pact.id} />}
         </aside>

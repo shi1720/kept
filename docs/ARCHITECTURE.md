@@ -106,3 +106,11 @@ The **sweeper** ([`sweep.ts`](../src/lib/domain/sweep.ts)) runs every minute in-
 ## 7. Production path
 
 The sandbox build captures client payments to the platform's PayPal account and releases with Payouts. In production Kept would use **PayPal's multiparty platform with delayed disbursement**: freelancers onboard via Partner Referrals (`DELAY_FUNDS_DISBURSEMENT`), orders name the freelancer as `payee` with `disbursement_mode: DELAYED`, and releases use `POST /v1/payments/referenced-payouts-items`. PayPal then holds funds throughout and Kept never takes custody. The `PayPalGateway` interface ([`types.ts`](../src/lib/paypal/types.ts)) isolates that change.
+
+## Client feedback before a revision
+
+`POST /api/milestones/:id/feedback` assesses a client-authored request against the signed milestone. Ambiguous feedback returns questions for the client. The client writes a final instruction and checks that exact text. The questions and unfinished drafts remain in the client's browser; only the confirmed final request is recorded for the freelancer.
+
+An in-scope assessment returns a 30-minute HMAC confirmation bound to the client, milestone, current verdict and exact request. The revision endpoint rechecks the latest verdict inside its transaction and consumes one revision only after confirmation. Replays, edited text and old delivery tokens are rejected. Added scope prompts a separate agreement and does not change the existing price, deadline or criteria.
+
+If AI is unavailable, a clearly labeled manual path lets the client select a signed criterion and specify where, what and how completion will be checked. This is the client's scope confirmation, not an AI guarantee. AI assessments are advisory and can make mistakes; neither path changes signed obligations automatically.

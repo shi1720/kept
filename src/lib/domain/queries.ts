@@ -52,7 +52,7 @@ export async function getPactDetail(viewer: User | null, pactId: string, opts: {
   const ms = await db.select().from(milestones).where(eq(milestones.pactId, pactId)).orderBy(asc(milestones.position));
   const ids = ms.map((m) => m.id);
   const none = ids.length === 0;
-  const [crit, subs, verds, disps, pays, pyos, rfds, evts, client, freelancer] = await Promise.all([
+  const [crit, subs, verds, disps, pays, pyos, rfds, evts, client, freelancer, revisionEvents] = await Promise.all([
     none ? [] : db.select().from(criteria).where(inArray(criteria.milestoneId, ids)).orderBy(asc(criteria.position)),
     none ? [] : db.select().from(submissions).where(inArray(submissions.milestoneId, ids)).orderBy(desc(submissions.version)),
     none ? [] : db.select().from(verdicts).where(inArray(verdicts.milestoneId, ids)).orderBy(desc(verdicts.createdAt)),
@@ -63,6 +63,7 @@ export async function getPactDetail(viewer: User | null, pactId: string, opts: {
     db.select().from(events).where(eq(events.pactId, pactId)).orderBy(desc(events.createdAt), desc(sql`${events}.rowid`)).limit(200),
     loadUser(pact.clientId),
     loadUser(pact.freelancerId),
+    db.select().from(events).where(and(eq(events.pactId,pactId),eq(events.type,"revision.requested"))).orderBy(desc(events.createdAt),desc(sql`${events}.rowid`)),
   ]);
   const subIds = subs.map((s) => s.id);
   const arts = subIds.length
@@ -85,6 +86,7 @@ export async function getPactDetail(viewer: User | null, pactId: string, opts: {
     const mSubs = subs.filter((s) => s.milestoneId === m.id);
     return {
       ...m,
+      revisionNote: revisionEvents.find(e=>e.milestoneId===m.id)?.data?.note,
       criteria: crit.filter((c) => c.milestoneId === m.id),
       submissions: mSubs.map((s) => ({
         ...s,
@@ -137,6 +139,8 @@ export interface ActionItem {
   milestoneId?: string;
   label: string;
   detail: string;
+  milestoneTitle?: string;
+  dueAt?: Date | null;
   tone: "jade" | "amber" | "rose" | "sky" | "ember";
   cta: string;
   href: string;
@@ -165,7 +169,7 @@ export async function getDashboard(user: User) {
   }
   for (const m of allMs) {
     const role = m.pact.role;
-    const base = { pactId: m.pact.id, pactTitle: m.pact.title, milestoneId: m.id, href: `/app/pacts/${m.pact.id}#${m.id}` };
+    const base = { pactId: m.pact.id, pactTitle: m.pact.title, milestoneId: m.id, milestoneTitle:m.title,dueAt:m.dueAt, href: `/app/pacts/${m.pact.id}#${m.id}` };
     const d = openDisputes.find((x) => x.milestoneId === m.id && x.status !== "resolved");
     const v = verdictRows.find((x) => x.milestoneId === m.id);
     if (role === "client" && m.status === "awaiting_funding") actions.push({ ...base, label: "Fund milestone", detail: m.title, tone: "amber", cta: "Fund with PayPal" });

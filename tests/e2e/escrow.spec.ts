@@ -18,7 +18,7 @@ async function switchPersona(page: Page, to: "Ana" | "Maya") {
   await page.getByRole("button", { name: new RegExp(`Switch to ${to}`) }).click();
   const guide = page.getByRole("button", {name:"Skip guide"});
   await guide.waitFor({state:"visible",timeout:2000}).then(()=>guide.click()).catch(()=>{});
-  await expect(page.getByText(new RegExp(`you are ${to === "Ana" ? "Ana Reyes" : "Maya Chen"}`))).toBeVisible();
+  await expect(page.getByTitle(new RegExp(`Viewing as ${to === "Ana" ? "Ana Reyes" : "Maya Chen"}`))).toBeVisible();
 }
 
 async function openPact(page: Page, title: RegExp) {
@@ -36,6 +36,7 @@ test("full escrow lifecycle across both personas", async ({ page }) => {
   await page.goto(`/invite/${packaging.inviteToken}`);
   await page.getByRole("button", { name: /Countersign as/ }).click();
   await page.waitForURL(`**/app/pacts/${packaging.id}`);
+  await page.locator("summary").filter({hasText:"Signed agreement"}).click();
   await expect(page.getByText("Signed by both")).toBeVisible();
 
   // Maya funds milestone 1 with PayPal.
@@ -54,13 +55,14 @@ test("full escrow lifecycle across both personas", async ({ page }) => {
     "Concept A: an engraved lantern wrapped in holly, Holiday Blend lettering in Ember. Concept B: a vintage stamp with a coffee branch, Holiday Blend set in Cream on Roast.",
   );
   await page.getByRole("button", { name: "Submit for review" }).click();
-  await expect(page.getByText("AI Referee verdict").first()).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("Delivery review").first()).toBeVisible({ timeout: 60_000 });
 
   // Maya approves and the payout is recorded.
   await switchPersona(page, "Maya");
   await page.goto(`/app/pacts/${packaging.id}`);
   await page.getByRole("button", { name: /Approve & release/ }).click();
   await page.getByRole("button", { name: "Release payment" }).click();
+  await page.locator("summary").filter({hasText:"Two illustration concepts"}).click();
   await expect(page.getByText("Released in full")).toBeVisible();
   await expect(page.getByText("PayPal Payout to freelancer")).toBeVisible();
 });
@@ -143,4 +145,29 @@ test("a queued draft survives refresh and resumes without submitting twice", asy
   await page.getByRole("button",{name:"Compile into a pact"}).click();
   await expect(page.getByRole("heading",{name:"Review your pact"})).toBeVisible();
   expect(requests).toBe(1);
+});
+
+test('vague feedback stays private, drafts survive refresh, and a confirmed correction reaches the freelancer',async({page})=>{
+ await startDemo(page,'client');await openPact(page,/Brand identity/);
+ await page.getByRole('button',{name:/Request revision/}).click();
+ await page.getByRole('textbox',{name:'Your feedback'}).fill('Make it warmer');
+ await page.getByRole('button',{name:'Check request',exact:true}).click();
+ await expect(page.getByText('A little more detail',{exact:true})).toBeVisible();
+ const final='In the existing logo, use the agreed Ember and Roast palette. Keep the layout and SVG format unchanged.';
+ await page.getByRole('textbox',{name:'Final request for the freelancer'}).fill(final);
+ await page.reload();await page.getByRole('button',{name:/Request revision/}).click();
+ await expect(page.getByRole('textbox',{name:'Final request for the freelancer'})).toHaveValue(final);
+ await page.getByRole('button',{name:'Clarify manually instead'}).click();
+ await page.getByRole('textbox',{name:'Where is the issue?'}).fill('The wordmark in the existing logo SVG');
+ await page.getByRole('textbox',{name:'What exact change is needed?'}).fill('Use the agreed Ember and Roast palette');
+ await page.getByRole('textbox',{name:'How will you check it is done?'}).fill('Compare the two colors to the signed palette');
+ await page.getByRole('button',{name:'Preview request'}).click();
+ await expect(page.getByText('Client-confirmed scope. No AI assessment was used.',{exact:false})).toBeVisible();
+ await expect(page.getByRole('dialog')).not.toContainText('Make it warmer');
+ await page.getByRole('button',{name:'Confirm & send'}).click();
+ await expect(page.getByText('Client revision request',{exact:true})).toBeVisible();
+ await switchPersona(page,'Ana');await openPact(page,/Brand identity/);
+ await expect(page.getByText('Client revision request',{exact:true})).toBeVisible();
+ await expect(page.getByRole('main')).not.toContainText('Make it warmer');
+ await expect(page.getByRole('button',{name:/Submit revised work/})).toBeVisible();
 });

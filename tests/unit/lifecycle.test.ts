@@ -1,3 +1,4 @@
+import { issueFeedbackToken, assessFeedback } from "@/lib/ai/feedback";
 import { eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { createUser } from "@/lib/auth/users";
@@ -102,7 +103,9 @@ describe("escrow lifecycle", () => {
     await runReview(milestoneId);
     const [v] = await db.select().from(verdicts).where(eq(verdicts.milestoneId, milestoneId));
     expect(v.overall).toBe("fail");
-    await requestRevision(client, milestoneId, "Please make it longer");
+    const note="Expand draft to at least 50 words, as agreed.";
+    await expect(requestRevision(client,milestoneId,note)).rejects.toThrow(/Review this request/);
+    await requestRevision(client, milestoneId, note, issueFeedbackToken(client.id,milestoneId,v.id,note));
     await submitWork(freelancer, milestoneId, { items: [{ kind: "text", name: "draft2", content: "still short" }] });
     await runReview(milestoneId);
     await expect(requestRevision(client, milestoneId, "Again please")).rejects.toThrow(/revisions/);
@@ -440,4 +443,27 @@ it("claims a submission once when background review, manual retry, and recovery 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(await db.select().from(verdicts).where(eq(verdicts.milestoneId,milestoneId))).toHaveLength(1);
   } finally {spy.mockRestore();}
+});
+
+describe('client feedback gate',()=>{
+ it('keeps drafts private and requires a concrete client-confirmed request before consuming a revision',async()=>{
+  const {milestoneId}=await activePact();await fund(milestoneId);
+  await submitWork(freelancer,milestoneId,{items:[{kind:'text',name:'draft.md',content:'too short'}]});await runReview(milestoneId);
+  const {criteria}=await loadMilestone(milestoneId);
+  const vague=await assessFeedback(client,{milestoneId,note:'Make it warmer',manual:false});
+  expect(vague.status).toBe('clarify');expect(vague.token).toBeUndefined();
+  expect((await loadMilestone(milestoneId)).milestone.revisionsUsed).toBe(0);
+  const manual={milestoneId,note:'Expand the opening paragraph.',manual:true,criterionId:criteria[0].id,location:'Opening paragraph in draft.md',change:'Expand the post to at least 50 words',done:'Count at least 50 words in the revised post'};
+  await expect(assessFeedback(freelancer,manual)).rejects.toThrow(/client/);
+  await expect(assessFeedback(client,{...manual,criterionId:'foreign'})).rejects.toThrow(/criterion/);
+  const extra=await assessFeedback(client,{...manual,change:'Add an extra landing page to this project'});
+  expect(extra.status).toBe('scope_change');expect(extra.token).toBeUndefined();
+  const checked=await assessFeedback(client,manual);
+  expect(checked.finalNote).toContain(manual.change);expect(checked.finalNote).toContain(criteria[0].text);
+  await expect(requestRevision(client,milestoneId,manual.note,checked.token)).rejects.toThrow(/changed/);
+  const attempts=await Promise.allSettled([requestRevision(client,milestoneId,checked.finalNote!,checked.token),requestRevision(client,milestoneId,checked.finalNote!,checked.token)]);
+  expect(attempts.filter(a=>a.status==='fulfilled')).toHaveLength(1);
+  const after=(await loadMilestone(milestoneId)).milestone;
+  expect(after.revisionsUsed).toBe(1);expect(after.status).toBe('funded');
+ });
 });

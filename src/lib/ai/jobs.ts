@@ -8,8 +8,11 @@ import {AppError} from "@/lib/errors";
 import {assertParty, loadMilestone, loadUser} from "@/lib/domain/context";
 import {draftRequest,compileDraft} from "./draft-request";
 
+import {feedbackInput,assessFeedback} from "./feedback";
+
 export const jobsEnabled=()=>Boolean(process.env.AI_TASK_QUEUE && process.env.AI_WORKER_URL);
 export const jobInput=z.discriminatedUnion("kind",[
+ z.object({kind:z.literal("feedback"),input:feedbackInput}),
  z.object({kind:z.literal("draft"),input:draftRequest}),
  z.object({kind:z.literal("mediate"),input:z.object({disputeId:z.string(),revision:z.number().int()})}),
  z.object({kind:z.literal("review"),input:z.object({milestoneId:z.string(),submissionId:z.string().optional()})}),
@@ -42,6 +45,7 @@ export async function readJob(id:string,userId:string){
 }
 async function execute(userId:string,data:JobInput){
  const user=await loadUser(userId);if(!user)throw new AppError("unauthorized","Account no longer exists");
+ if(data.kind==="feedback")return assessFeedback(user,data.input);
  if(data.kind==="draft")return compileDraft(user.id,data.input);
  if(data.kind==="review"){
   const {pact}=await loadMilestone(data.input.milestoneId);assertParty(user,pact);

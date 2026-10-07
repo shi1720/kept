@@ -235,6 +235,31 @@ paths:
       responses:
         "200": { description: Released }
         default: { $ref: "#/components/responses/Error" }
+  /api/milestones/{id}/feedback:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [Milestones]
+      summary: Check a client-authored revision against the signed scope before sending
+      operationId: checkRevisionFeedback
+      description: Returns clarify, scope_change, or in_scope. Only in_scope includes a confirmation token, bound to this client, delivery and exact note for 30 minutes. No revision is consumed. A queued response must be polled through the AI jobs endpoint. Manual mode requires criterionId, location, change and done; use the returned finalNote verbatim when sending.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [note]
+              properties:
+                note: { type: string, minLength: 5, maxLength: 2000 }
+                manual: { type: boolean, default: false }
+                criterionId: { type: string }
+                location: { type: string }
+                change: { type: string }
+                done: { type: string }
+      responses:
+        "200": { description: Feedback assessment with optional confirmation token and finalNote }
+        "202": { description: Queued jobId; poll /api/ai/jobs/{jobId} }
+        default: { $ref: "#/components/responses/Error" }
   /api/milestones/{id}/revision:
     parameters: [{ $ref: "#/components/parameters/Id" }]
     post:
@@ -245,7 +270,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [note], properties: { note: { type: string } } }
+            schema: { type: object, required: [note, feedbackToken], properties: { note: { type: string, maxLength: 4000 }, feedbackToken: { type: string } } }
       responses:
         "200": { description: Revision requested }
         default: { $ref: "#/components/responses/Error" }
