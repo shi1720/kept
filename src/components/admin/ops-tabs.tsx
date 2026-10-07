@@ -8,7 +8,7 @@ import {
   Vault,
   Webhook,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
 import { DecisionsPanel } from "./decisions-grid";
@@ -31,6 +31,15 @@ export function OpsTabs({
 }) {
   const { data } = useOpsLive();
   const [tab, setTab] = useState<OpsTab>(initialTab);
+  const panels = useRef<HTMLDivElement>(null);
+  const scrollPosition = useRef<number | null>(null);
+  const [panelFloor, setPanelFloor] = useState(0);
+  useLayoutEffect(() => {
+    if (scrollPosition.current !== null) {
+      window.scrollTo({ top: scrollPosition.current, behavior: "instant" });
+      scrollPosition.current = null;
+    }
+  }, [tab]);
   const queue = data.disputes.filter((d) => d.status !== "resolved").length;
   const webhookIssues = data.webhooks.filter(
     (w) => w.error || !w.verified,
@@ -88,6 +97,15 @@ export function OpsTabs({
   ];
 
   const change = (v: string) => {
+    if (v === tab) return;
+    // A short or empty table must not shrink the document beneath the current
+    // viewport, which would make the browser clamp scrollY and move the tabs.
+    const y = window.scrollY;
+    if (panels.current) {
+      const top = panels.current.getBoundingClientRect().top + y;
+      setPanelFloor(Math.max(0, y + window.innerHeight - top));
+    }
+    scrollPosition.current = y;
     setTab(v as OpsTab);
     try {
       const url = new URL(window.location.href);
@@ -130,28 +148,33 @@ export function OpsTabs({
           ))}
         </TabsList>
       </div>
-      <TabsContent value="escrow" className="outline-none">
-        <EscrowGrid rows={data.escrow} showWorkspace={showWorkspace} />
-      </TabsContent>
-      <TabsContent value="ledger" className="outline-none">
-        <LedgerPanel
-          rows={data.ledger}
-          balances={data.balances}
-          showWorkspace={showWorkspace}
-        />
-      </TabsContent>
-      <TabsContent value="paypal" className="outline-none">
-        <MovementsGrid rows={data.movements} paypalEnv={paypalEnv} />
-      </TabsContent>
-      <TabsContent value="ai" className="outline-none">
-        <DecisionsPanel verdicts={data.verdicts} rulings={rulings} />
-      </TabsContent>
-      <TabsContent value="disputes" className="outline-none">
-        <DisputesQueue rows={data.disputes} />
-      </TabsContent>
-      <TabsContent value="webhooks" className="outline-none">
-        <WebhooksGrid rows={data.webhooks} scoped={!showWorkspace} />
-      </TabsContent>
+      <div
+        ref={panels}
+        style={{ minHeight: panelFloor, overflowAnchor: "none" }}
+      >
+        <TabsContent value="escrow" className="outline-none">
+          <EscrowGrid rows={data.escrow} showWorkspace={showWorkspace} />
+        </TabsContent>
+        <TabsContent value="ledger" className="outline-none">
+          <LedgerPanel
+            rows={data.ledger}
+            balances={data.balances}
+            showWorkspace={showWorkspace}
+          />
+        </TabsContent>
+        <TabsContent value="paypal" className="outline-none">
+          <MovementsGrid rows={data.movements} paypalEnv={paypalEnv} />
+        </TabsContent>
+        <TabsContent value="ai" className="outline-none">
+          <DecisionsPanel verdicts={data.verdicts} rulings={rulings} />
+        </TabsContent>
+        <TabsContent value="disputes" className="outline-none">
+          <DisputesQueue rows={data.disputes} />
+        </TabsContent>
+        <TabsContent value="webhooks" className="outline-none">
+          <WebhooksGrid rows={data.webhooks} scoped={!showWorkspace} />
+        </TabsContent>
+      </div>
     </Tabs>
   );
 }
